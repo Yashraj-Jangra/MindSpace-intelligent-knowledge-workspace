@@ -7,7 +7,9 @@ import { PromptInput } from '@/components/ui/PromptInput';
 import { ReminderModal } from '@/components/ui/ReminderModal';
 import { NotificationToast, ToastMessage } from '@/components/ui/NotificationToast';
 import { OutlineView } from '@/components/ui/OutlineView';
-import { Network, FileText, Bell, Sparkles } from 'lucide-react';
+import { DocumentUpload } from '@/components/ui/DocumentUpload';
+import { SearchBar } from '@/components/ui/SearchBar';
+import { Network, FileText, FileUp, Sparkles } from 'lucide-react';
 
 export default function Home() {
   const [nodes, setNodes] = useState<ReactFlowNode[]>([]);
@@ -18,6 +20,7 @@ export default function Home() {
 
   // Modals & Panels
   const [isOutlineOpen, setIsOutlineOpen] = useState(false);
+  const [isDocUploadOpen, setIsDocUploadOpen] = useState(false);
   const [reminderTarget, setReminderTarget] = useState<{ id: string; label: string } | null>(null);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
@@ -95,9 +98,7 @@ export default function Home() {
         body: JSON.stringify({ prompt: promptText, canvasId }),
       });
 
-      if (!res.ok) {
-        throw new Error('Failed to generate graph');
-      }
+      if (!res.ok) throw new Error('Failed to generate graph');
 
       const data = await res.json();
       if (data.canvasId) setCanvasId(data.canvasId);
@@ -106,7 +107,7 @@ export default function Home() {
       if (data.edges) setEdges(data.edges);
     } catch (err) {
       console.error('Error generating graph:', err);
-      alert('Failed to generate mind map graph. Ensure OPENAI_API_KEY is configured.');
+      alert('Failed to generate mind map graph.');
     } finally {
       setIsGenerating(false);
     }
@@ -136,6 +137,57 @@ export default function Home() {
     [canvasId]
   );
 
+  // Handle AI Copilot Toolbar Actions (Summarize, Rewrite, Auto-Link)
+  const handleCopilotAction = useCallback(
+    async (action: 'summarize' | 'rewrite' | 'auto-link', nodeId: string, label: string, markdown?: string) => {
+      try {
+        const res = await fetch('/api/nodes/copilot', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action, nodeId, label, markdown, canvasId }),
+        });
+
+        if (!res.ok) throw new Error('Copilot action failed');
+
+        const data = await res.json();
+
+        if (action === 'summarize' && data.summary) {
+          setNodes((prev) =>
+            prev.map((n) => (n.id === nodeId ? { ...n, data: { ...n.data, markdown: data.summary } } : n))
+          );
+        } else if (action === 'rewrite' && data.rewritten) {
+          setNodes((prev) =>
+            prev.map((n) => (n.id === nodeId ? { ...n, data: { ...n.data, markdown: data.rewritten } } : n))
+          );
+        } else if (action === 'auto-link' && data.newEdges) {
+          setEdges((prev) => [...prev, ...data.newEdges]);
+          alert(`Auto-Linked ${data.newEdges.length} new relationship connections!`);
+        }
+      } catch (err) {
+        console.error('Copilot error:', err);
+      }
+    },
+    [canvasId]
+  );
+
+  // Handle Node Spotlight from RAG Search
+  const handleSelectSearchNode = useCallback((targetNode: { id: string; label: string; positionX: number; positionY: number }) => {
+    setNodes((prev) =>
+      prev.map((n) => ({
+        ...n,
+        selected: n.id === targetNode.id,
+      }))
+    );
+  }, []);
+
+  // Handle Document Upload Graph Generation
+  const handleDocumentSuccess = (data: { canvasId: string; title: string; nodes: any[]; edges: any[] }) => {
+    if (data.canvasId) setCanvasId(data.canvasId);
+    if (data.title) setTitle(data.title);
+    if (data.nodes) setNodes(data.nodes);
+    if (data.edges) setEdges(data.edges);
+  };
+
   // Handle Reminder Setting
   const handleOpenReminderModal = useCallback((nodeId: string, label: string) => {
     setReminderTarget({ id: nodeId, label });
@@ -154,7 +206,6 @@ export default function Home() {
       });
 
       if (res.ok) {
-        // Update local node state
         setNodes((prev) =>
           prev.map((n) =>
             n.id === nodeId
@@ -170,7 +221,6 @@ export default function Home() {
           )
         );
 
-        // Add to active toast notifications preview
         setToasts((prev) => [
           ...prev,
           {
@@ -188,7 +238,7 @@ export default function Home() {
 
   return (
     <main className="w-screen h-screen relative flex flex-col bg-[#0A0A0A] overflow-hidden">
-      {/* Header Bar - Bold Typography Poster Style */}
+      {/* Header Bar */}
       <header className="h-16 border-b border-[#262626] bg-[#0A0A0A]/90 backdrop-blur-md px-6 flex items-center justify-between z-30">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 bg-[#FF3D00] flex items-center justify-center font-mono font-bold text-[#0A0A0A]">
@@ -204,18 +254,24 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Map Title & Top Controls */}
-        <div className="flex items-center gap-4">
-          <span className="font-mono text-xs text-[#FAFAFA] border border-[#262626] px-3 py-1 bg-[#0F0F0F]">
-            {title}
-          </span>
+        {/* Semantic RAG Search Bar & Controls */}
+        <div className="flex items-center gap-3">
+          <SearchBar canvasId={canvasId} onSelectNode={handleSelectSearchNode} />
+
+          <button
+            onClick={() => setIsDocUploadOpen(true)}
+            className="flex items-center gap-2 px-3 py-1.5 border border-[#262626] hover:border-[#FF3D00] text-xs font-mono uppercase tracking-wider text-[#FAFAFA] transition-colors"
+          >
+            <FileUp className="w-3.5 h-3.5 text-[#FF3D00]" />
+            <span className="hidden sm:inline">Upload Doc</span>
+          </button>
 
           <button
             onClick={() => setIsOutlineOpen(true)}
             className="flex items-center gap-2 px-3 py-1.5 border border-[#262626] hover:border-[#FF3D00] text-xs font-mono uppercase tracking-wider text-[#FAFAFA] transition-colors"
           >
             <FileText className="w-3.5 h-3.5 text-[#FF3D00]" />
-            <span className="hidden sm:inline">Document View</span>
+            <span className="hidden sm:inline">Outline</span>
           </button>
         </div>
       </header>
@@ -223,7 +279,13 @@ export default function Home() {
       {/* Main Canvas Area */}
       <div className="flex-1 w-full h-full relative">
         <MindSpaceCanvas
-          initialNodes={nodes}
+          initialNodes={nodes.map((n) => ({
+            ...n,
+            data: {
+              ...n.data,
+              onCopilotAction: handleCopilotAction,
+            },
+          }))}
           initialEdges={edges}
           onExpandNode={handleExpandNode}
           onSetReminder={handleOpenReminderModal}
@@ -234,6 +296,13 @@ export default function Home() {
       <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 w-full px-4 flex justify-center">
         <PromptInput onGenerate={handleGenerateGraph} isLoading={isGenerating} />
       </div>
+
+      {/* Document Upload Modal */}
+      <DocumentUpload
+        isOpen={isDocUploadOpen}
+        onClose={() => setIsDocUploadOpen(false)}
+        onUploadSuccess={handleDocumentSuccess}
+      />
 
       {/* Slide-over Document Outline Drawer */}
       <OutlineView isOpen={isOutlineOpen} nodes={nodes} onClose={() => setIsOutlineOpen(false)} />

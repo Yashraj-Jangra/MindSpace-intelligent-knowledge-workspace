@@ -1,15 +1,17 @@
 import React, { memo, useState } from 'react';
 import { Handle, Position, NodeProps } from '@xyflow/react';
-import { Sparkles, AlarmClock, ChevronDown, ChevronUp, BellRing } from 'lucide-react';
+import { Sparkles, AlarmClock, ChevronDown, ChevronUp, BellRing, Wand2, FileText, Link2 } from 'lucide-react';
 import { MindSpaceNodeData } from '@/lib/graph/transformer';
 
 export const ConceptNode = memo(({ id, data, selected }: NodeProps) => {
   const nodeData = data as unknown as MindSpaceNodeData & {
     onExpandTopic?: (nodeId: string, label: string, markdown: string) => void;
     onSetReminder?: (nodeId: string, label: string) => void;
+    onCopilotAction?: (action: 'summarize' | 'rewrite' | 'auto-link', nodeId: string, label: string, markdown?: string) => void;
   };
 
   const [isExpanded, setIsExpanded] = useState(false);
+  const [showCopilotMenu, setShowCopilotMenu] = useState(false);
   const accentColor = nodeData.color || '#FF3D00';
 
   return (
@@ -80,15 +82,63 @@ export const ConceptNode = memo(({ id, data, selected }: NodeProps) => {
           </div>
         )}
 
-        {/* Action Toolbar on Node Select / Hover */}
-        <div className="mt-3 pt-3 border-t border-[#262626] flex items-center justify-between gap-2">
+        {/* Action Toolbar */}
+        <div className="mt-3 pt-3 border-t border-[#262626] flex items-center justify-between gap-2 relative">
           <button
             onClick={() => nodeData.onExpandTopic?.(id, nodeData.label, nodeData.markdown)}
-            className="flex items-center gap-1.5 text-xs font-mono uppercase tracking-wider text-[#FF3D00] hover:text-[#FAFAFA] transition-colors group/btn"
+            className="flex items-center gap-1.5 text-xs font-mono uppercase tracking-wider text-[#FF3D00] hover:text-[#FAFAFA] transition-colors"
           >
             <Sparkles className="w-3.5 h-3.5 stroke-[1.5]" />
-            <span className="hover-underline-accent">Expand AI</span>
+            <span className="hover-underline-accent">Expand</span>
           </button>
+
+          {/* AI Copilot Menu Toggle */}
+          <div className="relative">
+            <button
+              onClick={() => setShowCopilotMenu(!showCopilotMenu)}
+              className="flex items-center gap-1 text-xs font-mono uppercase tracking-wider text-[#FAFAFA] hover:text-[#FF3D00] transition-colors"
+            >
+              <Wand2 className="w-3.5 h-3.5 stroke-[1.5]" />
+              <span>Copilot</span>
+            </button>
+
+            {showCopilotMenu && (
+              <div className="absolute right-0 bottom-6 z-50 w-44 bg-[#0F0F0F] border border-[#FF3D00] p-1 shadow-2xl space-y-1">
+                <button
+                  onClick={() => {
+                    setShowCopilotMenu(false);
+                    nodeData.onCopilotAction?.('summarize', id, nodeData.label, nodeData.markdown);
+                  }}
+                  className="w-full text-left flex items-center gap-2 px-2.5 py-1.5 text-xs font-mono text-[#FAFAFA] hover:bg-[#FF3D00] hover:text-[#0A0A0A] transition-colors"
+                >
+                  <FileText className="w-3.5 h-3.5" />
+                  <span>Summarize Notes</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    setShowCopilotMenu(false);
+                    nodeData.onCopilotAction?.('rewrite', id, nodeData.label, nodeData.markdown);
+                  }}
+                  className="w-full text-left flex items-center gap-2 px-2.5 py-1.5 text-xs font-mono text-[#FAFAFA] hover:bg-[#FF3D00] hover:text-[#0A0A0A] transition-colors"
+                >
+                  <Wand2 className="w-3.5 h-3.5" />
+                  <span>Rewrite Tone</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    setShowCopilotMenu(false);
+                    nodeData.onCopilotAction?.('auto-link', id, nodeData.label, nodeData.markdown);
+                  }}
+                  className="w-full text-left flex items-center gap-2 px-2.5 py-1.5 text-xs font-mono text-[#FAFAFA] hover:bg-[#FF3D00] hover:text-[#0A0A0A] transition-colors"
+                >
+                  <Link2 className="w-3.5 h-3.5" />
+                  <span>Auto-Link Map</span>
+                </button>
+              </div>
+            )}
+          </div>
 
           <button
             onClick={() => nodeData.onSetReminder?.(id, nodeData.label)}

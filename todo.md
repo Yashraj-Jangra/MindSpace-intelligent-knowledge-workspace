@@ -12,11 +12,12 @@
 - [x] Created `src/workers/elk-layout.worker.ts` & `src/lib/graph/layout.ts` for Web Worker non-blocking ELK.js layout positioning.
 - [x] Created `src/lib/webhooks/dispatcher.ts` for HMAC-SHA256 signed outbound webhook dispatches.
 - [x] Created API routes: `/api/generate`, `/api/nodes/expand`, `/api/reminders`, `/api/webhooks`, `/api/v1/nodes`.
-- [x] Created React Flow custom node component `ConceptNode.tsx` with sharp edges, accent anchor bars, markdown body, and node reminder badges.
-- [x] Created `MindSpaceCanvas.tsx`, `PromptInput.tsx`, `ReminderModal.tsx`, `NotificationToast.tsx`, `OutlineView.tsx`.
-- [x] Implemented main application page `src/app/page.tsx` & root layout `src/app/layout.tsx`.
+- [x] Implemented Phase 2 Features:
+  - Added `/api/parse-document` & `DocumentUpload.tsx` for PDF/text file structure extraction.
+  - Added `/api/nodes/copilot` AI Copilot suite (Summarize notes, Rewrite tone, Auto-Link canvas edges).
+  - Updated `ConceptNode.tsx` with Copilot dropdown menu.
+  - Added `src/lib/embeddings.ts` (OpenAI `text-embedding-3-small`), `/api/rag/search` (pgvector cosine search), and `SearchBar.tsx` (semantic search bar with node spotlight).
+  - Integrated all Phase 2 features into `src/app/page.tsx`.
 
 ## Next Steps
-- [ ] Boot Docker Compose containers (`docker compose up -d` in WSL).
-- [ ] Run `npm install` and `npx prisma db push` to generate Prisma Client & setup local database schema.
-- [ ] Verify dev server execution (`npm run dev`) and test text prompt-to-graph synthesis.
+- [ ] Implement Phase 3: Export Engine (Markdown export download, SVG vector render, High-Res PNG canvas render).

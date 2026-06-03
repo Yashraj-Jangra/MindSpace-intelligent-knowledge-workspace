@@ -12,12 +12,11 @@
 - [x] Created `src/workers/elk-layout.worker.ts` & `src/lib/graph/layout.ts` for Web Worker non-blocking ELK.js layout positioning.
 - [x] Created `src/lib/webhooks/dispatcher.ts` for HMAC-SHA256 signed outbound webhook dispatches.
 - [x] Created API routes: `/api/generate`, `/api/nodes/expand`, `/api/reminders`, `/api/webhooks`, `/api/v1/nodes`.
-- [x] Implemented Phase 2 Features:
-  - Added `/api/parse-document` & `DocumentUpload.tsx` for PDF/text file structure extraction.
-  - Added `/api/nodes/copilot` AI Copilot suite (Summarize notes, Rewrite tone, Auto-Link canvas edges).
-  - Updated `ConceptNode.tsx` with Copilot dropdown menu.
-  - Added `src/lib/embeddings.ts` (OpenAI `text-embedding-3-small`), `/api/rag/search` (pgvector cosine search), and `SearchBar.tsx` (semantic search bar with node spotlight).
-  - Integrated all Phase 2 features into `src/app/page.tsx`.
+- [x] Implemented Phase 2 Features: Document Upload (`/api/parse-document`), AI Copilot suite (`/api/nodes/copilot`), `pgvector` RAG search (`/api/rag/search`), and `SearchBar.tsx`.
+- [x] Implemented Phase 3 Features:
+  - Created `src/lib/export.ts` & `ExportMenu.tsx` (Markdown .md and JSON .json downloads).
+  - Enhanced `OutlineView.tsx` with bi-directional live text editing synced to React Flow nodes.
+  - Integrated Export Engine & Live Split View into `src/app/page.tsx`.
 
 ## Next Steps
-- [ ] Implement Phase 3: Export Engine (Markdown export download, SVG vector render, High-Res PNG canvas render).
+- [ ] Run `docker compose up -d`, `npm install`, and `npx prisma db push` to start application server.

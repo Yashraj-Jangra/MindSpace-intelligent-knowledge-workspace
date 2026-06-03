@@ -9,7 +9,8 @@ import { NotificationToast, ToastMessage } from '@/components/ui/NotificationToa
 import { OutlineView } from '@/components/ui/OutlineView';
 import { DocumentUpload } from '@/components/ui/DocumentUpload';
 import { SearchBar } from '@/components/ui/SearchBar';
-import { Network, FileText, FileUp, Sparkles } from 'lucide-react';
+import { ExportMenu } from '@/components/ui/ExportMenu';
+import { Network, FileText, FileUp } from 'lucide-react';
 
 export default function Home() {
   const [nodes, setNodes] = useState<ReactFlowNode[]>([]);
@@ -170,6 +171,13 @@ export default function Home() {
     [canvasId]
   );
 
+  // Handle Bi-Directional Outline Live Text Edit
+  const handleUpdateNodeText = useCallback((nodeId: string, label: string, markdown: string) => {
+    setNodes((prev) =>
+      prev.map((n) => (n.id === nodeId ? { ...n, data: { ...n.data, label, markdown } } : n))
+    );
+  }, []);
+
   // Handle Node Spotlight from RAG Search
   const handleSelectSearchNode = useCallback((targetNode: { id: string; label: string; positionX: number; positionY: number }) => {
     setNodes((prev) =>
@@ -254,7 +262,7 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Semantic RAG Search Bar & Controls */}
+        {/* Search Bar, Document Upload, Export Menu & Outline Drawer */}
         <div className="flex items-center gap-3">
           <SearchBar canvasId={canvasId} onSelectNode={handleSelectSearchNode} />
 
@@ -265,6 +273,8 @@ export default function Home() {
             <FileUp className="w-3.5 h-3.5 text-[#FF3D00]" />
             <span className="hidden sm:inline">Upload Doc</span>
           </button>
+
+          <ExportMenu title={title} nodes={nodes} edges={edges} />
 
           <button
             onClick={() => setIsOutlineOpen(true)}
@@ -304,8 +314,13 @@ export default function Home() {
         onUploadSuccess={handleDocumentSuccess}
       />
 
-      {/* Slide-over Document Outline Drawer */}
-      <OutlineView isOpen={isOutlineOpen} nodes={nodes} onClose={() => setIsOutlineOpen(false)} />
+      {/* Bi-Directional Live Sync Document Outline Drawer */}
+      <OutlineView
+        isOpen={isOutlineOpen}
+        nodes={nodes}
+        onClose={() => setIsOutlineOpen(false)}
+        onUpdateNodeText={handleUpdateNodeText}
+      />
 
       {/* Node Reminder Scheduling Modal */}
       <ReminderModal

@@ -17,11 +17,12 @@ import {
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { ConceptNode } from '../nodes/ConceptNode';
-import { LayoutGrid, Sparkles } from 'lucide-react';
+import { LayoutGrid } from 'lucide-react';
 import { calculateElkLayout } from '@/lib/graph/layout';
+import { MindSpaceNodeData } from '@/lib/graph/transformer';
 
 interface MindSpaceCanvasProps {
-  initialNodes?: Node[];
+  initialNodes?: Node<MindSpaceNodeData>[];
   initialEdges?: Edge[];
   onExpandNode?: (nodeId: string, label: string, markdown: string) => void;
   onSetReminder?: (nodeId: string, label: string) => void;
@@ -74,7 +75,7 @@ export function MindSpaceCanvas({
   // Auto-layout trigger handler
   const handleAutoLayout = async () => {
     const layoutedNodes = await calculateElkLayout(nodes, edges, 'RIGHT');
-    setNodes([...layoutedNodes]);
+    setNodes(layoutedNodes as any);
   };
 
   return (

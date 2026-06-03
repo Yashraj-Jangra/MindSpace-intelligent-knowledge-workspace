@@ -1,14 +1,17 @@
 import { Node as ReactFlowNode, Edge as ReactFlowEdge } from '@xyflow/react';
 import { AiGraphResponse } from '../schemas/graph';
 
-export interface MindSpaceNodeData {
+export interface MindSpaceNodeData extends Record<string, unknown> {
   label: string;
-  markdown: string;
+  markdown?: string;
   type: 'CONCEPT' | 'TEXT_NOTE' | 'WEB_CLIP' | 'DOCUMENT' | 'REMINDER_NODE';
   color: string;
   parentId?: string;
   reminderAt?: string | null;
   isCollapsed?: boolean;
+  onExpandTopic?: (nodeId: string, label: string, markdown: string) => void;
+  onSetReminder?: (nodeId: string, label: string) => void;
+  onCopilotAction?: (action: 'summarize' | 'rewrite' | 'auto-link', nodeId: string, label: string, markdown?: string) => void;
 }
 
 export function transformAiResponseToReactFlow(
@@ -30,7 +33,7 @@ export function transformAiResponseToReactFlow(
       data: {
         label: n.label,
         markdown: n.summary,
-        type: n.type,
+        type: n.type as any,
         color: n.colorHint || '#FF3D00',
         parentId: n.parentId ? idMap.get(n.parentId) : undefined,
         reminderAt: n.reminderAt || null,

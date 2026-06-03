@@ -2,10 +2,11 @@ import { NextResponse } from 'next/server';
 import { generateObject } from 'ai';
 import { openai } from '@ai-sdk/openai';
 import { AiGraphResponseSchema } from '@/lib/schemas/graph';
-import { transformAiResponseToReactFlow } from '@/lib/graph/transformer';
+import { transformAiResponseToReactFlow, MindSpaceNodeData } from '@/lib/graph/transformer';
 import { calculateElkLayout } from '@/lib/graph/layout';
 import { prisma } from '@/lib/db';
 import { dispatchWebhookEvent } from '@/lib/webhooks/dispatcher';
+import { NodeType } from '@prisma/client';
 
 export async function POST(req: Request) {
   try {
@@ -68,17 +69,20 @@ Document Content:
     // 5. Persist Nodes and Edges in DB
     await prisma.$transaction(async (tx) => {
       for (const node of positionedNodes) {
+        const data = node.data as MindSpaceNodeData;
+        const nodeType = (data.type as NodeType) || NodeType.DOCUMENT;
+
         await tx.node.create({
           data: {
             id: node.id,
             canvasId: targetCanvasId,
-            parentId: node.data.parentId as string | undefined,
-            type: 'DOCUMENT',
-            label: node.data.label,
-            markdown: node.data.markdown,
+            parentId: data.parentId,
+            type: nodeType,
+            label: data.label || 'Doc Node',
+            markdown: data.markdown || '',
             positionX: node.position.x,
             positionY: node.position.y,
-            color: '#10b981',
+            color: data.color || '#10b981',
           },
         });
       }

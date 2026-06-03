@@ -4,11 +4,7 @@ import { Sparkles, AlarmClock, ChevronDown, ChevronUp, BellRing, Wand2, FileText
 import { MindSpaceNodeData } from '@/lib/graph/transformer';
 
 export const ConceptNode = memo(({ id, data, selected }: NodeProps) => {
-  const nodeData = data as unknown as MindSpaceNodeData & {
-    onExpandTopic?: (nodeId: string, label: string, markdown: string) => void;
-    onSetReminder?: (nodeId: string, label: string) => void;
-    onCopilotAction?: (action: 'summarize' | 'rewrite' | 'auto-link', nodeId: string, label: string, markdown?: string) => void;
-  };
+  const nodeData = data as unknown as MindSpaceNodeData;
 
   const [isExpanded, setIsExpanded] = useState(false);
   const [showCopilotMenu, setShowCopilotMenu] = useState(false);
@@ -85,7 +81,7 @@ export const ConceptNode = memo(({ id, data, selected }: NodeProps) => {
         {/* Action Toolbar */}
         <div className="mt-3 pt-3 border-t border-[#262626] flex items-center justify-between gap-2 relative">
           <button
-            onClick={() => nodeData.onExpandTopic?.(id, nodeData.label, nodeData.markdown)}
+            onClick={() => nodeData.onExpandTopic?.(id, nodeData.label, nodeData.markdown || '')}
             className="flex items-center gap-1.5 text-xs font-mono uppercase tracking-wider text-[#FF3D00] hover:text-[#FAFAFA] transition-colors"
           >
             <Sparkles className="w-3.5 h-3.5 stroke-[1.5]" />

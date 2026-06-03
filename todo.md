@@ -13,10 +13,10 @@
 - [x] Created `src/lib/webhooks/dispatcher.ts` for HMAC-SHA256 signed outbound webhook dispatches.
 - [x] Created API routes: `/api/generate`, `/api/nodes/expand`, `/api/reminders`, `/api/webhooks`, `/api/v1/nodes`.
 - [x] Implemented Phase 2 Features: Document Upload (`/api/parse-document`), AI Copilot suite (`/api/nodes/copilot`), `pgvector` RAG search (`/api/rag/search`), and `SearchBar.tsx`.
-- [x] Implemented Phase 3 Features:
-  - Created `src/lib/export.ts` & `ExportMenu.tsx` (Markdown .md and JSON .json downloads).
-  - Enhanced `OutlineView.tsx` with bi-directional live text editing synced to React Flow nodes.
-  - Integrated Export Engine & Live Split View into `src/app/page.tsx`.
+- [x] Implemented Phase 3 Features: `src/lib/export.ts`, `ExportMenu.tsx`, bi-directional live `OutlineView.tsx`, and main page integration (`src/app/page.tsx`).
+- [x] Verified build compilation: `next build` compiled cleanly with 0 errors.
 
 ## Next Steps
-- [ ] Run `docker compose up -d`, `npm install`, and `npx prisma db push` to start application server.
+- [ ] Run `docker compose up -d` in WSL to boot PostgreSQL + `pgvector` & MinIO containers.
+- [ ] Run `npx prisma db push` to initialize local database tables.
+- [ ] Start development server: `npm run dev`.

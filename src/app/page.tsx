@@ -11,9 +11,10 @@ import { DocumentUpload } from '@/components/ui/DocumentUpload';
 import { SearchBar } from '@/components/ui/SearchBar';
 import { ExportMenu } from '@/components/ui/ExportMenu';
 import { Network, FileText, FileUp } from 'lucide-react';
+import { MindSpaceNodeData } from '@/lib/graph/transformer';
 
 export default function Home() {
-  const [nodes, setNodes] = useState<ReactFlowNode[]>([]);
+  const [nodes, setNodes] = useState<ReactFlowNode<MindSpaceNodeData>[]>([]);
   const [edges, setEdges] = useState<ReactFlowEdge[]>([]);
   const [canvasId, setCanvasId] = useState<string | null>(null);
   const [title, setTitle] = useState('Untitled MindSpace Map');
@@ -27,7 +28,7 @@ export default function Home() {
 
   // Initial Demo Graph on mount
   useEffect(() => {
-    const initialDemoNodes: ReactFlowNode[] = [
+    const initialDemoNodes: ReactFlowNode<MindSpaceNodeData>[] = [
       {
         id: 'demo-1',
         type: 'conceptNode',

@@ -1,0 +1,44 @@
+import { NextResponse } from 'next/server';
+import { prisma } from '@/lib/db';
+
+export async function GET(req: Request) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const userId = searchParams.get('userId') || 'default_user';
+
+    const webhooks = await prisma.webhook.findMany({
+      where: { userId },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return NextResponse.json({ webhooks });
+  } catch (error) {
+    return NextResponse.json({ error: (error as Error).message }, { status: 500 });
+  }
+}
+
+export async function POST(req: Request) {
+  try {
+    const { name, targetUrl, events, secret, userId = 'default_user' } = await req.json();
+
+    if (!targetUrl) {
+      return NextResponse.json({ error: 'targetUrl is required' }, { status: 400 });
+    }
+
+    const webhook = await prisma.webhook.create({
+      data: {
+        userId,
+        name: name || 'Custom Webhook',
+        targetUrl,
+        secret: secret || process.env.WEBHOOK_SECRET_KEY || 'mindspace_secret',
+        events: Array.isArray(events) && events.length > 0 ? events : ['node.created', 'reminder.fired', 'canvas.updated'],
+        isActive: true,
+      },
+    });
+
+    return NextResponse.json({ webhook });
+  } catch (error) {
+    console.error('[API /webhooks POST Error]:', error);
+    return NextResponse.json({ error: (error as Error).message }, { status: 500 });
+  }
+}

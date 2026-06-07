@@ -2,10 +2,13 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { signUp } from '@/lib/auth-client';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
 import { Network, ArrowRight, Loader2 } from 'lucide-react';
 
 export default function RegisterPage() {
+  const router = useRouter();
+  const { register } = useAuth();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -18,15 +21,11 @@ export default function RegisterPage() {
     setError('');
 
     try {
-      const res = await signUp.email({
-        name,
-        email,
-        password,
-        callbackURL: '/',
-      });
-
-      if (res.error) {
-        setError(res.error.message || 'Registration failed');
+      const res = await register(name, email, password);
+      if (!res.success) {
+        setError(res.error || 'Registration failed');
+      } else {
+        router.push('/');
       }
     } catch (err) {
       setError('Failed to create account. Please try again.');

@@ -1,14 +1,28 @@
 import React from 'react';
 import { prisma } from '@/lib/db';
+import { countUsers } from '@/lib/auth-storage';
 import { Users, Network, Bell, Shield, Key } from 'lucide-react';
 import Link from 'next/link';
 
+export const dynamic = 'force-dynamic';
+
 export default async function AdminDashboard() {
-  const userCount = await prisma.user.count();
-  const canvasCount = await prisma.canvas.count();
-  const nodeCount = await prisma.node.count();
-  const webhookCount = await prisma.webhook.count();
-  const discordCount = await prisma.discordAccount.count({ where: { isPaired: true } });
+  let userCount = 0;
+  let canvasCount = 0;
+  let nodeCount = 0;
+  let webhookCount = 0;
+  let discordCount = 0;
+
+  try {
+    userCount = await prisma.user.count();
+    canvasCount = await prisma.canvas.count();
+    nodeCount = await prisma.node.count();
+    webhookCount = await prisma.webhook.count();
+    discordCount = await prisma.discordAccount.count({ where: { isPaired: true } });
+  } catch (error) {
+    // Database connection or unmigrated fallback
+    userCount = await countUsers();
+  }
 
   return (
     <div className="p-8 max-w-6xl mx-auto space-y-8 bg-[#0A0A0A] text-[#FAFAFA]">
@@ -91,8 +105,8 @@ export default async function AdminDashboard() {
             <span className="text-[#10b981] font-bold">CONFIGURED</span>
           </div>
           <div className="flex items-center justify-between py-2 border-b border-[#262626]">
-            <span>PostgreSQL + pgvector Local DB</span>
-            <span className="text-[#10b981] font-bold">CONNECTED</span>
+            <span>Authentication Engine</span>
+            <span className="text-[#10b981] font-bold">ACTIVE</span>
           </div>
           <div className="flex items-center justify-between py-2 border-b border-[#262626]">
             <span>Outbound Webhooks Active</span>

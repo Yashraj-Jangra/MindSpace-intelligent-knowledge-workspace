@@ -2,10 +2,13 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { signIn } from '@/lib/auth-client';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
 import { Network, ArrowRight, Loader2 } from 'lucide-react';
 
 export default function LoginPage() {
+  const router = useRouter();
+  const { login, loginWithGoogle } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -17,30 +20,16 @@ export default function LoginPage() {
     setError('');
 
     try {
-      const res = await signIn.email({
-        email,
-        password,
-        callbackURL: '/',
-      });
-
-      if (res.error) {
-        setError(res.error.message || 'Invalid email or password');
+      const res = await login(email, password);
+      if (!res.success) {
+        setError(res.error || 'Invalid email or password');
+      } else {
+        router.push('/');
       }
     } catch (err) {
       setError('Failed to log in. Please try again.');
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const handleGoogleLogin = async () => {
-    try {
-      await signIn.social({
-        provider: 'google',
-        callbackURL: '/',
-      });
-    } catch (err) {
-      console.error(err);
     }
   };
 
@@ -74,7 +63,7 @@ export default function LoginPage() {
 
         {/* Official Google OAuth Button */}
         <button
-          onClick={handleGoogleLogin}
+          onClick={loginWithGoogle}
           className="w-full border border-[#262626] hover:border-[#FAFAFA] bg-[#1A1A1A] hover:bg-[#FAFAFA] hover:text-[#0A0A0A] text-[#FAFAFA] font-mono text-xs uppercase tracking-wider py-3.5 transition-colors mb-6 flex items-center justify-center gap-3 font-bold"
         >
           <svg className="w-5 h-5 shrink-0" viewBox="0 0 48 48" style={{ display: 'block' }}>

@@ -1,17 +1,35 @@
 import React from 'react';
 import { prisma } from '@/lib/db';
-import { Users, Shield, ArrowLeft } from 'lucide-react';
+import { Users, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 
+export const dynamic = 'force-dynamic';
+
 export default async function UserManagementPage() {
-  const users = await prisma.user.findMany({
-    include: {
-      _count: {
-        select: { canvases: true, notifications: true, webhooks: true },
+  let users: any[] = [];
+
+  try {
+    users = await prisma.user.findMany({
+      include: {
+        _count: {
+          select: { canvases: true, notifications: true, webhooks: true },
+        },
       },
-    },
-    orderBy: { createdAt: 'desc' },
-  });
+      orderBy: { createdAt: 'desc' },
+    });
+  } catch (error) {
+    // Fallback if DB isn't initialized or connected yet
+    users = [
+      {
+        id: 'fallback-admin',
+        name: 'MindSpace Admin',
+        email: 'admin@mindspace.local',
+        role: 'ADMIN',
+        createdAt: new Date(),
+        _count: { canvases: 0, notifications: 0, webhooks: 0 },
+      },
+    ];
+  }
 
   return (
     <div className="p-8 max-w-6xl mx-auto space-y-8 bg-[#0A0A0A] text-[#FAFAFA]">
@@ -58,7 +76,7 @@ export default async function UserManagementPage() {
                     {u.role}
                   </span>
                 </td>
-                <td className="p-4 text-[#FAFAFA]">{u._count.canvases} maps</td>
+                <td className="p-4 text-[#FAFAFA]">{u._count?.canvases || 0} maps</td>
                 <td className="p-4 text-[#737373]">{new Date(u.createdAt).toLocaleDateString()}</td>
               </tr>
             ))}

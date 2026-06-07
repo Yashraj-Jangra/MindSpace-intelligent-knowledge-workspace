@@ -12,8 +12,9 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
     autoSignIn: true,
-    async password({ password }) {
-      return await bcrypt.hash(password, 10);
+    password: {
+      hash: async (password: string) => await bcrypt.hash(password, 10),
+      verify: async ({ hash, password }: { hash: string; password: string }) => await bcrypt.compare(password, hash),
     },
   },
   socialProviders: {

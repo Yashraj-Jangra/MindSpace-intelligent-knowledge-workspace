@@ -13,10 +13,10 @@ import { SearchBar } from '@/components/ui/SearchBar';
 import { ExportMenu } from '@/components/ui/ExportMenu';
 import { Network, FileText, FileUp, LogIn, UserPlus, LogOut, Shield, User } from 'lucide-react';
 import { MindSpaceNodeData } from '@/lib/graph/transformer';
-import { useSession, signOut } from '@/lib/auth-client';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function Home() {
-  const { data: session } = useSession();
+  const { user, logout } = useAuth();
   const [nodes, setNodes] = useState<ReactFlowNode<MindSpaceNodeData>[]>([]);
   const [edges, setEdges] = useState<ReactFlowEdge[]>([]);
   const [canvasId, setCanvasId] = useState<string | null>(null);
@@ -103,7 +103,7 @@ export default function Home() {
         body: JSON.stringify({
           prompt: promptText,
           canvasId,
-          userId: session?.user?.id || 'default_user',
+          userId: user?.id || 'default_user',
         }),
       });
 
@@ -294,7 +294,7 @@ export default function Home() {
 
           {/* Auth Navigation & User Profile */}
           <div className="border-l border-[#262626] pl-3 flex items-center gap-2">
-            {session?.user ? (
+            {user ? (
               <div className="flex items-center gap-2">
                 <Link
                   href="/admin"
@@ -307,11 +307,11 @@ export default function Home() {
 
                 <div className="flex items-center gap-2 bg-[#0F0F0F] border border-[#262626] px-3 py-1 text-xs font-mono text-[#FAFAFA]">
                   <User className="w-3.5 h-3.5 text-[#FF3D00]" />
-                  <span className="max-w-[100px] truncate">{session.user.name || session.user.email}</span>
+                  <span className="max-w-[100px] truncate">{user.name || user.email}</span>
                 </div>
 
                 <button
-                  onClick={() => signOut()}
+                  onClick={() => logout()}
                   className="p-1.5 border border-[#262626] hover:border-[#FF3D00] text-[#737373] hover:text-[#FF3D00] transition-colors"
                   title="Sign Out"
                 >

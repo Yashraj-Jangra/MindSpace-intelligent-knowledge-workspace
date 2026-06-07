@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { Node as ReactFlowNode, Edge as ReactFlowEdge } from '@xyflow/react';
+import Link from 'next/link';
 import { MindSpaceCanvas } from '@/components/canvas/MindSpaceCanvas';
 import { PromptInput } from '@/components/ui/PromptInput';
 import { ReminderModal } from '@/components/ui/ReminderModal';
@@ -10,10 +11,12 @@ import { OutlineView } from '@/components/ui/OutlineView';
 import { DocumentUpload } from '@/components/ui/DocumentUpload';
 import { SearchBar } from '@/components/ui/SearchBar';
 import { ExportMenu } from '@/components/ui/ExportMenu';
-import { Network, FileText, FileUp } from 'lucide-react';
+import { Network, FileText, FileUp, LogIn, UserPlus, LogOut, Shield, User } from 'lucide-react';
 import { MindSpaceNodeData } from '@/lib/graph/transformer';
+import { useSession, signOut } from '@/lib/auth-client';
 
 export default function Home() {
+  const { data: session } = useSession();
   const [nodes, setNodes] = useState<ReactFlowNode<MindSpaceNodeData>[]>([]);
   const [edges, setEdges] = useState<ReactFlowEdge[]>([]);
   const [canvasId, setCanvasId] = useState<string | null>(null);
@@ -97,7 +100,11 @@ export default function Home() {
       const res = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: promptText, canvasId }),
+        body: JSON.stringify({
+          prompt: promptText,
+          canvasId,
+          userId: session?.user?.id || 'default_user',
+        }),
       });
 
       if (!res.ok) throw new Error('Failed to generate graph');
@@ -263,7 +270,7 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Search Bar, Document Upload, Export Menu & Outline Drawer */}
+        {/* Search Bar & Workspace Controls */}
         <div className="flex items-center gap-3">
           <SearchBar canvasId={canvasId} onSelectNode={handleSelectSearchNode} />
 
@@ -284,6 +291,53 @@ export default function Home() {
             <FileText className="w-3.5 h-3.5 text-[#FF3D00]" />
             <span className="hidden sm:inline">Outline</span>
           </button>
+
+          {/* Auth Navigation & User Profile */}
+          <div className="border-l border-[#262626] pl-3 flex items-center gap-2">
+            {session?.user ? (
+              <div className="flex items-center gap-2">
+                <Link
+                  href="/admin"
+                  className="flex items-center gap-1 px-2.5 py-1.5 border border-[#262626] hover:border-[#FF3D00] text-xs font-mono text-[#FAFAFA] transition-colors"
+                  title="Admin Dashboard"
+                >
+                  <Shield className="w-3.5 h-3.5 text-[#FF3D00]" />
+                  <span className="hidden md:inline">Admin</span>
+                </Link>
+
+                <div className="flex items-center gap-2 bg-[#0F0F0F] border border-[#262626] px-3 py-1 text-xs font-mono text-[#FAFAFA]">
+                  <User className="w-3.5 h-3.5 text-[#FF3D00]" />
+                  <span className="max-w-[100px] truncate">{session.user.name || session.user.email}</span>
+                </div>
+
+                <button
+                  onClick={() => signOut()}
+                  className="p-1.5 border border-[#262626] hover:border-[#FF3D00] text-[#737373] hover:text-[#FF3D00] transition-colors"
+                  title="Sign Out"
+                >
+                  <LogOut className="w-4 h-4 stroke-[1.5]" />
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <Link
+                  href="/login"
+                  className="flex items-center gap-1.5 px-3 py-1.5 border border-[#262626] hover:border-[#FAFAFA] text-xs font-mono uppercase tracking-wider text-[#FAFAFA] transition-colors"
+                >
+                  <LogIn className="w-3.5 h-3.5 stroke-[1.5]" />
+                  <span>Log In</span>
+                </Link>
+
+                <Link
+                  href="/register"
+                  className="flex items-center gap-1.5 px-4 py-1.5 bg-[#FF3D00] hover:bg-[#FAFAFA] text-[#0A0A0A] text-xs font-mono uppercase tracking-wider font-bold transition-colors"
+                >
+                  <UserPlus className="w-3.5 h-3.5 stroke-[2]" />
+                  <span>Get Started</span>
+                </Link>
+              </div>
+            )}
+          </div>
         </div>
       </header>
 

@@ -9,7 +9,8 @@
 - [x] Created SMTP & Gmail 1-click email sender engine (`src/lib/email/mailer.ts`, `/api/email/send`).
 - [x] Created Admin Control Panel (`/admin`, `/admin/users`, `/admin/settings`).
 - [x] Built Login (`/login`) & Register (`/register`) views styled with Bold Typography design rules.
+- [x] Added "LOG IN" and "GET STARTED" authentication buttons + user profile session badge to header navigation bar (`src/app/page.tsx`).
+- [x] Created poster-style Landing Page (`src/app/landing/page.tsx`).
 
 ## Next Steps
-- [ ] Run `npx prisma db push` to sync new database models with local PostgreSQL instance.
 - [ ] Test Google OAuth login flow and email/password registration.

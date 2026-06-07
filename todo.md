@@ -9,6 +9,7 @@
 - [x] Created SMTP & Gmail 1-click email sender engine (`src/lib/email/mailer.ts`, `/api/email/send`).
 - [x] Created Admin Control Panel (`/admin`, `/admin/users`, `/admin/settings`).
 - [x] Built Login (`/login`) & Register (`/register`) views styled with Bold Typography design rules.
+- [x] Updated Login page (`src/app/(auth)/login/page.tsx`) with official multi-color Google OAuth logo SVG.
 - [x] Added "LOG IN" and "GET STARTED" authentication buttons + user profile session badge to header navigation bar (`src/app/page.tsx`).
 - [x] Created poster-style Landing Page (`src/app/landing/page.tsx`).
 

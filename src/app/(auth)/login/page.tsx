@@ -46,7 +46,6 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen w-full bg-[#0A0A0A] text-[#FAFAFA] flex flex-col justify-center items-center p-6 relative">
-      {/* Background Noise Texture */}
       <div className="w-full max-w-md bg-[#0F0F0F] border border-[#262626] p-8 shadow-2xl relative">
         <div className="h-1.5 w-20 bg-[#FF3D00] absolute top-0 left-0" />
 
@@ -73,13 +72,17 @@ export default function LoginPage() {
           </div>
         )}
 
-        {/* Google OAuth Button */}
+        {/* Official Google OAuth Button */}
         <button
           onClick={handleGoogleLogin}
-          className="w-full border border-[#FAFAFA] hover:bg-[#FAFAFA] hover:text-[#0A0A0A] text-[#FAFAFA] font-mono text-xs uppercase tracking-wider py-3.5 transition-colors mb-6 flex items-center justify-center gap-2 font-bold"
+          className="w-full border border-[#262626] hover:border-[#FAFAFA] bg-[#1A1A1A] hover:bg-[#FAFAFA] hover:text-[#0A0A0A] text-[#FAFAFA] font-mono text-xs uppercase tracking-wider py-3.5 transition-colors mb-6 flex items-center justify-center gap-3 font-bold"
         >
-          <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-            <path d="M12.24 10.285V13.4h6.887c-.58 3.033-2.923 5.405-6.887 5.405-4.137 0-7.5-3.363-7.5-7.5s3.363-7.5 7.5-7.5c1.88 0 3.58.683 4.908 1.933l2.42-2.42C17.487 1.583 15.02 0 12.24 0 5.48 0 0 5.48 0 12.24s5.48 12.24 12.24 12.24c6.98 0 12.24-5.26 12.24-12.24 0-.75-.07-1.48-.19-2.205H12.24z" />
+          <svg className="w-5 h-5 shrink-0" viewBox="0 0 48 48" style={{ display: 'block' }}>
+            <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"></path>
+            <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"></path>
+            <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"></path>
+            <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"></path>
+            <path fill="none" d="M0 0h48v48H0z"></path>
           </svg>
           <span>Continue with Google</span>
         </button>

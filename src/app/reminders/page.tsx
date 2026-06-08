@@ -1,0 +1,169 @@
+import React from 'react';
+import Link from 'next/link';
+import { getUserNotes } from '@/lib/notes-storage';
+import { getSessionFromCookie } from '@/lib/session';
+import { Bell, ArrowLeft, Clock, FileText, CheckCircle2, AlertTriangle, Shield } from 'lucide-react';
+
+export const dynamic = 'force-dynamic';
+
+export default async function RemindersDashboard() {
+  const session = await getSessionFromCookie();
+  const userId = session?.id || 'default_user';
+
+  const notes = await getUserNotes(userId);
+  const reminderNotes = notes.filter((n) => n.reminderAt);
+
+  const now = new Date();
+
+  // Categorize reminders
+  const dueToday = reminderNotes.filter((n) => {
+    if (!n.reminderAt) return false;
+    const rDate = new Date(n.reminderAt);
+    return rDate.toDateString() === now.toDateString();
+  });
+
+  const upcoming = reminderNotes.filter((n) => {
+    if (!n.reminderAt) return false;
+    return new Date(n.reminderAt) > now && new Date(n.reminderAt).toDateString() !== now.toDateString();
+  });
+
+  const overdue = reminderNotes.filter((n) => {
+    if (!n.reminderAt) return false;
+    return new Date(n.reminderAt) < now && new Date(n.reminderAt).toDateString() !== now.toDateString();
+  });
+
+  return (
+    <div className="min-h-screen w-full bg-[#0A0A0A] text-[#FAFAFA] flex flex-col font-sans">
+      {/* Top Header Bar */}
+      <header className="h-16 border-b border-[#262626] bg-[#0A0A0A]/95 px-8 flex items-center justify-between z-30">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 bg-[#FF3D00] flex items-center justify-center font-mono font-bold text-[#0A0A0A]">
+            <Bell className="w-5 h-5 stroke-[2.5]" />
+          </div>
+          <div>
+            <h1 className="font-sans font-black text-xl tracking-tighter uppercase text-[#FAFAFA]">
+              MIND<span className="text-[#FF3D00]">SPACE</span>
+            </h1>
+            <span className="font-mono text-[9px] uppercase tracking-widest text-[#737373] block -mt-1">
+              REMINDERS & DEADLINES
+            </span>
+          </div>
+        </div>
+
+        {/* Navigation Header */}
+        <div className="flex items-center gap-4 font-mono text-xs">
+          <Link href="/dashboard" className="text-[#737373] hover:text-[#FAFAFA] uppercase tracking-wider transition-colors">
+            Notes
+          </Link>
+          <Link href="/" className="text-[#737373] hover:text-[#FAFAFA] uppercase tracking-wider transition-colors">
+            Canvas Map
+          </Link>
+          <Link href="/reminders" className="text-[#FF3D00] font-bold uppercase tracking-wider">
+            Reminders
+          </Link>
+          <Link href="/admin" className="text-[#737373] hover:text-[#FAFAFA] uppercase tracking-wider transition-colors flex items-center gap-1">
+            <Shield className="w-3.5 h-3.5 text-[#FF3D00]" />
+            <span>Admin</span>
+          </Link>
+        </div>
+      </header>
+
+      {/* Main Workspace */}
+      <main className="flex-1 max-w-5xl w-full mx-auto p-8 space-y-8">
+        {/* Metric Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+          <div className="bg-[#0F0F0F] border border-[#FF3D00] p-6 relative">
+            <div className="h-1 w-12 bg-[#FF3D00] absolute top-0 left-0" />
+            <div className="flex items-center justify-between text-[#737373] mb-2">
+              <span className="font-mono text-xs uppercase tracking-wider">Due Today</span>
+              <Clock className="w-4 h-4 text-[#FF3D00]" />
+            </div>
+            <div className="font-sans font-black text-3xl text-[#FAFAFA]">{dueToday.length}</div>
+          </div>
+
+          <div className="bg-[#0F0F0F] border border-[#262626] p-6 relative">
+            <div className="h-1 w-12 bg-[#10b981] absolute top-0 left-0" />
+            <div className="flex items-center justify-between text-[#737373] mb-2">
+              <span className="font-mono text-xs uppercase tracking-wider">Upcoming</span>
+              <Bell className="w-4 h-4 text-[#10b981]" />
+            </div>
+            <div className="font-sans font-black text-3xl text-[#FAFAFA]">{upcoming.length}</div>
+          </div>
+
+          <div className="bg-[#0F0F0F] border border-[#262626] p-6 relative">
+            <div className="h-1 w-12 bg-[#ef4444] absolute top-0 left-0" />
+            <div className="flex items-center justify-between text-[#737373] mb-2">
+              <span className="font-mono text-xs uppercase tracking-wider">Overdue</span>
+              <AlertTriangle className="w-4 h-4 text-[#ef4444]" />
+            </div>
+            <div className="font-sans font-black text-3xl text-[#FAFAFA]">{overdue.length}</div>
+          </div>
+        </div>
+
+        {/* Due Today Section */}
+        {dueToday.length > 0 && (
+          <div className="space-y-4">
+            <div className="font-mono text-xs uppercase tracking-wider text-[#FF3D00] flex items-center gap-2">
+              <Clock className="w-4 h-4" />
+              <span>DUE TODAY ({dueToday.length})</span>
+            </div>
+
+            <div className="space-y-3">
+              {dueToday.map((n) => (
+                <Link
+                  key={n.id}
+                  href={`/notes/${n.id}`}
+                  className="block bg-[#0F0F0F] border border-[#FF3D00] p-4 hover:bg-[#1A1A1A] transition-colors"
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="font-sans font-bold text-base text-[#FAFAFA]">{n.title}</h3>
+                      <p className="text-xs text-[#737373] line-clamp-1 mt-1">{n.content}</p>
+                    </div>
+                    <div className="text-right font-mono text-xs text-[#FF3D00]">
+                      {n.reminderAt && new Date(n.reminderAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Upcoming Reminders Section */}
+        <div className="space-y-4">
+          <div className="font-mono text-xs uppercase tracking-wider text-[#10b981] flex items-center gap-2">
+            <Bell className="w-4 h-4" />
+            <span>UPCOMING REMINDERS ({upcoming.length})</span>
+          </div>
+
+          {upcoming.length === 0 ? (
+            <div className="bg-[#0F0F0F] border border-[#262626] p-8 text-center text-xs font-mono text-[#737373]">
+              No upcoming note reminders scheduled.
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {upcoming.map((n) => (
+                <Link
+                  key={n.id}
+                  href={`/notes/${n.id}`}
+                  className="block bg-[#0F0F0F] border border-[#262626] p-4 hover:border-[#10b981] transition-colors"
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="font-sans font-bold text-base text-[#FAFAFA]">{n.title}</h3>
+                      <p className="text-xs text-[#737373] line-clamp-1 mt-1">{n.content}</p>
+                    </div>
+                    <div className="text-right font-mono text-xs text-[#10b981]">
+                      {n.reminderAt && new Date(n.reminderAt).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+      </main>
+    </div>
+  );
+}

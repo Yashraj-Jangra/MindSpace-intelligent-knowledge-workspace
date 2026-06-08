@@ -22,6 +22,12 @@ enum NodeType {
   REMINDER_NODE  // Node with active scheduled deadline
 }
 
+enum NotePriority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
 enum EdgeType {
   DEFAULT
   SMOOTHSTEP
@@ -48,6 +54,7 @@ model User {
 
   sessions       Session[]
   accounts       Account[]
+  notes          Note[]
   canvases       Canvas[]
   notifications  Notification[]
   webhooks       Webhook[]
@@ -73,7 +80,7 @@ model Session {
   @@map("sessions")
 }
 
-// Better-Auth Standard Account Model for OAuth (Google) and Credentials
+// Better-Auth Standard Account Model
 model Account {
   id                    String    @id @default(cuid())
   userId                String
@@ -106,6 +113,29 @@ model Verification {
   @@map("verifications")
 }
 
+// Classic Note Model
+model Note {
+  id          String       @id @default(cuid())
+  userId      String
+  canvasId    String?      // Optional link to visual mind map
+  title       String       @default("Untitled Note")
+  content     String       @db.Text
+  tags        String[]     @default([])
+  priority    NotePriority @default(MEDIUM)
+  isPinned    Boolean      @default(false)
+  isArchived  Boolean      @default(false)
+  reminderAt  DateTime?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  canvas      Canvas?      @relation(fields: [canvasId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([reminderAt])
+  @@map("notes")
+}
+
 model Canvas {
   id            String         @id @default(cuid())
   userId        String
@@ -122,6 +152,7 @@ model Canvas {
   updatedAt     DateTime       @updatedAt
 
   user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  notes         Note[]
   nodes         Node[]
   edges         Edge[]
 
@@ -139,7 +170,6 @@ model Node {
   content       Json?
   markdown      String?        @db.Text
   
-  // React Flow Visual Properties
   positionX     Float          @default(0)
   positionY     Float          @default(0)
   width         Float?         @default(260)
@@ -148,10 +178,7 @@ model Node {
   icon          String?
   isCollapsed   Boolean        @default(false)
 
-  // Reminders & Deadlines
   reminderAt    DateTime?
-
-  // Vector Embedding for local search (1536 dims)
   embedding     Unsupported("vector(1536)")?
 
   createdAt     DateTime       @default(now())
@@ -225,7 +252,6 @@ model Webhook {
   @@map("webhooks")
 }
 
-// Discord Account Integration & Account Linking
 model DiscordAccount {
   id              String   @id @default(cuid())
   userId          String   @unique
@@ -243,14 +269,13 @@ model DiscordAccount {
   @@map("discord_accounts")
 }
 
-// SMTP Email Sender Configuration
 model SmtpConfig {
   id        String   @id @default(cuid())
   userId    String   @unique
   host      String   @default("smtp.gmail.com")
   port      Int      @default(587)
   username  String
-  password  String   // Encrypted SMTP/App Password
+  password  String
   fromEmail String
   isGmail   Boolean  @default(true)
   isDefault Boolean  @default(false)
@@ -262,7 +287,6 @@ model SmtpConfig {
   @@map("smtp_configs")
 }
 
-// Admin System Configuration KV Store
 model SystemSetting {
   id        String   @id @default(cuid())
   key       String   @unique

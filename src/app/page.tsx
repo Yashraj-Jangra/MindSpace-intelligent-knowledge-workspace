@@ -11,7 +11,7 @@ import { OutlineView } from '@/components/ui/OutlineView';
 import { DocumentUpload } from '@/components/ui/DocumentUpload';
 import { SearchBar } from '@/components/ui/SearchBar';
 import { ExportMenu } from '@/components/ui/ExportMenu';
-import { Network, FileText, FileUp, LogIn, UserPlus, LogOut, Shield, User } from 'lucide-react';
+import { Network, FileText, FileUp, LogIn, UserPlus, LogOut, Shield, User, LayoutDashboard, Bell } from 'lucide-react';
 import { MindSpaceNodeData } from '@/lib/graph/transformer';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -48,8 +48,8 @@ export default function Home() {
         type: 'conceptNode',
         position: { x: 500, y: 50 },
         data: {
-          label: 'Text Prompt-to-Graph',
-          markdown: 'Paste unstructured notes or prompts to generate interconnected node maps via Vercel AI SDK.',
+          label: 'Classic Notes Dashboard',
+          markdown: 'Create markdown notes, set deadlines, and convert notes into visual mind maps.',
           type: 'TEXT_NOTE',
           color: '#3b82f6',
         },
@@ -265,13 +265,29 @@ export default function Home() {
               MIND<span className="text-[#FF3D00]">SPACE</span>
             </h1>
             <span className="font-mono text-[10px] uppercase tracking-widest text-[#737373] block -mt-1">
-              AI VISUAL NOTE-TAKING PLATFORM
+              VISUAL CANVAS WORKSPACE
             </span>
           </div>
         </div>
 
-        {/* Search Bar & Workspace Controls */}
+        {/* Workspace Quick Links & Search Bar */}
         <div className="flex items-center gap-3">
+          <Link
+            href="/dashboard"
+            className="flex items-center gap-1.5 px-3 py-1.5 border border-[#262626] hover:border-[#FF3D00] text-xs font-mono uppercase tracking-wider text-[#FAFAFA] transition-colors"
+          >
+            <LayoutDashboard className="w-3.5 h-3.5 text-[#FF3D00]" />
+            <span className="hidden sm:inline">Dashboard</span>
+          </Link>
+
+          <Link
+            href="/reminders"
+            className="flex items-center gap-1.5 px-3 py-1.5 border border-[#262626] hover:border-[#FF3D00] text-xs font-mono uppercase tracking-wider text-[#FAFAFA] transition-colors"
+          >
+            <Bell className="w-3.5 h-3.5 text-[#10b981]" />
+            <span className="hidden sm:inline">Reminders</span>
+          </Link>
+
           <SearchBar canvasId={canvasId} onSelectNode={handleSelectSearchNode} />
 
           <button

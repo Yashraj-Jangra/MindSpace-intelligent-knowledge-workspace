@@ -1,7 +1,7 @@
 import React from 'react';
 import { getNoteById, createNote } from '@/lib/notes-storage';
 import { getSessionFromCookie } from '@/lib/session';
-import { RichNoteEditor } from '@/components/editor/RichNoteEditor';
+import { AdvancedNoteEditor } from '@/components/editor/AdvancedNoteEditor';
 import { redirect } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
@@ -26,5 +26,5 @@ export default async function NotePage({ params }: { params: Promise<{ id: strin
     }
   }
 
-  return <RichNoteEditor initialNote={note} />;
+  return <AdvancedNoteEditor initialNote={note} />;
 }

@@ -1,1 +1,16 @@
-[]
+[
+  {
+    "id": "note_862iec8q",
+    "userId": "usr_8hr84fx2",
+    "canvasId": null,
+    "title": "Untitled Note",
+    "content": "",
+    "tags": [],
+    "priority": "MEDIUM",
+    "isPinned": false,
+    "isArchived": false,
+    "reminderAt": null,
+    "createdAt": "2026-07-22T20:37:17.707Z",
+    "updatedAt": "2026-07-22T20:37:17.707Z"
+  }
+]

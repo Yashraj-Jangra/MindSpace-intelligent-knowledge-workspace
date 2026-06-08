@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { useEditor, EditorContent } from '@tiptap/react';
+import { useEditor, EditorContent, BubbleMenu } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import TaskList from '@tiptap/extension-task-list';
 import TaskItem from '@tiptap/extension-task-item';
@@ -11,6 +11,14 @@ import Highlight from '@tiptap/extension-highlight';
 import ImageExtension from '@tiptap/extension-image';
 import LinkExtension from '@tiptap/extension-link';
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight';
+import Table from '@tiptap/extension-table';
+import TableRow from '@tiptap/extension-table-row';
+import TableCell from '@tiptap/extension-table-cell';
+import TableHeader from '@tiptap/extension-table-header';
+import TextAlign from '@tiptap/extension-text-align';
+import Placeholder from '@tiptap/extension-placeholder';
+import Color from '@tiptap/extension-color';
+import TextStyle from '@tiptap/extension-text-style';
 import { common, createLowlight } from 'lowlight';
 
 import {
@@ -26,7 +34,12 @@ import {
   FileText,
   Clock,
   Sparkles,
-  Image as ImageIcon,
+  Bold,
+  Italic,
+  Underline as UnderlineIcon,
+  Strikethrough,
+  Link as LinkIcon,
+  Palette,
 } from 'lucide-react';
 
 import { StoredNote } from '@/lib/notes-storage';
@@ -64,8 +77,9 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
   const [isStylusOpen, setIsStylusOpen] = useState(false);
   const [isStickerOpen, setIsStickerOpen] = useState(false);
 
-  // Initialize Tiptap Editor
+  // Initialize Tiptap Editor with Full Extensions
   const editor = useEditor({
+    immediatelyRender: false,
     extensions: [
       StarterKit.configure({
         codeBlock: false,
@@ -78,22 +92,39 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
       Highlight.configure({
         multicolor: true,
       }),
-      ImageExtension,
+      ImageExtension.configure({
+        allowBase64: true,
+      }),
       LinkExtension.configure({
         openOnClick: false,
+        autolink: true,
       }),
       CodeBlockLowlight.configure({
         lowlight,
       }),
+      Table.configure({
+        resizable: true,
+      }),
+      TableRow,
+      TableHeader,
+      TableCell,
+      TextAlign.configure({
+        types: ['heading', 'paragraph'],
+      }),
+      Placeholder.configure({
+        placeholder: "Write your note here or type '/' for formatting commands...",
+      }),
+      TextStyle,
+      Color,
     ],
-    content: initialNote.content || '<p>Write your note here...</p>',
+    content: initialNote.content || '<p></p>',
     onUpdate: () => {
       setSaveStatus('unsaved');
     },
     editorProps: {
       attributes: {
         class:
-          'prose prose-invert max-w-none focus:outline-none min-h-[500px] text-base leading-relaxed text-[#FAFAFA] font-sans px-4 py-2',
+          'prose prose-invert max-w-none focus:outline-none min-h-[550px] text-base leading-relaxed text-[#FAFAFA] font-sans px-6 py-4',
       },
     },
   });
@@ -141,7 +172,7 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
   const textContent = editor?.getText() || '';
   const wordCount = textContent.trim() ? textContent.trim().split(/\s+/).length : 0;
   const charCount = textContent.length;
-  const readingTime = Math.ceil(wordCount / 200);
+  const readingTime = Math.max(1, Math.ceil(wordCount / 200));
 
   // Tag Handlers
   const handleAddTag = (e: React.KeyboardEvent) => {
@@ -328,7 +359,7 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
       />
 
       {/* Editor Content Main Workspace */}
-      <main className="flex-1 max-w-4xl w-full mx-auto p-8 flex flex-col space-y-6">
+      <main className="flex-1 max-w-5xl w-full mx-auto p-8 flex flex-col space-y-6">
         {/* Title Input */}
         <input
           type="text"
@@ -365,8 +396,62 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
           />
         </div>
 
-        {/* Tiptap Rich Text Editor Content */}
-        <div className="border border-[#262626] bg-[#0F0F0F] p-4 shadow-xl relative min-h-[500px]">
+        {/* Tiptap Rich Text Editor Workspace Container */}
+        <div className="border border-[#262626] bg-[#0F0F0F] p-4 shadow-xl relative min-h-[550px]">
+          {/* Floating Selection Bubble Menu */}
+          {editor && (
+            <BubbleMenu
+              editor={editor}
+              tippyOptions={{ duration: 150 }}
+              className="bg-[#0F0F0F] border border-[#262626] shadow-2xl p-1 flex items-center gap-1 text-xs font-mono text-[#FAFAFA]"
+            >
+              <button
+                onClick={() => editor.chain().focus().toggleBold().run()}
+                className={`p-1.5 transition-colors ${
+                  editor.isActive('bold') ? 'bg-[#1A1A1A] text-[#FF3D00]' : 'text-[#737373] hover:text-[#FAFAFA]'
+                }`}
+                title="Bold"
+              >
+                <Bold className="w-3.5 h-3.5" />
+              </button>
+              <button
+                onClick={() => editor.chain().focus().toggleItalic().run()}
+                className={`p-1.5 transition-colors ${
+                  editor.isActive('italic') ? 'bg-[#1A1A1A] text-[#FF3D00]' : 'text-[#737373] hover:text-[#FAFAFA]'
+                }`}
+                title="Italic"
+              >
+                <Italic className="w-3.5 h-3.5" />
+              </button>
+              <button
+                onClick={() => editor.chain().focus().toggleUnderline().run()}
+                className={`p-1.5 transition-colors ${
+                  editor.isActive('underline') ? 'bg-[#1A1A1A] text-[#FF3D00]' : 'text-[#737373] hover:text-[#FAFAFA]'
+                }`}
+                title="Underline"
+              >
+                <UnderlineIcon className="w-3.5 h-3.5" />
+              </button>
+              <button
+                onClick={() => editor.chain().focus().toggleStrike().run()}
+                className={`p-1.5 transition-colors ${
+                  editor.isActive('strike') ? 'bg-[#1A1A1A] text-[#FF3D00]' : 'text-[#737373] hover:text-[#FAFAFA]'
+                }`}
+                title="Strikethrough"
+              >
+                <Strikethrough className="w-3.5 h-3.5" />
+              </button>
+              <div className="h-4 w-px bg-[#262626] mx-0.5" />
+              <button
+                onClick={() => editor.chain().focus().setColor('#FF3D00').run()}
+                className="p-1.5 text-[#FF3D00] hover:scale-110 transition-transform"
+                title="Vermillion Highlight"
+              >
+                <Palette className="w-3.5 h-3.5" />
+              </button>
+            </BubbleMenu>
+          )}
+
           <EditorContent editor={editor} />
         </div>
 
@@ -375,10 +460,7 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
           <div className="border border-[#262626] bg-[#0F0F0F] p-4 space-y-2">
             <div className="flex items-center justify-between text-xs font-mono text-[#737373]">
               <span>Stylus Drawing Annotation</span>
-              <button
-                onClick={() => setStylusDrawingData(null)}
-                className="hover:text-[#FF3D00]"
-              >
+              <button onClick={() => setStylusDrawingData(null)} className="hover:text-[#FF3D00]">
                 Remove Annotation
               </button>
             </div>
@@ -407,7 +489,7 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="uppercase tracking-widest text-[10px]">Tiptap Rich Suite</span>
+            <span className="uppercase tracking-widest text-[10px]">Tiptap Pro Suite (Bold Theme)</span>
           </div>
         </footer>
       )}

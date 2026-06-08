@@ -104,3 +104,267 @@ body {
   transform: scaleX(1);
   transform-origin: bottom left;
 }
+
+/* ==========================================================================
+   TIPTAP PROSEMIRROR FULL WYSIWYG STYLES (BOLD TYPOGRAPHY DARK THEME)
+   ========================================================================== */
+
+.ProseMirror {
+  outline: none !important;
+  min-h: 450px;
+  color: #FAFAFA;
+  font-family: 'Inter Tight', sans-serif;
+  line-height: 1.7;
+}
+
+.ProseMirror p.is-editor-empty:first-child::before {
+  color: #525252;
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+  font-style: italic;
+}
+
+/* Headings */
+.ProseMirror h1 {
+  font-size: 2.25rem;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+  color: #FAFAFA;
+  border-bottom: 2px solid #FF3D00;
+  padding-bottom: 0.25rem;
+}
+
+.ProseMirror h2 {
+  font-size: 1.75rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  margin-top: 1.25rem;
+  margin-bottom: 0.5rem;
+  color: #FAFAFA;
+}
+
+.ProseMirror h3 {
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+  color: #FAFAFA;
+}
+
+.ProseMirror h4 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin-top: 0.75rem;
+  margin-bottom: 0.5rem;
+  color: #FAFAFA;
+}
+
+/* Lists & Checklists */
+.ProseMirror ul {
+  list-style-type: disc;
+  padding-left: 1.5rem;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.ProseMirror ol {
+  list-style-type: decimal;
+  padding-left: 1.5rem;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.ProseMirror ul[data-type="taskList"] {
+  list-style: none;
+  padding-left: 0;
+}
+
+.ProseMirror ul[data-type="taskList"] li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-bottom: 0.4rem;
+}
+
+.ProseMirror ul[data-type="taskList"] li > label {
+  flex: 0 0 auto;
+  user-select: none;
+  cursor: pointer;
+  margin-top: 0.2rem;
+}
+
+.ProseMirror ul[data-type="taskList"] li > label input[type="checkbox"] {
+  appearance: none;
+  width: 1.1rem;
+  height: 1.1rem;
+  border: 1px solid #FF3D00;
+  background-color: #0A0A0A;
+  cursor: pointer;
+  display: grid;
+  place-content: center;
+  transition: all 150ms ease;
+}
+
+.ProseMirror ul[data-type="taskList"] li > label input[type="checkbox"]:checked {
+  background-color: #FF3D00;
+}
+
+.ProseMirror ul[data-type="taskList"] li > label input[type="checkbox"]:checked::before {
+  content: "✓";
+  color: #0A0A0A;
+  font-size: 0.75rem;
+  font-weight: 900;
+}
+
+.ProseMirror ul[data-type="taskList"] li[data-checked="true"] > div {
+  text-decoration: line-through;
+  color: #737373;
+}
+
+/* Blockquotes */
+.ProseMirror blockquote {
+  border-left: 3px solid #FF3D00;
+  padding-left: 1rem;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+  font-style: italic;
+  color: #D4D4D4;
+  background-color: #121212;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+}
+
+/* Code Blocks & Inline Code */
+.ProseMirror code {
+  background-color: #1A1A1A;
+  color: #FF3D00;
+  font-family: 'JetBrains Mono', monospace;
+  padding: 0.2rem 0.4rem;
+  font-size: 0.875em;
+  border: 1px solid #262626;
+}
+
+.ProseMirror pre {
+  background-color: #0F0F0F;
+  border: 1px solid #262626;
+  color: #FAFAFA;
+  font-family: 'JetBrains Mono', monospace;
+  padding: 1rem;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+  overflow-x: auto;
+}
+
+.ProseMirror pre code {
+  background: none;
+  color: inherit;
+  font-size: 0.9em;
+  padding: 0;
+  border: none;
+}
+
+/* Code Highlighting Syntax Colors */
+.hljs-comment,
+.hljs-quote {
+  color: #737373;
+  font-style: italic;
+}
+.hljs-keyword,
+.hljs-selector-tag,
+.hljs-subst {
+  color: #FF3D00;
+  font-weight: bold;
+}
+.hljs-number,
+.hljs-literal,
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag .hljs-attr {
+  color: #FBBC05;
+}
+.hljs-string,
+.hljs-doctag {
+  color: #34A853;
+}
+.hljs-title,
+.hljs-section,
+.hljs-selector-id {
+  color: #4285F4;
+  font-weight: bold;
+}
+.hljs-type,
+.hljs-class .hljs-title {
+  color: #A855F7;
+}
+
+/* Tables */
+.ProseMirror table {
+  border-collapse: collapse;
+  table-layout: fixed;
+  width: 100%;
+  margin: 1rem 0;
+  overflow: hidden;
+  border: 1px solid #262626;
+}
+
+.ProseMirror td,
+.ProseMirror th {
+  min-width: 1em;
+  border: 1px solid #262626;
+  padding: 8px 12px;
+  vertical-align: top;
+  box-sizing: border-box;
+  position: relative;
+  background-color: #0A0A0A;
+}
+
+.ProseMirror th {
+  font-weight: bold;
+  text-align: left;
+  background-color: #1A1A1A;
+  color: #FF3D00;
+}
+
+.ProseMirror .selectedCell:after {
+  z-index: 2;
+  position: absolute;
+  content: "";
+  left: 0; right: 0; top: 0; bottom: 0;
+  background: rgba(255, 61, 0, 0.15);
+  pointer-events: none;
+}
+
+/* Images & Media */
+.ProseMirror img {
+  max-width: 100%;
+  height: auto;
+  margin: 1rem 0;
+  border: 1px solid #262626;
+}
+
+.ProseMirror img.ProseMirror-selectednode {
+  outline: 2px solid #FF3D00;
+}
+
+/* Links */
+.ProseMirror a {
+  color: #FF3D00;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.ProseMirror a:hover {
+  color: #FAFAFA;
+}
+
+/* Horizontal Divider */
+.ProseMirror hr {
+  border: none;
+  border-top: 1px solid #262626;
+  margin: 1.5rem 0;
+}

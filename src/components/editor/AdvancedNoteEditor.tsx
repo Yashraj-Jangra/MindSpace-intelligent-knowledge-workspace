@@ -1,4 +1,6 @@
-'use client';
+import { common, createLowlight } from 'lowlight';
+
+const lowlight = createLowlight(common);
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
@@ -89,6 +91,9 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
   const extensions = useMemo(() => {
     return [
       StarterKit.configure({
+        bold: false,
+        italic: false,
+        strike: false,
         codeBlock: false,
         heading: false,
         bulletList: false,
@@ -101,7 +106,7 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
       Italic,
       TextUnderline,
       Strike,
-      CodeBlock,
+      CodeBlock.configure({ lowlight }),
       Blockquote,
       BulletList,
       OrderedList,
@@ -124,7 +129,6 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
       }),
       Table.configure({ resizable: true }),
       HorizontalRule,
-      History,
       Clear,
       SlashCommand,
       SearchAndReplace,

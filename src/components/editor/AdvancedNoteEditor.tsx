@@ -427,7 +427,7 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
 
       {/* Primary Sticky Formatting Toolbar */}
       {editor && (
-        <div className="sticky top-16 z-20 border-b border-[#262626] bg-[#0F0F0F] px-6 py-2 flex items-center justify-between gap-1 overflow-x-auto select-none">
+        <div className="sticky top-16 z-40 border-b border-[#262626] bg-[#0F0F0F] px-6 py-2 flex items-center justify-between gap-1 overflow-x-auto select-none">
           <div className="flex items-center gap-1 flex-wrap">
             {/* History */}
             <div className="flex items-center gap-0.5 border-r border-[#262626] pr-1.5 mr-1">
@@ -527,7 +527,7 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
                   <Palette className="w-4 h-4" />
                 </button>
                 {showColorDropdown && (
-                  <div className="absolute top-full left-0 mt-1 z-50 bg-[#0F0F0F] border border-[#262626] p-2 grid grid-cols-4 gap-1.5 shadow-2xl">
+                  <div className="absolute top-full left-0 mt-1 z-[100] bg-[#0F0F0F] border border-[#262626] p-2 grid grid-cols-4 gap-1.5 shadow-2xl">
                     {COLOR_OPTIONS.map((c) => (
                       <button
                         key={c.name}
@@ -633,7 +633,7 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
                 <TableIcon className="w-4 h-4" />
               </button>
               {showTableMenu && (
-                <div className="absolute top-full left-0 mt-1 z-50 bg-[#0F0F0F] border border-[#262626] p-2 flex flex-col space-y-1 shadow-2xl w-48 text-xs font-mono text-[#FAFAFA]">
+                <div className="absolute top-full left-0 mt-1 z-[100] bg-[#0F0F0F] border border-[#262626] p-2 flex flex-col space-y-1 shadow-2xl w-48 text-xs font-mono text-[#FAFAFA]">
                   <button
                     onClick={() => {
                       editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run();

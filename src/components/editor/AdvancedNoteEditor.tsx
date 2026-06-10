@@ -22,8 +22,7 @@ import Color from '@tiptap/extension-color';
 import { TextStyle } from '@tiptap/extension-text-style';
 import { common, createLowlight } from 'lowlight';
 
-import { RichTextProvider } from 'reactjs-tiptap-editor';
-import 'reactjs-tiptap-editor/style.css';
+import 'katex/dist/katex.min.css';
 
 import {
   ArrowLeft,
@@ -799,56 +798,54 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
           />
         </div>
 
-        {/* Rebuilt Tiptap Rich Text Workspace inside RichTextProvider */}
+        {/* Rebuilt Tiptap Rich Text Workspace */}
         {editor && (
-          <RichTextProvider editor={editor} dark={true}>
-            <div className="border border-[#262626] bg-[#0F0F0F] shadow-2xl relative min-h-[600px] text-[#FAFAFA]">
-              {/* Floating Selection Bubble Menu */}
-              <BubbleMenu
-                editor={editor}
-                className="bg-[#0F0F0F] border border-[#262626] shadow-2xl p-1 flex items-center gap-1 text-xs font-mono text-[#FAFAFA]"
+          <div className="border border-[#262626] bg-[#0F0F0F] shadow-2xl relative min-h-[600px] text-[#FAFAFA]">
+            {/* Floating Selection Bubble Menu */}
+            <BubbleMenu
+              editor={editor}
+              className="bg-[#0F0F0F] border border-[#262626] shadow-2xl p-1 flex items-center gap-1 text-xs font-mono text-[#FAFAFA]"
+            >
+              <button
+                onClick={() => editor.chain().focus().toggleBold().run()}
+                className={`p-1.5 transition-colors ${
+                  editor.isActive('bold') ? 'bg-[#1A1A1A] text-[#FF3D00]' : 'text-[#737373] hover:text-[#FAFAFA]'
+                }`}
+                title="Bold"
               >
-                <button
-                  onClick={() => editor.chain().focus().toggleBold().run()}
-                  className={`p-1.5 transition-colors ${
-                    editor.isActive('bold') ? 'bg-[#1A1A1A] text-[#FF3D00]' : 'text-[#737373] hover:text-[#FAFAFA]'
-                  }`}
-                  title="Bold"
-                >
-                  <Bold className="w-3.5 h-3.5" />
-                </button>
-                <button
-                  onClick={() => editor.chain().focus().toggleItalic().run()}
-                  className={`p-1.5 transition-colors ${
-                    editor.isActive('italic') ? 'bg-[#1A1A1A] text-[#FF3D00]' : 'text-[#737373] hover:text-[#FAFAFA]'
-                  }`}
-                  title="Italic"
-                >
-                  <Italic className="w-3.5 h-3.5" />
-                </button>
-                <button
-                  onClick={() => editor.chain().focus().toggleUnderline().run()}
-                  className={`p-1.5 transition-colors ${
-                    editor.isActive('underline') ? 'bg-[#1A1A1A] text-[#FF3D00]' : 'text-[#737373] hover:text-[#FAFAFA]'
-                  }`}
-                  title="Underline"
-                >
-                  <UnderlineIcon className="w-3.5 h-3.5" />
-                </button>
-                <button
-                  onClick={() => editor.chain().focus().toggleStrike().run()}
-                  className={`p-1.5 transition-colors ${
-                    editor.isActive('strike') ? 'bg-[#1A1A1A] text-[#FF3D00]' : 'text-[#737373] hover:text-[#FAFAFA]'
-                  }`}
-                  title="Strikethrough"
-                >
-                  <Strikethrough className="w-3.5 h-3.5" />
-                </button>
-              </BubbleMenu>
+                <Bold className="w-3.5 h-3.5" />
+              </button>
+              <button
+                onClick={() => editor.chain().focus().toggleItalic().run()}
+                className={`p-1.5 transition-colors ${
+                  editor.isActive('italic') ? 'bg-[#1A1A1A] text-[#FF3D00]' : 'text-[#737373] hover:text-[#FAFAFA]'
+                }`}
+                title="Italic"
+              >
+                <Italic className="w-3.5 h-3.5" />
+              </button>
+              <button
+                onClick={() => editor.chain().focus().toggleUnderline().run()}
+                className={`p-1.5 transition-colors ${
+                  editor.isActive('underline') ? 'bg-[#1A1A1A] text-[#FF3D00]' : 'text-[#737373] hover:text-[#FAFAFA]'
+                }`}
+                title="Underline"
+              >
+                <UnderlineIcon className="w-3.5 h-3.5" />
+              </button>
+              <button
+                onClick={() => editor.chain().focus().toggleStrike().run()}
+                className={`p-1.5 transition-colors ${
+                  editor.isActive('strike') ? 'bg-[#1A1A1A] text-[#FF3D00]' : 'text-[#737373] hover:text-[#FAFAFA]'
+                }`}
+                title="Strikethrough"
+              >
+                <Strikethrough className="w-3.5 h-3.5" />
+              </button>
+            </BubbleMenu>
 
-              <EditorContent editor={editor} />
-            </div>
-          </RichTextProvider>
+            <EditorContent editor={editor} />
+          </div>
         )}
 
         {/* Saved Stylus Drawing Canvas Annotation Preview */}

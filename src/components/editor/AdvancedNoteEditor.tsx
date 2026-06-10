@@ -427,7 +427,7 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
 
       {/* Primary Sticky Formatting Toolbar */}
       {editor && (
-        <div className="sticky top-16 z-40 border-b border-[#262626] bg-[#0F0F0F] px-6 py-2 flex items-center justify-between gap-1 overflow-x-auto select-none">
+        <div className="sticky top-16 z-40 border-b border-[#262626] bg-[#0F0F0F] px-6 py-2 flex items-center justify-between gap-1 overflow-visible select-none">
           <div className="flex items-center gap-1 flex-wrap">
             {/* History */}
             <div className="flex items-center gap-0.5 border-r border-[#262626] pr-1.5 mr-1">

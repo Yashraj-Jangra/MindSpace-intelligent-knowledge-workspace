@@ -10,13 +10,12 @@
 - [x] Created Resilient Note Storage (`src/lib/notes-storage.ts`) with PostgreSQL Prisma query and local persistent JSON fallback (`.data/notes.json`).
 - [x] Created Notes API endpoints: `/api/notes`, `/api/notes/[id]`, `/api/notes/[id]/convert-canvas`.
 - [x] Built **Ultra-Advanced Classic Note Editor Suite**:
-  - Integrated Tiptap (`@tiptap/react`) rich text engine supporting Headings (H1-H6), tasklists, bullet/ordered lists, blockquotes, syntax-highlighted code blocks (lowlight JS/TS/Python/SQL/HTML), bold, italic, underline, strikethrough, highlights, images, and links.
-  - Built **StylusAnnotationCanvas** overlay: HTML5 Canvas with pressure sensitivity (`PointerEvent.pressure`), pen, marker, highlighter, eraser, and color swatches.
-  - Built **CustomizableToolbar**: Docking support (Top, Bottom, Floating Side) and configurable tool group visibility settings.
-  - Built **StickerPicker**: Categorized emojis, status badges, tech icons, and callout banners.
+  - Integrated exact `hunghg255/reactjs-tiptap-editor` native component suite (`RichTextProvider`, `RichTextTable`, `RichTextHeading`, `RichTextBold`, `RichTextItalic`, `RichTextUnderline`, `RichTextStrike`, `RichTextColor`, `RichTextHighlight`, `RichTextAlign`, `RichTextBulletList`, `RichTextOrderedList`, `RichTextTaskList`, `RichTextBlockquote`, `RichTextHorizontalRule`, `RichTextCodeBlock`, `RichTextLink`, `RichTextImage`, `RichTextEmoji`, `RichTextClear`, `RichTextSearchAndReplace`, `RichTextUndo`, `RichTextRedo`).
+  - Integrated native contextual bubble menus (`RichTextBubbleText`, `RichTextBubbleTable`, `RichTextBubbleImage`, `RichTextBubbleLink`, `RichTextBubbleCodeBlock`).
+  - Wrapped inside client-only dynamic loading container (`NoteEditorContainer.tsx` with `ssr: false`) to eliminate Next.js hydration issues.
+  - Integrated **StylusAnnotationCanvas** overlay: HTML5 Canvas with pressure sensitivity (`PointerEvent.pressure`), pen, marker, highlighter, eraser, and color swatches.
   - Built File Upload API (`/api/upload`) for note media attachments.
   - Integrated Document Telemetry bar (Word count, character count, estimated reading time) & Zen Focus writing mode.
 
 ## Next Steps
-- [ ] Test live rich text note editing, stylus drawings, sticker insertion, and docking toolbar in browser.
-
+- [ ] Test live note creation and rich text editing in browser.

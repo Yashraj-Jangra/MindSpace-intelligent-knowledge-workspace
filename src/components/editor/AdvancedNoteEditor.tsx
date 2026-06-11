@@ -60,6 +60,7 @@ import {
 import { StoredNote } from '@/lib/notes-storage';
 import { ReminderModal } from '../ui/ReminderModal';
 import { StylusAnnotationCanvas } from './StylusAnnotationCanvas';
+import { ThemeToggle } from '../ui/ThemeToggle';
 
 interface AdvancedNoteEditorProps {
   initialNote: StoredNote;
@@ -412,7 +413,7 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
 
         {/* Rebuilt reactjs-tiptap-editor Workspace */}
         {editor && (
-          <RichTextProvider editor={editor} dark={true}>
+          <RichTextProvider editor={editor}>
             <div className="border border-[#262626] bg-[#0F0F0F] shadow-2xl relative min-h-[600px] text-[#FAFAFA]">
               {/* reactjs-tiptap-editor Sticky Toolbar */}
               <div className="sticky top-16 z-40 bg-[#0F0F0F] border-b border-[#262626] p-2 flex flex-wrap items-center gap-1 overflow-visible">

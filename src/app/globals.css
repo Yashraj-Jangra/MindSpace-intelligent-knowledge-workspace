@@ -370,47 +370,95 @@ body {
 }
 
 /* ==========================================================================
-   REACTJS-TIPTAP-EDITOR HIGH-CONTRAST DARK THEME & SMOOTH UX STYLING
+   REACTJS-TIPTAP-EDITOR HIGH-CONTRAST DARK THEME & CRISP WHITE CONTRAST
    ========================================================================== */
 
-.reactjs-tiptap-editor {
-  background-color: #0F0F0F !important;
+.reactjs-tiptap-editor,
+.reactjs-tiptap-editor-theme,
+div[data-richtext-portal] {
+  --background: 240 10% 4% !important; /* #0A0A0A */
+  --foreground: 0 0% 98% !important; /* #FAFAFA */
+  --card: 240 10% 6% !important;
+  --card-foreground: 0 0% 98% !important;
+  --popover: 240 10% 6% !important;
+  --popover-foreground: 0 0% 98% !important;
+  --primary: 14 100% 50% !important;
+  --primary-foreground: 0 0% 98% !important;
+  --secondary: 240 3.7% 15.9% !important;
+  --secondary-foreground: 0 0% 98% !important;
+  --muted: 240 3.7% 15.9% !important;
+  --muted-foreground: 240 5% 75% !important; /* Crisp Light Gray */
+  --accent: 14 100% 50% !important;
+  --accent-foreground: 0 0% 98% !important;
+  --border: 240 3.7% 25% !important; /* Visible Light Border #404040 */
+  --input: 240 3.7% 20% !important;
+  --ring: 14 100% 50% !important;
   color: #FAFAFA !important;
-  border-color: #262626 !important;
+  background-color: #0F0F0F !important;
   font-family: 'Inter Tight', sans-serif !important;
 }
 
-/* High-Contrast Toolbar Icons & Buttons */
+/* Force All Buttons, Icons, Text Labels, Popups to Crisp White & High Contrast */
 .reactjs-tiptap-editor button,
 .reactjs-tiptap-editor [role="button"],
-.reactjs-tiptap-editor svg {
-  color: #D4D4D4 !important;
-  stroke: #D4D4D4 !important;
+div[data-richtext-portal] button,
+div[data-richtext-portal] [role="menuitem"] {
   border-radius: 0px !important;
+  color: #FAFAFA !important;
   transition: all 150ms cubic-bezier(0.25, 0, 0, 1) !important;
 }
 
-/* Button Hover State */
+.reactjs-tiptap-editor button *,
+.reactjs-tiptap-editor [role="button"] *,
+div[data-richtext-portal] * {
+  color: #FAFAFA !important;
+}
+
+.reactjs-tiptap-editor button svg,
+.reactjs-tiptap-editor [role="button"] svg,
+div[data-richtext-portal] svg {
+  color: #FAFAFA !important;
+  stroke: #FAFAFA !important;
+}
+
+/* Hover State - Vermillion Text/Icon on Elevated Dark Background */
 .reactjs-tiptap-editor button:hover,
-.reactjs-tiptap-editor [role="button"]:hover {
-  color: #FF3D00 !important;
+.reactjs-tiptap-editor [role="button"]:hover,
+div[data-richtext-portal] button:hover,
+div[data-richtext-portal] [role="menuitem"]:hover {
   background-color: #1E1E1E !important;
+  color: #FF3D00 !important;
+}
+
+.reactjs-tiptap-editor button:hover *,
+.reactjs-tiptap-editor [role="button"]:hover *,
+div[data-richtext-portal] button:hover *,
+div[data-richtext-portal] [role="menuitem"]:hover * {
+  color: #FF3D00 !important;
 }
 
 .reactjs-tiptap-editor button:hover svg,
-.reactjs-tiptap-editor [role="button"]:hover svg {
+.reactjs-tiptap-editor [role="button"]:hover svg,
+div[data-richtext-portal] button:hover svg,
+div[data-richtext-portal] [role="menuitem"]:hover svg {
   color: #FF3D00 !important;
   stroke: #FF3D00 !important;
 }
 
-/* Active Button Selected State */
+/* Active Selected State */
 .reactjs-tiptap-editor button[data-state="on"],
 .reactjs-tiptap-editor button[aria-pressed="true"],
 .reactjs-tiptap-editor button.active,
 .reactjs-tiptap-editor [data-state="on"] {
-  color: #FF3D00 !important;
   background-color: #1E1E1E !important;
+  color: #FF3D00 !important;
   border-bottom: 2px solid #FF3D00 !important;
+}
+
+.reactjs-tiptap-editor button[data-state="on"] *,
+.reactjs-tiptap-editor button[aria-pressed="true"] *,
+.reactjs-tiptap-editor button.active * {
+  color: #FF3D00 !important;
 }
 
 .reactjs-tiptap-editor button[data-state="on"] svg,
@@ -431,28 +479,89 @@ div[role="menu"] *,
 div[data-richtext-portal],
 div[role="dialog"],
 div[role="menu"],
-[data-radix-popper-content-wrapper] > div {
+[data-radix-popper-content-wrapper] > div,
+[data-radix-popper-content-wrapper] > div > div {
   background-color: #0F0F0F !important;
   border: 1px solid #333333 !important;
   color: #FAFAFA !important;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.95) !important;
 }
 
-/* Dropdown Menu Items Contrast */
-div[data-richtext-portal] [role="menuitem"],
-div[role="menu"] [role="menuitem"],
+/* Force All Buttons inside Bubble Menus & Floating Toolbars */
+[data-radix-popper-content-wrapper] button,
 div[data-richtext-portal] button,
-div[role="dialog"] button {
+.richtext-bubble-menu button,
+[role="toolbar"] button {
+  background-color: #0F0F0F !important;
   color: #FAFAFA !important;
-  font-weight: 500 !important;
+  border-radius: 0px !important;
 }
 
-div[data-richtext-portal] [role="menuitem"]:hover,
-div[role="menu"] [role="menuitem"]:hover,
-div[data-richtext-portal] button:hover,
-div[role="dialog"] button:hover {
+[data-radix-popper-content-wrapper] button *,
+div[data-richtext-portal] button *,
+.richtext-bubble-menu button *,
+[role="toolbar"] button * {
+  color: #FAFAFA !important;
+}
+
+[data-radix-popper-content-wrapper] button svg,
+div[data-richtext-portal] button svg,
+.richtext-bubble-menu button svg,
+[role="toolbar"] button svg {
+  color: #FAFAFA !important;
+  stroke: #FAFAFA !important;
+}
+
+/* Active state in Bubble Menu */
+[data-radix-popper-content-wrapper] button[data-state="on"],
+div[data-richtext-portal] button[data-state="on"],
+.richtext-bubble-menu button[data-state="on"],
+[role="toolbar"] button[data-state="on"],
+[data-radix-popper-content-wrapper] button.active,
+div[data-richtext-portal] button.active,
+.richtext-bubble-menu button.active {
   background-color: #1E1E1E !important;
   color: #FF3D00 !important;
+  border-bottom: 2px solid #FF3D00 !important;
+}
+
+[data-radix-popper-content-wrapper] button[data-state="on"] *,
+div[data-richtext-portal] button[data-state="on"] *,
+.richtext-bubble-menu button[data-state="on"] *,
+[role="toolbar"] button[data-state="on"] * {
+  color: #FF3D00 !important;
+}
+
+[data-radix-popper-content-wrapper] button[data-state="on"] svg,
+div[data-richtext-portal] button[data-state="on"] svg,
+.richtext-bubble-menu button[data-state="on"] svg,
+[role="toolbar"] button[data-state="on"] svg {
+  color: #FF3D00 !important;
+  stroke: #FF3D00 !important;
+}
+
+/* Hover state in Bubble Menu */
+[data-radix-popper-content-wrapper] button:hover,
+div[data-richtext-portal] button:hover,
+.richtext-bubble-menu button:hover,
+[role="toolbar"] button:hover {
+  background-color: #1E1E1E !important;
+  color: #FF3D00 !important;
+}
+
+[data-radix-popper-content-wrapper] button:hover *,
+div[data-richtext-portal] button:hover *,
+.richtext-bubble-menu button:hover *,
+[role="toolbar"] button:hover * {
+  color: #FF3D00 !important;
+}
+
+[data-radix-popper-content-wrapper] button:hover svg,
+div[data-richtext-portal] button:hover svg,
+.richtext-bubble-menu button:hover svg,
+[role="toolbar"] button:hover svg {
+  color: #FF3D00 !important;
+  stroke: #FF3D00 !important;
 }
 
 /* Inputs Inside Dialogs & Link Modals */
@@ -474,15 +583,24 @@ div[role="menu"] input:focus {
   border-color: #FF3D00 !important;
 }
 
-/* Table Grid Selector Popover Contrast */
-.reactjs-tiptap-editor .table-grid-cell,
-div[data-richtext-portal] .table-grid-cell {
+/* Table Grid Selector Popover Contrast Fix */
+div[data-richtext-portal] div[class*="grid"] > *,
+[data-radix-popper-content-wrapper] div[class*="grid"] > *,
+.table-grid-cell {
   background-color: #1A1A1A !important;
   border: 1px solid #333333 !important;
 }
 
-.reactjs-tiptap-editor .table-grid-cell.active,
-div[data-richtext-portal] .table-grid-cell.active {
+div[data-richtext-portal] div[class*="grid"] > *:hover,
+div[data-richtext-portal] div[class*="grid"] > *[data-state="on"],
+div[data-richtext-portal] div[class*="grid"] > *.active,
+div[data-richtext-portal] div[class*="grid"] > *.is-active,
+[data-radix-popper-content-wrapper] div[class*="grid"] > *:hover,
+[data-radix-popper-content-wrapper] div[class*="grid"] > *[data-state="on"],
+[data-radix-popper-content-wrapper] div[class*="grid"] > *.active,
+[data-radix-popper-content-wrapper] div[class*="grid"] > *.is-active,
+.table-grid-cell.active,
+.table-grid-cell:hover {
   background-color: #FF3D00 !important;
   border-color: #FF3D00 !important;
 }
@@ -515,5 +633,6 @@ div[data-richtext-portal] [data-state="open"] {
     transform: translateY(0);
   }
 }
+
 
 

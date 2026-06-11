@@ -12,7 +12,7 @@
 - [x] Built **Ultra-Advanced Classic Note Editor Suite**:
   - Integrated exact `hunghg255/reactjs-tiptap-editor` native component suite (`RichTextProvider`, `RichTextTable`, `RichTextHeading`, `RichTextBold`, `RichTextItalic`, `RichTextUnderline`, `RichTextStrike`, `RichTextColor`, `RichTextHighlight`, `RichTextAlign`, `RichTextBulletList`, `RichTextOrderedList`, `RichTextTaskList`, `RichTextBlockquote`, `RichTextHorizontalRule`, `RichTextCodeBlock`, `RichTextLink`, `RichTextImage`, `RichTextEmoji`, `RichTextClear`, `RichTextSearchAndReplace`, `RichTextUndo`, `RichTextRedo`).
   - Integrated native contextual bubble menus (`RichTextBubbleText`, `RichTextBubbleTable`, `RichTextBubbleImage`, `RichTextBubbleLink`, `RichTextBubbleCodeBlock`).
-  - Styled with MindSpace **Bold Dark Theme Design System** (`#0A0A0A` background, `#0F0F0F` card surfaces, `#262626` dividers, `#FF3D00` vermillion accent, 0px sharp edges, and 150ms smooth UI transitions).
+  - Styled with MindSpace **Bold Dark Theme & High-Contrast Visual Architecture** (`#0A0A0A` background, `#0F0F0F` card surfaces, `#333333` popover borders, `#D4D4D4` icon strokes, `#FF3D00` vermillion accent, 0px sharp edges, and 150ms smooth UI transitions).
   - Wrapped inside client-only dynamic loading container (`NoteEditorContainer.tsx` with `ssr: false`) to eliminate Next.js hydration issues.
   - Integrated **StylusAnnotationCanvas** overlay: HTML5 Canvas with pressure sensitivity (`PointerEvent.pressure`), pen, marker, highlighter, eraser, and color swatches.
   - Built File Upload API (`/api/upload`) for note media attachments.

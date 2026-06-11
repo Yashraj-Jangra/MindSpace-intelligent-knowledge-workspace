@@ -368,3 +368,83 @@ body {
   border-top: 1px solid #262626;
   margin: 1.5rem 0;
 }
+
+/* ==========================================================================
+   REACTJS-TIPTAP-EDITOR DARK THEME INTEGRATION & UI/UX SMOOTH TRANSITIONS
+   ========================================================================== */
+
+.reactjs-tiptap-editor {
+  background-color: #0F0F0F !important;
+  color: #FAFAFA !important;
+  border-color: #262626 !important;
+  font-family: 'Inter Tight', sans-serif !important;
+}
+
+/* Toolbar Buttons & Popovers UI Overrides */
+.reactjs-tiptap-editor button,
+.reactjs-tiptap-editor [role="button"] {
+  border-radius: 0px !important;
+  transition: all 150ms cubic-bezier(0.25, 0, 0, 1) !important;
+}
+
+.reactjs-tiptap-editor button:hover {
+  color: #FF3D00 !important;
+  background-color: #1A1A1A !important;
+}
+
+/* Active Button State */
+.reactjs-tiptap-editor button[data-state="on"],
+.reactjs-tiptap-editor button.active {
+  color: #FF3D00 !important;
+  background-color: #1A1A1A !important;
+}
+
+/* Popover Content & Portals (Table grid picker, Color dropdown, Link edit, Search) */
+div[data-richtext-portal] *,
+div[role="dialog"] *,
+div[role="menu"] *,
+[data-radix-popper-content-wrapper] * {
+  border-radius: 0px !important;
+}
+
+div[data-richtext-portal],
+div[role="dialog"],
+div[role="menu"],
+[data-radix-popper-content-wrapper] > div {
+  background-color: #0F0F0F !important;
+  border: 1px solid #262626 !important;
+  color: #FAFAFA !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.9) !important;
+}
+
+div[data-richtext-portal] input,
+div[role="dialog"] input,
+div[role="menu"] input {
+  background-color: #1A1A1A !important;
+  border: 1px solid #262626 !important;
+  color: #FAFAFA !important;
+  outline: none !important;
+}
+
+div[data-richtext-portal] input:focus,
+div[role="dialog"] input:focus,
+div[role="menu"] input:focus {
+  border-color: #FF3D00 !important;
+}
+
+/* Bubble Menu Popovers */
+div[data-richtext-portal] [data-state="open"] {
+  animation: fadeIn 150ms ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+

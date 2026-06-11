@@ -370,7 +370,7 @@ body {
 }
 
 /* ==========================================================================
-   REACTJS-TIPTAP-EDITOR DARK THEME INTEGRATION & UI/UX SMOOTH TRANSITIONS
+   REACTJS-TIPTAP-EDITOR HIGH-CONTRAST DARK THEME & SMOOTH UX STYLING
    ========================================================================== */
 
 .reactjs-tiptap-editor {
@@ -380,26 +380,47 @@ body {
   font-family: 'Inter Tight', sans-serif !important;
 }
 
-/* Toolbar Buttons & Popovers UI Overrides */
+/* High-Contrast Toolbar Icons & Buttons */
 .reactjs-tiptap-editor button,
-.reactjs-tiptap-editor [role="button"] {
+.reactjs-tiptap-editor [role="button"],
+.reactjs-tiptap-editor svg {
+  color: #D4D4D4 !important;
+  stroke: #D4D4D4 !important;
   border-radius: 0px !important;
   transition: all 150ms cubic-bezier(0.25, 0, 0, 1) !important;
 }
 
-.reactjs-tiptap-editor button:hover {
+/* Button Hover State */
+.reactjs-tiptap-editor button:hover,
+.reactjs-tiptap-editor [role="button"]:hover {
   color: #FF3D00 !important;
-  background-color: #1A1A1A !important;
+  background-color: #1E1E1E !important;
 }
 
-/* Active Button State */
+.reactjs-tiptap-editor button:hover svg,
+.reactjs-tiptap-editor [role="button"]:hover svg {
+  color: #FF3D00 !important;
+  stroke: #FF3D00 !important;
+}
+
+/* Active Button Selected State */
 .reactjs-tiptap-editor button[data-state="on"],
-.reactjs-tiptap-editor button.active {
+.reactjs-tiptap-editor button[aria-pressed="true"],
+.reactjs-tiptap-editor button.active,
+.reactjs-tiptap-editor [data-state="on"] {
   color: #FF3D00 !important;
-  background-color: #1A1A1A !important;
+  background-color: #1E1E1E !important;
+  border-bottom: 2px solid #FF3D00 !important;
 }
 
-/* Popover Content & Portals (Table grid picker, Color dropdown, Link edit, Search) */
+.reactjs-tiptap-editor button[data-state="on"] svg,
+.reactjs-tiptap-editor button[aria-pressed="true"] svg,
+.reactjs-tiptap-editor button.active svg {
+  color: #FF3D00 !important;
+  stroke: #FF3D00 !important;
+}
+
+/* Popover Portals, Dropdowns & Dialog Overlays */
 div[data-richtext-portal] *,
 div[role="dialog"] *,
 div[role="menu"] *,
@@ -412,17 +433,38 @@ div[role="dialog"],
 div[role="menu"],
 [data-radix-popper-content-wrapper] > div {
   background-color: #0F0F0F !important;
-  border: 1px solid #262626 !important;
+  border: 1px solid #333333 !important;
   color: #FAFAFA !important;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.9) !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.95) !important;
 }
 
+/* Dropdown Menu Items Contrast */
+div[data-richtext-portal] [role="menuitem"],
+div[role="menu"] [role="menuitem"],
+div[data-richtext-portal] button,
+div[role="dialog"] button {
+  color: #FAFAFA !important;
+  font-weight: 500 !important;
+}
+
+div[data-richtext-portal] [role="menuitem"]:hover,
+div[role="menu"] [role="menuitem"]:hover,
+div[data-richtext-portal] button:hover,
+div[role="dialog"] button:hover {
+  background-color: #1E1E1E !important;
+  color: #FF3D00 !important;
+}
+
+/* Inputs Inside Dialogs & Link Modals */
 div[data-richtext-portal] input,
 div[role="dialog"] input,
 div[role="menu"] input {
-  background-color: #1A1A1A !important;
-  border: 1px solid #262626 !important;
+  background-color: #1E1E1E !important;
+  border: 1px solid #333333 !important;
   color: #FAFAFA !important;
+  font-family: 'JetBrains Mono', monospace !important;
+  font-size: 0.85rem !important;
+  padding: 0.4rem 0.6rem !important;
   outline: none !important;
 }
 
@@ -432,9 +474,35 @@ div[role="menu"] input:focus {
   border-color: #FF3D00 !important;
 }
 
-/* Bubble Menu Popovers */
+/* Table Grid Selector Popover Contrast */
+.reactjs-tiptap-editor .table-grid-cell,
+div[data-richtext-portal] .table-grid-cell {
+  background-color: #1A1A1A !important;
+  border: 1px solid #333333 !important;
+}
+
+.reactjs-tiptap-editor .table-grid-cell.active,
+div[data-richtext-portal] .table-grid-cell.active {
+  background-color: #FF3D00 !important;
+  border-color: #FF3D00 !important;
+}
+
+/* High Contrast Tooltips */
+[data-radix-popper-content-wrapper] [role="tooltip"],
+div[data-richtext-portal] [role="tooltip"] {
+  background-color: #1E1E1E !important;
+  border: 1px solid #333333 !important;
+  color: #FAFAFA !important;
+  font-family: 'JetBrains Mono', monospace !important;
+  font-size: 11px !important;
+  letter-spacing: 0.05em !important;
+  text-transform: uppercase !important;
+  padding: 4px 8px !important;
+}
+
+/* Bubble Menu Popover Smooth Animation */
 div[data-richtext-portal] [data-state="open"] {
-  animation: fadeIn 150ms ease-out forwards;
+  animation: fadeIn 150ms cubic-bezier(0.25, 0, 0, 1) forwards;
 }
 
 @keyframes fadeIn {
@@ -447,4 +515,5 @@ div[data-richtext-portal] [data-state="open"] {
     transform: translateY(0);
   }
 }
+
 

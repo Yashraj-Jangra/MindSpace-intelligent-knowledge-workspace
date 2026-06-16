@@ -619,20 +619,21 @@ div[role="menu"] input:focus {
 }
 
 /* ==========================================================================
-   MINIMAL TABLE GRID SELECTOR (NO EXTRA DIVISIONS, PERFECT THEME MATCHING)
+   SLEEK & MINIMAL HIGH-CONTRAST TABLE GRID SELECTOR (THEME-MATCHED)
    ========================================================================== */
 
-/* Outer grid container */
+/* Outer grid card popover */
 .table-grid-size-editor {
-  padding: 12px !important;
-  border-radius: 8px !important;
+  padding: 14px !important;
+  border-radius: 0px !important;
 }
 
+/* Row & Column gaps */
 .table-grid-size-editor .richtext-flex.richtext-gap-1 {
-  gap: 3px !important;
+  gap: 3.5px !important;
 }
 
-/* Completely strip outer cell wrapper to remove extra divisions */
+/* Strip JS wrapper clutter */
 .table-grid-size-editor .richtext-cursor-pointer,
 .table-grid-size-editor .tableCellActive {
   background: transparent !important;
@@ -643,73 +644,87 @@ div[role="menu"] input:focus {
   margin: 0 !important;
 }
 
-/* Single clean inner cell square */
+/* Inner cell square */
 .table-grid-size-editor div[class*="richtext-size-4"] {
   box-sizing: border-box !important;
-  width: 16px !important;
-  height: 16px !important;
+  width: 15px !important;
+  height: 15px !important;
   padding: 0 !important;
   margin: 0 !important;
-  border-radius: 3px !important;
-  transition: all 100ms ease-out !important;
+  border-radius: 2px !important;
+  transition: all 120ms cubic-bezier(0.25, 0, 0, 1) !important;
 }
 
-/* --- DARK MODE (MINIMAL) --- */
+/* --- DARK MODE (SLEEK VERMILLION ACCENT) --- */
 .table-grid-size-editor {
   background-color: #0F0F0F !important;
+  border: 1px solid #262626 !important;
   color: #FAFAFA !important;
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.95) !important;
 }
 
 /* Unselected cell */
 .table-grid-size-editor div[class*="richtext-size-4"] {
-  background-color: transparent !important;
-  border: 1.5px solid #333333 !important;
+  background-color: #141414 !important;
+  border: 1px solid #262626 !important;
 }
 
-/* Selected cell */
+/* Selected cell (Hovered region) */
 .table-grid-size-editor .tableCellActive div[class*="richtext-size-4"] {
   background-color: #FF3D00 !important;
-  border: 1.5px solid #FF3D00 !important;
+  border: 1px solid #FF3D00 !important;
+  box-shadow: 0 0 8px rgba(255, 61, 0, 0.4) !important;
 }
 
-/* Label text */
+/* Dimension label */
 .table-grid-size-editor > div:last-child {
-  margin-top: 10px !important;
-  font-size: 13px !important;
-  font-weight: 600 !important;
-  color: #A1A1AA !important;
+  margin-top: 12px !important;
+  padding-top: 8px !important;
+  border-top: 1px solid #262626 !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.1em !important;
+  text-transform: uppercase !important;
+  color: #FF3D00 !important;
   text-align: center !important;
   font-family: 'JetBrains Mono', monospace !important;
 }
 
-/* --- LIGHT MODE (MINIMAL) --- */
+/* --- LIGHT MODE (SLEEK SLATE & VERMILLION ACCENT) --- */
 html.light .table-grid-size-editor,
 .light .table-grid-size-editor {
   background-color: #FFFFFF !important;
+  border: 1px solid #E2E8F0 !important;
   color: #0F172A !important;
+  box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.08) !important;
 }
 
 /* Unselected cell */
 html.light .table-grid-size-editor div[class*="richtext-size-4"],
 .light .table-grid-size-editor div[class*="richtext-size-4"] {
-  background-color: transparent !important;
-  border: 1.5px solid #CBD5E1 !important;
+  background-color: #F8FAFC !important;
+  border: 1px solid #E2E8F0 !important;
 }
 
-/* Selected cell */
+/* Selected cell (Hovered region) */
 html.light .table-grid-size-editor .tableCellActive div[class*="richtext-size-4"],
 .light .table-grid-size-editor .tableCellActive div[class*="richtext-size-4"] {
-  background-color: #0F172A !important;
-  border: 1.5px solid #0F172A !important;
+  background-color: #FF3D00 !important;
+  border: 1px solid #FF3D00 !important;
+  box-shadow: 0 0 8px rgba(255, 61, 0, 0.3) !important;
 }
 
-/* Label text */
+/* Dimension label */
 html.light .table-grid-size-editor > div:last-child,
 .light .table-grid-size-editor > div:last-child {
-  margin-top: 10px !important;
-  font-size: 13px !important;
-  font-weight: 600 !important;
-  color: #334155 !important;
+  margin-top: 12px !important;
+  padding-top: 8px !important;
+  border-top: 1px solid #F1F5F9 !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.1em !important;
+  text-transform: uppercase !important;
+  color: #FF3D00 !important;
   text-align: center !important;
   font-family: 'JetBrains Mono', monospace !important;
 }

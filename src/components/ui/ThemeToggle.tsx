@@ -11,8 +11,10 @@ export function ThemeToggle() {
     setTheme(savedTheme);
     if (savedTheme === 'light') {
       document.documentElement.classList.add('light');
+      document.body?.classList.add('light');
     } else {
       document.documentElement.classList.remove('light');
+      document.body?.classList.remove('light');
     }
   }, []);
 
@@ -22,26 +24,29 @@ export function ThemeToggle() {
     localStorage.setItem('mindspace-theme', nextTheme);
     if (nextTheme === 'light') {
       document.documentElement.classList.add('light');
+      document.body?.classList.add('light');
     } else {
       document.documentElement.classList.remove('light');
+      document.body?.classList.remove('light');
     }
   };
 
   return (
     <button
       onClick={toggleTheme}
-      className="p-1.5 border border-[#262626] light:border-[#E2E8F0] text-[#737373] light:text-[#64748B] hover:text-[#FF3D00] light:hover:text-[#FF3D00] transition-colors flex items-center gap-1 text-xs font-mono uppercase tracking-wider"
+      type="button"
+      className="p-1.5 border border-[#262626] text-[#FAFAFA] hover:text-[#FF3D00] hover:border-[#FF3D00] transition-colors flex items-center gap-1.5 text-xs font-mono uppercase tracking-wider bg-[#1A1A1A] cursor-pointer"
       title={`Switch to ${theme === 'dark' ? 'White/Light' : 'Dark'} Theme`}
     >
       {theme === 'dark' ? (
         <>
           <Sun className="w-4 h-4 text-[#FF3D00]" />
-          <span className="hidden sm:inline">Light</span>
+          <span className="hidden sm:inline">Light Mode</span>
         </>
       ) : (
         <>
-          <Moon className="w-4 h-4 text-[#0F172A]" />
-          <span className="hidden sm:inline">Dark</span>
+          <Moon className="w-4 h-4 text-[#FF3D00]" />
+          <span className="hidden sm:inline text-[#0F172A]">Dark Mode</span>
         </>
       )}
     </button>

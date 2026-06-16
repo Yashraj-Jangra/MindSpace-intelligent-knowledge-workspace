@@ -634,5 +634,165 @@ div[data-richtext-portal] [data-state="open"] {
   }
 }
 
+/* ==========================================================================
+   LIGHT MODE / WHITE THEME GLOBAL OVERRIDES
+   ========================================================================== */
+
+html.light,
+html.light body,
+.light body {
+  background-color: #FFFFFF !important;
+  color: #0F172A !important;
+  background-image: none !important;
+}
+
+/* Hardcoded Tailwind Dark Class Overrides */
+html.light .bg-\[\#0A0A0A\],
+html.light .bg-\[\#0F0F0F\] {
+  background-color: #FFFFFF !important;
+  color: #0F172A !important;
+}
+
+html.light .bg-\[\#0A0A0A\]\/95 {
+  background-color: rgba(255, 255, 255, 0.95) !important;
+}
+
+html.light .bg-\[\#1A1A1A\] {
+  background-color: #F1F5F9 !important;
+  color: #0F172A !important;
+}
+
+html.light .text-\[\#FAFAFA\] {
+  color: #0F172A !important;
+}
+
+html.light .text-\[\#737373\] {
+  color: #475569 !important;
+}
+
+html.light .border-\[\#262626\] {
+  border-color: #E2E8F0 !important;
+}
+
+html.light header,
+html.light main,
+html.light footer {
+  background-color: #FFFFFF !important;
+  color: #0F172A !important;
+  border-color: #E2E8F0 !important;
+}
+
+html.light input,
+html.light select,
+html.light textarea {
+  background-color: #F8FAFC !important;
+  color: #0F172A !important;
+  border-color: #CBD5E1 !important;
+}
+
+html.light input::placeholder,
+html.light textarea::placeholder {
+  color: #94A3B8 !important;
+}
+
+/* Light Mode Tiptap Editor & Popover Overrides */
+html.light .reactjs-tiptap-editor,
+html.light div[data-richtext-portal] {
+  background-color: #FFFFFF !important;
+  color: #0F172A !important;
+  border-color: #E2E8F0 !important;
+}
+
+html.light .sticky.top-16 {
+  background-color: #FFFFFF !important;
+  border-color: #E2E8F0 !important;
+}
+
+html.light .reactjs-tiptap-editor button,
+html.light .reactjs-tiptap-editor [role="button"],
+html.light div[data-richtext-portal] button,
+html.light [data-radix-popper-content-wrapper] button {
+  background-color: #FFFFFF !important;
+  color: #0F172A !important;
+}
+
+html.light .reactjs-tiptap-editor button *,
+html.light .reactjs-tiptap-editor [role="button"] *,
+html.light div[data-richtext-portal] button *,
+html.light [data-radix-popper-content-wrapper] button * {
+  color: #0F172A !important;
+}
+
+html.light .reactjs-tiptap-editor button svg,
+html.light .reactjs-tiptap-editor [role="button"] svg,
+html.light div[data-richtext-portal] button svg,
+html.light [data-radix-popper-content-wrapper] button svg {
+  color: #0F172A !important;
+  stroke: #0F172A !important;
+}
+
+html.light .reactjs-tiptap-editor button:hover,
+html.light div[data-richtext-portal] button:hover,
+html.light [data-radix-popper-content-wrapper] button:hover {
+  background-color: #F1F5F9 !important;
+  color: #FF3D00 !important;
+}
+
+html.light .reactjs-tiptap-editor button:hover *,
+html.light div[data-richtext-portal] button:hover *,
+html.light [data-radix-popper-content-wrapper] button:hover * {
+  color: #FF3D00 !important;
+}
+
+html.light .reactjs-tiptap-editor button:hover svg,
+html.light div[data-richtext-portal] button:hover svg,
+html.light [data-radix-popper-content-wrapper] button:hover svg {
+  color: #FF3D00 !important;
+  stroke: #FF3D00 !important;
+}
+
+html.light .reactjs-tiptap-editor button[data-state="on"],
+html.light div[data-richtext-portal] button[data-state="on"],
+html.light [data-radix-popper-content-wrapper] button[data-state="on"],
+html.light .reactjs-tiptap-editor button.active {
+  background-color: #F1F5F9 !important;
+  color: #FF3D00 !important;
+  border-bottom: 2px solid #FF3D00 !important;
+}
+
+html.light div[data-richtext-portal],
+html.light div[role="dialog"],
+html.light div[role="menu"],
+html.light [data-radix-popper-content-wrapper] > div {
+  background-color: #FFFFFF !important;
+  border: 1px solid #E2E8F0 !important;
+  color: #0F172A !important;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1) !important;
+}
+
+html.light .ProseMirror {
+  color: #0F172A !important;
+}
+
+html.light .ProseMirror h1,
+html.light .ProseMirror h2,
+html.light .ProseMirror h3,
+html.light .ProseMirror h4 {
+  color: #0F172A !important;
+}
+
+html.light .ProseMirror pre {
+  background-color: #F8FAFC !important;
+  border: 1px solid #E2E8F0 !important;
+  color: #0F172A !important;
+}
+
+html.light .ProseMirror code {
+  background-color: #F1F5F9 !important;
+  color: #FF3D00 !important;
+  border: 1px solid #CBD5E1 !important;
+}
+
+
 
 

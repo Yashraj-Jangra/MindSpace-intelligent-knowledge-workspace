@@ -618,26 +618,100 @@ div[role="menu"] input:focus {
   border-color: #FF3D00 !important;
 }
 
-/* Table Grid Selector Popover Contrast Fix */
-div[data-richtext-portal] div[class*="grid"] > *,
-[data-radix-popper-content-wrapper] div[class*="grid"] > *,
-.table-grid-cell {
-  background-color: #1A1A1A !important;
-  border: 1px solid #333333 !important;
+/* ==========================================================================
+   MINIMAL TABLE GRID SELECTOR (NO EXTRA DIVISIONS, PERFECT THEME MATCHING)
+   ========================================================================== */
+
+/* Outer grid container */
+.table-grid-size-editor {
+  padding: 12px !important;
+  border-radius: 8px !important;
 }
 
-div[data-richtext-portal] div[class*="grid"] > *:hover,
-div[data-richtext-portal] div[class*="grid"] > *[data-state="on"],
-div[data-richtext-portal] div[class*="grid"] > *.active,
-div[data-richtext-portal] div[class*="grid"] > *.is-active,
-[data-radix-popper-content-wrapper] div[class*="grid"] > *:hover,
-[data-radix-popper-content-wrapper] div[class*="grid"] > *[data-state="on"],
-[data-radix-popper-content-wrapper] div[class*="grid"] > *.active,
-[data-radix-popper-content-wrapper] div[class*="grid"] > *.is-active,
-.table-grid-cell.active,
-.table-grid-cell:hover {
+.table-grid-size-editor .richtext-flex.richtext-gap-1 {
+  gap: 3px !important;
+}
+
+/* Completely strip outer cell wrapper to remove extra divisions */
+.table-grid-size-editor .richtext-cursor-pointer,
+.table-grid-size-editor .tableCellActive {
+  background: transparent !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+/* Single clean inner cell square */
+.table-grid-size-editor div[class*="richtext-size-4"] {
+  box-sizing: border-box !important;
+  width: 16px !important;
+  height: 16px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border-radius: 3px !important;
+  transition: all 100ms ease-out !important;
+}
+
+/* --- DARK MODE (MINIMAL) --- */
+.table-grid-size-editor {
+  background-color: #0F0F0F !important;
+  color: #FAFAFA !important;
+}
+
+/* Unselected cell */
+.table-grid-size-editor div[class*="richtext-size-4"] {
+  background-color: transparent !important;
+  border: 1.5px solid #333333 !important;
+}
+
+/* Selected cell */
+.table-grid-size-editor .tableCellActive div[class*="richtext-size-4"] {
   background-color: #FF3D00 !important;
-  border-color: #FF3D00 !important;
+  border: 1.5px solid #FF3D00 !important;
+}
+
+/* Label text */
+.table-grid-size-editor > div:last-child {
+  margin-top: 10px !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  color: #A1A1AA !important;
+  text-align: center !important;
+  font-family: 'JetBrains Mono', monospace !important;
+}
+
+/* --- LIGHT MODE (MINIMAL) --- */
+html.light .table-grid-size-editor,
+.light .table-grid-size-editor {
+  background-color: #FFFFFF !important;
+  color: #0F172A !important;
+}
+
+/* Unselected cell */
+html.light .table-grid-size-editor div[class*="richtext-size-4"],
+.light .table-grid-size-editor div[class*="richtext-size-4"] {
+  background-color: transparent !important;
+  border: 1.5px solid #CBD5E1 !important;
+}
+
+/* Selected cell */
+html.light .table-grid-size-editor .tableCellActive div[class*="richtext-size-4"],
+.light .table-grid-size-editor .tableCellActive div[class*="richtext-size-4"] {
+  background-color: #0F172A !important;
+  border: 1.5px solid #0F172A !important;
+}
+
+/* Label text */
+html.light .table-grid-size-editor > div:last-child,
+.light .table-grid-size-editor > div:last-child {
+  margin-top: 10px !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  color: #334155 !important;
+  text-align: center !important;
+  font-family: 'JetBrains Mono', monospace !important;
 }
 
 /* High Contrast Tooltips */

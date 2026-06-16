@@ -469,13 +469,11 @@ div[data-richtext-portal] [role="menuitem"]:hover svg {
 }
 
 /* Popover Portals, Dropdowns & Dialog Overlays */
-div[data-richtext-portal] *,
-div[role="dialog"] *,
-div[role="menu"] *,
-[data-radix-popper-content-wrapper] * {
-  border-radius: 0px !important;
-}
-
+.richtext-bg-popover,
+.richtext-bg-card,
+.richtext-bg-background,
+.richtext-text-popover-foreground,
+.richtext-text-foreground,
 div[data-richtext-portal],
 div[role="dialog"],
 div[role="menu"],
@@ -485,6 +483,43 @@ div[role="menu"],
   border: 1px solid #333333 !important;
   color: #FAFAFA !important;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.95) !important;
+}
+
+.richtext-bg-popover button,
+.richtext-bg-popover [role="button"] {
+  background-color: #0F0F0F !important;
+  color: #FAFAFA !important;
+}
+
+.richtext-bg-popover button svg,
+.richtext-bg-popover [role="button"] svg {
+  color: #FAFAFA !important;
+  stroke: #FAFAFA !important;
+}
+
+.richtext-bg-popover button:hover,
+.richtext-bg-popover [role="button"]:hover {
+  background-color: #1E1E1E !important;
+  color: #FF3D00 !important;
+}
+
+.richtext-bg-popover button:hover svg,
+.richtext-bg-popover [role="button"]:hover svg {
+  color: #FF3D00 !important;
+  stroke: #FF3D00 !important;
+}
+
+.richtext-bg-popover button[data-state="on"],
+.richtext-bg-popover button.active {
+  background-color: #1E1E1E !important;
+  color: #FF3D00 !important;
+  border-bottom: 2px solid #FF3D00 !important;
+}
+
+.richtext-bg-popover button[data-state="on"] svg,
+.richtext-bg-popover button.active svg {
+  color: #FF3D00 !important;
+  stroke: #FF3D00 !important;
 }
 
 /* Force All Buttons inside Bubble Menus & Floating Toolbars */

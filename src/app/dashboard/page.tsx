@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { getUserNotes } from '@/lib/notes-storage';
 import { getSessionFromCookie } from '@/lib/session';
 import { Plus, Pin, Bell, Tag, FileText, Search, Network, Clock, Shield } from 'lucide-react';
+import { ThemeToggle } from '@/components/ui/ThemeToggle';
 
 export const dynamic = 'force-dynamic';
 
@@ -57,6 +58,7 @@ export default async function NotesDashboard({
             <Shield className="w-3.5 h-3.5 text-[#FF3D00]" />
             <span>Admin</span>
           </Link>
+          <ThemeToggle />
 
           <Link
             href="/notes/new"

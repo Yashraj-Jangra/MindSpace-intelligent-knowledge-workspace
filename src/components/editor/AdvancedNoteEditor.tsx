@@ -361,6 +361,9 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
               {isZenMode ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
             </button>
 
+            {/* Theme Switcher Toggle */}
+            <ThemeToggle />
+
             {/* Delete Note */}
             <button
               onClick={handleDeleteNote}

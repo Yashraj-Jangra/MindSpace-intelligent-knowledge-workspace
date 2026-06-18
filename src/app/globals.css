@@ -1141,13 +1141,90 @@ div[data-richtext-portal] [role="menuitem"]:hover *,
   color: #FF3D00 !important;
 }
 
-.reactjs-tiptap-editor button:hover svg,
-.reactjs-tiptap-editor [role="button"]:hover svg,
-div[data-richtext-portal] button:hover svg,
-div[data-richtext-portal] [role="menuitem"]:hover svg,
-[data-radix-popper-content-wrapper] button:hover svg {
+/* ==========================================================================
+   DEFAULT TABLE HEADER SHADING (FIRST ROW & FIRST COLUMN DIFFERENT SHADE)
+   ========================================================================== */
+
+/* Dark Mode Default Table First Row & First Column Shading */
+.ProseMirror table tr:first-child td,
+.ProseMirror table tr:first-child th {
+  background-color: #1E1E24 !important;
+  font-weight: 700 !important;
   color: #FF3D00 !important;
-  stroke: #FF3D00 !important;
+}
+
+.ProseMirror table tr td:first-child,
+.ProseMirror table tr th:first-child {
+  background-color: #16161A !important;
+  font-weight: 600 !important;
+}
+
+/* Light Mode Default Table First Row & First Column Shading */
+html.light .ProseMirror table tr:first-child td,
+html.light .ProseMirror table tr:first-child th,
+.light .ProseMirror table tr:first-child td,
+.light .ProseMirror table tr:first-child th {
+  background-color: #F1F5F9 !important;
+  font-weight: 700 !important;
+  color: #FF3D00 !important;
+}
+
+html.light .ProseMirror table tr td:first-child,
+html.light .ProseMirror table tr th:first-child,
+.light .ProseMirror table tr td:first-child,
+.light .ProseMirror table tr th:first-child {
+  background-color: #F8FAFC !important;
+  font-weight: 600 !important;
+}
+
+/* ==========================================================================
+   LIGHT MODE DROPDOWN MENU ITEM TEXT COLOR FIX (PARAGRAPH / HEADING ITEMS)
+   ========================================================================== */
+
+html.light [role="menu"] *,
+html.light [role="listbox"] *,
+html.light [role="option"] *,
+html.light div[data-richtext-portal] [role="menuitem"] *,
+html.light div[data-richtext-portal] [role="option"] *,
+html.light [data-radix-popper-content-wrapper] [role="menuitem"] *,
+html.light [data-radix-popper-content-wrapper] [role="option"] *,
+html.light [data-radix-popper-content-wrapper] div,
+html.light [data-radix-popper-content-wrapper] span,
+html.light [data-radix-popper-content-wrapper] p,
+.light [role="menu"] *,
+.light [role="listbox"] *,
+.light [role="option"] *,
+.light div[data-richtext-portal] [role="menuitem"] *,
+.light div[data-richtext-portal] [role="option"] *,
+.light [data-radix-popper-content-wrapper] [role="menuitem"] *,
+.light [data-radix-popper-content-wrapper] [role="option"] *,
+.light [data-radix-popper-content-wrapper] div,
+.light [data-radix-popper-content-wrapper] span,
+.light [data-radix-popper-content-wrapper] p {
+  color: #0F172A !important;
+}
+
+html.light [role="menu"] [role="menuitem"]:hover,
+html.light [role="menu"] [role="option"]:hover,
+html.light div[data-richtext-portal] [role="menuitem"]:hover,
+html.light [data-radix-popper-content-wrapper] [role="menuitem"]:hover,
+.light [role="menu"] [role="menuitem"]:hover,
+.light [role="menu"] [role="option"]:hover,
+.light div[data-richtext-portal] [role="menuitem"]:hover,
+.light [data-radix-popper-content-wrapper] [role="menuitem"]:hover {
+  background-color: #F1F5F9 !important;
+  color: #FF3D00 !important;
+}
+
+html.light [role="menu"] [role="menuitem"]:hover *,
+html.light [role="menu"] [role="option"]:hover *,
+html.light div[data-richtext-portal] [role="menuitem"]:hover *,
+html.light [data-radix-popper-content-wrapper] [role="menuitem"]:hover *,
+.light [role="menu"] [role="menuitem"]:hover *,
+.light [role="menu"] [role="option"]:hover *,
+.light div[data-richtext-portal] [role="menuitem"]:hover *,
+.light [data-radix-popper-content-wrapper] [role="menuitem"]:hover * {
+  color: #FF3D00 !important;
 }
 
 

@@ -802,10 +802,15 @@ html.light .table-grid-size-editor > div:last-child,
   font-family: 'JetBrains Mono', monospace !important;
 }
 
-/* High Contrast Tooltips */
+/* High Contrast Tooltips (Dark Mode) */
+[role="tooltip"],
+.richtext-tooltip,
+[data-state="delayed-open"],
+div[class*="tooltip"],
+div[class*="Tooltip"],
 [data-radix-popper-content-wrapper] [role="tooltip"],
 div[data-richtext-portal] [role="tooltip"] {
-  background-color: #1E1E1E !important;
+  background-color: #141414 !important;
   border: 1px solid #333333 !important;
   color: #FAFAFA !important;
   font-family: 'JetBrains Mono', monospace !important;
@@ -813,6 +818,56 @@ div[data-richtext-portal] [role="tooltip"] {
   letter-spacing: 0.05em !important;
   text-transform: uppercase !important;
   padding: 4px 8px !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.8) !important;
+  z-index: 9999 !important;
+}
+
+[role="tooltip"] *,
+.richtext-tooltip *,
+[data-state="delayed-open"] *,
+div[class*="tooltip"] *,
+div[class*="Tooltip"] * {
+  color: #FAFAFA !important;
+}
+
+/* High Contrast Tooltips (Light Mode - Dark Slate Pill + Crisp White Monospace Text) */
+html.light [role="tooltip"],
+html.light .richtext-tooltip,
+html.light [data-state="delayed-open"],
+html.light div[class*="tooltip"],
+html.light div[class*="Tooltip"],
+html.light [data-radix-popper-content-wrapper] [role="tooltip"],
+html.light div[data-richtext-portal] [role="tooltip"],
+.light [role="tooltip"],
+.light .richtext-tooltip,
+.light [data-state="delayed-open"],
+.light div[class*="tooltip"],
+.light div[class*="Tooltip"],
+.light [data-radix-popper-content-wrapper] [role="tooltip"],
+.light div[data-richtext-portal] [role="tooltip"] {
+  background-color: #0F172A !important;
+  border: 1px solid #0F172A !important;
+  color: #FFFFFF !important;
+  font-family: 'JetBrains Mono', monospace !important;
+  font-size: 11px !important;
+  letter-spacing: 0.05em !important;
+  text-transform: uppercase !important;
+  padding: 4px 8px !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2) !important;
+  z-index: 9999 !important;
+}
+
+html.light [role="tooltip"] *,
+html.light .richtext-tooltip *,
+html.light [data-state="delayed-open"] *,
+html.light div[class*="tooltip"] *,
+html.light div[class*="Tooltip"] *,
+.light [role="tooltip"] *,
+.light .richtext-tooltip *,
+.light [data-state="delayed-open"] *,
+.light div[class*="tooltip"] *,
+.light div[class*="Tooltip"] * {
+  color: #FFFFFF !important;
 }
 
 /* Bubble Menu Popover Smooth Animation */

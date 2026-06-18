@@ -15,6 +15,7 @@
   - Styled with MindSpace **Bold Dark Theme & High-Contrast Visual Architecture** (`#0A0A0A` background, `#0F0F0F` card surfaces, `#333333` popover borders, `#D4D4D4` icon strokes, `#FF3D00` vermillion accent, 0px sharp edges, and 150ms smooth UI transitions).
   - Fixed white container bar bug on `RichTextBubbleTable` by explicitly overriding `.richtext-bg-popover`.
   - Redesigned table grid size selector to a **sleek, minimal, ultra-modern control** with Vermillion accent glows, micro 15x15px cells, 0 extra divisions, and monospace dimension indicators in both Light and Dark themes.
+  - Eliminated duplicate Radix Popper card background layer behind table grid selector popover.
   - Built **ThemeToggle** component (`src/components/ui/ThemeToggle.tsx`) supporting persistent Dark / Light Mode.
   - Wrapped inside client-only dynamic loading container (`NoteEditorContainer.tsx` with `ssr: false`) to eliminate Next.js hydration issues.
   - Integrated **StylusAnnotationCanvas** overlay: HTML5 Canvas with pressure sensitivity (`PointerEvent.pressure`), pen, marker, highlighter, eraser, and color swatches.

@@ -1002,6 +1002,99 @@ html.light .ProseMirror code {
   border: 1px solid #CBD5E1 !important;
 }
 
+/* ==========================================================================
+   HIGH-CONTRAST HOVER TEXT & BACKGROUND OVERRIDES (PREVENT WHITE-ON-WHITE)
+   ========================================================================== */
+
+/* Light Mode Primary Solid Button Hover (Vermillion Button -> Dark Slate Hover) */
+html.light .bg-\[\#FF3D00\]:hover,
+html.light button.bg-\[\#FF3D00\]:hover,
+html.light a.bg-\[\#FF3D00\]:hover,
+.light .bg-\[\#FF3D00\]:hover,
+.light button.bg-\[\#FF3D00\]:hover,
+.light a.bg-\[\#FF3D00\]:hover {
+  background-color: #0F172A !important;
+  color: #FFFFFF !important;
+}
+
+html.light .bg-\[\#FF3D00\]:hover *,
+html.light button.bg-\[\#FF3D00\]:hover *,
+html.light a.bg-\[\#FF3D00\]:hover *,
+.light .bg-\[\#FF3D00\]:hover *,
+.light button.bg-\[\#FF3D00\]:hover *,
+.light a.bg-\[\#FF3D00\]:hover * {
+  color: #FFFFFF !important;
+}
+
+html.light .bg-\[\#FF3D00\]:hover svg,
+html.light button.bg-\[\#FF3D00\]:hover svg,
+html.light a.bg-\[\#FF3D00\]:hover svg,
+.light .bg-\[\#FF3D00\]:hover svg,
+.light button.bg-\[\#FF3D00\]:hover svg,
+.light a.bg-\[\#FF3D00\]:hover svg {
+  color: #FFFFFF !important;
+  stroke: #FFFFFF !important;
+}
+
+/* Light Mode Secondary Hover Overrides (Light Slate Background + Vermillion Accent) */
+html.light .hover\:bg-\[\#FAFAFA\]:hover,
+html.light .hover\:bg-white:hover,
+.light .hover\:bg-\[\#FAFAFA\]:hover,
+.light .hover\:bg-white:hover {
+  background-color: #F1F5F9 !important;
+  color: #FF3D00 !important;
+}
+
+html.light .hover\:bg-\[\#FAFAFA\]:hover *,
+html.light .hover\:bg-white:hover *,
+.light .hover\:bg-\[\#FAFAFA\]:hover *,
+.light .hover\:bg-white:hover * {
+  color: #FF3D00 !important;
+}
+
+html.light .hover\:bg-\[\#FAFAFA\]:hover svg,
+html.light .hover\:bg-white:hover svg,
+.light .hover\:bg-\[\#FAFAFA\]:hover svg,
+.light .hover\:bg-white:hover svg {
+  color: #FF3D00 !important;
+  stroke: #FF3D00 !important;
+}
+
+/* Light Mode Text Hover Overrides */
+html.light .hover\:text-\[\#FAFAFA\]:hover,
+html.light .hover\:text-white:hover,
+.light .hover\:text-\[\#FAFAFA\]:hover,
+.light .hover\:text-white:hover {
+  color: #FF3D00 !important;
+}
+
+/* Dark Mode Toolbar Button Hover Overrides */
+.reactjs-tiptap-editor button:hover,
+.reactjs-tiptap-editor [role="button"]:hover,
+div[data-richtext-portal] button:hover,
+div[data-richtext-portal] [role="menuitem"]:hover,
+[data-radix-popper-content-wrapper] button:hover {
+  background-color: #1E1E1E !important;
+  color: #FF3D00 !important;
+}
+
+.reactjs-tiptap-editor button:hover *,
+.reactjs-tiptap-editor [role="button"]:hover *,
+div[data-richtext-portal] button:hover *,
+div[data-richtext-portal] [role="menuitem"]:hover *,
+[data-radix-popper-content-wrapper] button:hover * {
+  color: #FF3D00 !important;
+}
+
+.reactjs-tiptap-editor button:hover svg,
+.reactjs-tiptap-editor [role="button"]:hover svg,
+div[data-richtext-portal] button:hover svg,
+div[data-richtext-portal] [role="menuitem"]:hover svg,
+[data-radix-popper-content-wrapper] button:hover svg {
+  color: #FF3D00 !important;
+  stroke: #FF3D00 !important;
+}
+
 
 
 

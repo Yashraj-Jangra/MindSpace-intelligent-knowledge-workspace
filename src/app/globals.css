@@ -302,32 +302,50 @@ body {
   color: #A855F7;
 }
 
-/* Tables */
+/* ==========================================================================
+   PROSEMIRROR HIGH-CONTRAST BOLD TABLES (DARK & LIGHT THEMES)
+   ========================================================================== */
+
 .ProseMirror table {
   border-collapse: collapse;
   table-layout: fixed;
   width: 100%;
-  margin: 1rem 0;
+  margin: 1.5rem 0;
   overflow: hidden;
-  border: 1px solid #262626;
+  border: 2px solid #404040 !important;
 }
 
 .ProseMirror td,
 .ProseMirror th {
   min-width: 1em;
-  border: 1px solid #262626;
-  padding: 8px 12px;
+  border: 2px solid #333333 !important;
+  padding: 10px 14px !important;
   vertical-align: top;
   box-sizing: border-box;
   position: relative;
-  background-color: #0A0A0A;
+  transition: background-color 150ms ease;
+}
+
+/* Dark Mode Cell Colors */
+.ProseMirror td {
+  background-color: #0F0F0F !important;
+  color: #FAFAFA !important;
+}
+
+.ProseMirror td:hover {
+  background-color: #18181B !important;
 }
 
 .ProseMirror th {
-  font-weight: bold;
-  text-align: left;
-  background-color: #1A1A1A;
-  color: #FF3D00;
+  font-weight: 700 !important;
+  text-align: left !important;
+  background-color: #1A1A1A !important;
+  color: #FF3D00 !important;
+  font-family: 'JetBrains Mono', monospace !important;
+  font-size: 0.85rem !important;
+  letter-spacing: 0.05em !important;
+  text-transform: uppercase !important;
+  border-bottom: 2px solid #FF3D00 !important;
 }
 
 .ProseMirror .selectedCell:after {
@@ -335,8 +353,41 @@ body {
   position: absolute;
   content: "";
   left: 0; right: 0; top: 0; bottom: 0;
-  background: rgba(255, 61, 0, 0.15);
+  background: rgba(255, 61, 0, 0.25) !important;
+  border: 2px solid #FF3D00 !important;
   pointer-events: none;
+}
+
+/* --- LIGHT MODE PROSEMIRROR TABLES --- */
+html.light .ProseMirror table,
+.light .ProseMirror table {
+  border: 2px solid #CBD5E1 !important;
+}
+
+html.light .ProseMirror td,
+html.light .ProseMirror th,
+.light .ProseMirror td,
+.light .ProseMirror th {
+  border: 2px solid #E2E8F0 !important;
+}
+
+html.light .ProseMirror td,
+.light .ProseMirror td {
+  background-color: #FFFFFF !important;
+  color: #0F172A !important;
+}
+
+html.light .ProseMirror td:hover,
+.light .ProseMirror td:hover {
+  background-color: #F8FAFC !important;
+}
+
+html.light .ProseMirror th,
+.light .ProseMirror th {
+  background-color: #F1F5F9 !important;
+  color: #FF3D00 !important;
+  font-weight: 700 !important;
+  border-bottom: 2px solid #FF3D00 !important;
 }
 
 /* Images & Media */
@@ -478,50 +529,68 @@ div[data-richtext-portal] [role="menuitem"]:hover svg {
   padding: 0 !important;
 }
 
-/* Actual Single Card Surface for Floating Menus, Dialogs & Popovers */
+/* Actual Single Card Surface for Floating Table Options, Menus & Dialogs */
 .richtext-bg-popover,
 .richtext-bg-card,
+.richtext-bubble-menu,
 div[role="dialog"],
 div[role="menu"] {
   background-color: #0F0F0F !important;
-  border: 1px solid #262626 !important;
+  border: 2px solid #333333 !important;
   color: #FAFAFA !important;
   box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.95) !important;
 }
 
 .richtext-bg-popover button,
-.richtext-bg-popover [role="button"] {
+.richtext-bg-popover [role="button"],
+.richtext-bubble-menu button,
+div[role="menu"] button,
+div[role="menu"] [role="menuitem"] {
   background-color: #0F0F0F !important;
   color: #FAFAFA !important;
+  border: 1px solid transparent !important;
+  border-radius: 0px !important;
+  transition: all 120ms cubic-bezier(0.25, 0, 0, 1) !important;
 }
 
 .richtext-bg-popover button svg,
-.richtext-bg-popover [role="button"] svg {
+.richtext-bg-popover [role="button"] svg,
+.richtext-bubble-menu button svg,
+div[role="menu"] svg {
   color: #FAFAFA !important;
   stroke: #FAFAFA !important;
 }
 
 .richtext-bg-popover button:hover,
-.richtext-bg-popover [role="button"]:hover {
+.richtext-bg-popover [role="button"]:hover,
+.richtext-bubble-menu button:hover,
+div[role="menu"] [role="menuitem"]:hover {
   background-color: #1E1E1E !important;
   color: #FF3D00 !important;
+  border-color: #FF3D00 !important;
 }
 
 .richtext-bg-popover button:hover svg,
-.richtext-bg-popover [role="button"]:hover svg {
+.richtext-bg-popover [role="button"]:hover svg,
+.richtext-bubble-menu button:hover svg,
+div[role="menu"] [role="menuitem"]:hover svg {
   color: #FF3D00 !important;
   stroke: #FF3D00 !important;
 }
 
 .richtext-bg-popover button[data-state="on"],
-.richtext-bg-popover button.active {
+.richtext-bg-popover button.active,
+.richtext-bubble-menu button[data-state="on"],
+.richtext-bubble-menu button.active {
   background-color: #1E1E1E !important;
   color: #FF3D00 !important;
   border-bottom: 2px solid #FF3D00 !important;
 }
 
 .richtext-bg-popover button[data-state="on"] svg,
-.richtext-bg-popover button.active svg {
+.richtext-bg-popover button.active svg,
+.richtext-bubble-menu button[data-state="on"] svg,
+.richtext-bubble-menu button.active svg {
   color: #FF3D00 !important;
   stroke: #FF3D00 !important;
 }

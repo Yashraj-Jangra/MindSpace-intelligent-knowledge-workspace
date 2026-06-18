@@ -468,21 +468,25 @@ div[data-richtext-portal] [role="menuitem"]:hover svg {
   stroke: #FF3D00 !important;
 }
 
-/* Popover Portals, Dropdowns & Dialog Overlays */
+/* Popover Portals & Popper Content Wrappers - Transparent Outer Containers */
+[data-radix-popper-content-wrapper],
+[data-radix-popper-content-wrapper] > div {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+  padding: 0 !important;
+}
+
+/* Actual Single Card Surface for Floating Menus, Dialogs & Popovers */
 .richtext-bg-popover,
 .richtext-bg-card,
-.richtext-bg-background,
-.richtext-text-popover-foreground,
-.richtext-text-foreground,
-div[data-richtext-portal],
 div[role="dialog"],
-div[role="menu"],
-[data-radix-popper-content-wrapper] > div,
-[data-radix-popper-content-wrapper] > div > div {
+div[role="menu"] {
   background-color: #0F0F0F !important;
-  border: 1px solid #333333 !important;
+  border: 1px solid #262626 !important;
   color: #FAFAFA !important;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.95) !important;
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.95) !important;
 }
 
 .richtext-bg-popover button,
@@ -884,10 +888,22 @@ html.light .reactjs-tiptap-editor button.active {
   border-bottom: 2px solid #FF3D00 !important;
 }
 
+html.light [data-radix-popper-content-wrapper],
+html.light [data-radix-popper-content-wrapper] > div,
+.light [data-radix-popper-content-wrapper],
+.light [data-radix-popper-content-wrapper] > div {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+
 html.light div[data-richtext-portal],
 html.light div[role="dialog"],
 html.light div[role="menu"],
-html.light [data-radix-popper-content-wrapper] > div {
+.light div[data-richtext-portal],
+.light div[role="dialog"],
+.light div[role="menu"] {
   background-color: #FFFFFF !important;
   border: 1px solid #E2E8F0 !important;
   color: #0F172A !important;

@@ -1,5 +1,4 @@
 import { common, createLowlight } from 'lowlight';
-
 const lowlight = createLowlight(common);
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
@@ -55,12 +54,28 @@ import {
   Clock,
   Network,
   PenTool,
+  ShieldCheck,
 } from 'lucide-react';
 
 import { StoredNote } from '@/lib/notes-storage';
 import { ReminderModal } from '../ui/ReminderModal';
-import { StylusAnnotationCanvas } from './StylusAnnotationCanvas';
 import { ThemeToggle } from '../ui/ThemeToggle';
+
+// Stylus & Digital Ink System Imports
+import {
+  VectorStroke,
+  StylusTool,
+  PenSubtype,
+  LineType,
+  StylusSettings,
+  DEFAULT_STYLUS_SETTINGS,
+  StylusButtonAction,
+} from '@/lib/stylus/stylus-types';
+import { NativeStylusCanvas } from './stylus/NativeStylusCanvas';
+import { StylusDock } from './stylus/StylusDock';
+import { StylusSettingsModal } from './stylus/StylusSettingsModal';
+import { useStylusHardware } from '@/hooks/useStylusHardware';
+import { recognizeInkToText } from '@/lib/stylus/ink-to-text';
 
 interface AdvancedNoteEditorProps {
   initialNote: StoredNote;
@@ -77,7 +92,18 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
   const [priority, setPriority] = useState<'LOW' | 'MEDIUM' | 'HIGH'>(initialNote.priority || 'MEDIUM');
   const [isPinned, setIsPinned] = useState(initialNote.isPinned || false);
   const [reminderAt, setReminderAt] = useState<string | null>(initialNote.reminderAt || null);
-  const [stylusDrawingData, setStylusDrawingData] = useState<string | null>(null);
+
+  // Stylus Vector Stroke & Engine State
+  const [isStylusOverlayOpen, setIsStylusOverlayOpen] = useState(true);
+  const [activeTool, setActiveTool] = useState<StylusTool>('pen');
+  const [activePenSubtype, setActivePenSubtype] = useState<PenSubtype>('ballpoint');
+  const [activeColor, setActiveColor] = useState<string>('#FF3D00');
+  const [strokeWidth, setStrokeWidth] = useState<number>(3);
+  const [lineType, setLineType] = useState<LineType>('solid');
+  const [stylusSettings, setStylusSettings] = useState<StylusSettings>(DEFAULT_STYLUS_SETTINGS);
+  const [strokes, setStrokes] = useState<VectorStroke[]>([]);
+  const [undoStack, setUndoStack] = useState<VectorStroke[][]>([]);
+  const [redoStack, setRedoStack] = useState<VectorStroke[][]>([]);
 
   // Editor View Mode & Status
   const [isZenMode, setIsZenMode] = useState(false);
@@ -86,7 +112,7 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
 
   // Modals state
   const [isReminderOpen, setIsReminderOpen] = useState(false);
-  const [isStylusOpen, setIsStylusOpen] = useState(false);
+  const [isStylusSettingsOpen, setIsStylusSettingsOpen] = useState(false);
 
   // Configure Extensions from reactjs-tiptap-editor
   const extensions = useMemo(() => {
@@ -149,9 +175,80 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
     editorProps: {
       attributes: {
         class:
-          'prose prose-invert max-w-none focus:outline-none min-h-[600px] text-base leading-relaxed text-[#FAFAFA] font-sans p-6',
+          'prose prose-invert max-w-none focus:outline-none min-h-[650px] text-base leading-relaxed text-[#FAFAFA] font-sans p-8',
       },
     },
+  });
+
+  // Undo / Redo Stacks for Vector Strokes
+  const handleStrokesChange = (nextStrokes: VectorStroke[]) => {
+    setUndoStack((prev) => [...prev, strokes]);
+    setRedoStack([]);
+    setStrokes(nextStrokes);
+    setSaveStatus('unsaved');
+  };
+
+  const handleUndo = () => {
+    if (undoStack.length === 0) return;
+    const previous = undoStack[undoStack.length - 1];
+    setRedoStack((prev) => [...prev, strokes]);
+    setStrokes(previous);
+    setUndoStack((prev) => prev.slice(0, prev.length - 1));
+    setSaveStatus('unsaved');
+  };
+
+  const handleRedo = () => {
+    if (redoStack.length === 0) return;
+    const next = redoStack[redoStack.length - 1];
+    setUndoStack((prev) => [...prev, strokes]);
+    setStrokes(next);
+    setRedoStack((prev) => prev.slice(0, prev.length - 1));
+    setSaveStatus('unsaved');
+  };
+
+  const handleClearStrokes = () => {
+    if (confirm('Clear all freehand stylus strokes on this note?')) {
+      handleStrokesChange([]);
+    }
+  };
+
+  // Convert Ink to Text OCR Callback
+  const handleConvertInkToText = async () => {
+    if (!strokes.length || !editor) return;
+    const result = await recognizeInkToText(strokes);
+    if (result && result.text) {
+      editor.chain().focus().insertContent(`<p><strong>[Handwritten Ink]:</strong> ${result.text}</p>`).run();
+      setSaveStatus('unsaved');
+    }
+  };
+
+  // Hardware Button Event Handler via Hook
+  const handleHardwareAction = useCallback((action: StylusButtonAction) => {
+    switch (action) {
+      case 'toggle_eraser':
+        setActiveTool((prev) => (prev === 'eraser' ? 'pen' : 'eraser'));
+        break;
+      case 'undo':
+        handleUndo();
+        break;
+      case 'redo':
+        handleRedo();
+        break;
+      case 'cycle_color':
+        setActiveColor((prev) => (prev === '#FF3D00' ? '#FAFAFA' : prev === '#FAFAFA' ? '#4285F4' : '#FF3D00'));
+        break;
+      case 'clear_ink':
+        handleClearStrokes();
+        break;
+      case 'convert_text':
+        handleConvertInkToText();
+        break;
+    }
+  }, [strokes, editor]);
+
+  useStylusHardware({
+    settings: stylusSettings,
+    onExecuteAction: handleHardwareAction,
   });
 
   // Auto-save Debounce
@@ -248,7 +345,7 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
 
   return (
     <div
-      className={`min-h-screen w-full bg-[#0A0A0A] text-[#FAFAFA] flex flex-col font-sans select-text ${
+      className={`min-h-screen w-full bg-[#0A0A0A] text-[#FAFAFA] flex flex-col font-sans select-text pb-28 ${
         isZenMode ? 'fixed inset-0 z-50 overflow-y-auto bg-[#0A0A0A]' : ''
       }`}
     >
@@ -327,13 +424,22 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
               <span>{reminderAt ? new Date(reminderAt).toLocaleDateString() : 'Remind'}</span>
             </button>
 
-            {/* Open Stylus Canvas */}
+            {/* Stylus Mode Quick Toggle */}
             <button
-              onClick={() => setIsStylusOpen(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 border border-[#FF3D00] text-[#FF3D00] hover:bg-[#FF3D00] hover:text-[#0A0A0A] text-xs font-mono uppercase tracking-wider font-bold transition-colors"
+              onClick={() =>
+                setStylusSettings((prev) => ({
+                  ...prev,
+                  isStylusModeActive: !prev.isStylusModeActive,
+                }))
+              }
+              className={`flex items-center gap-1.5 px-3 py-1.5 border text-xs font-mono uppercase tracking-wider font-bold transition-colors ${
+                stylusSettings.isStylusModeActive
+                  ? 'border-[#FF3D00] bg-[#FF3D00] text-[#0A0A0A]'
+                  : 'border-[#262626] text-[#737373] hover:text-[#FAFAFA]'
+              }`}
             >
-              <PenTool className="w-3.5 h-3.5" />
-              <span>Stylus</span>
+              <ShieldCheck className="w-3.5 h-3.5" />
+              <span>{stylusSettings.isStylusModeActive ? 'Stylus Mode ON' : 'Stylus Mode OFF'}</span>
             </button>
 
             {/* Convert to Mind Map CTA */}
@@ -414,10 +520,10 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
           />
         </div>
 
-        {/* Rebuilt reactjs-tiptap-editor Workspace */}
+        {/* Editor Workspace Container with Integrated Native Stylus Canvas Overlay */}
         {editor && (
           <RichTextProvider editor={editor}>
-            <div className="border border-[#262626] bg-[#0F0F0F] shadow-2xl relative min-h-[600px] text-[#FAFAFA]">
+            <div className="border border-[#262626] bg-[#0F0F0F] shadow-2xl relative min-h-[650px] text-[#FAFAFA]">
               {/* reactjs-tiptap-editor Sticky Toolbar */}
               <div className="sticky top-16 z-40 bg-[#0F0F0F] border-b border-[#262626] p-2 flex flex-wrap items-center gap-1 overflow-visible">
                 <RichTextUndo />
@@ -456,31 +562,27 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
 
               {/* Tiptap Core Editor Content */}
               <EditorContent editor={editor} />
+
+              {/* Native Freehand Stylus Overlay Canvas */}
+              <NativeStylusCanvas
+                isActive={isStylusOverlayOpen}
+                activeTool={activeTool}
+                activePenSubtype={activePenSubtype}
+                activeColor={activeColor}
+                strokeWidth={strokeWidth}
+                lineType={lineType}
+                settings={stylusSettings}
+                strokes={strokes}
+                onStrokesChange={handleStrokesChange}
+              />
             </div>
           </RichTextProvider>
-        )}
-
-        {/* Saved Stylus Drawing Canvas Annotation Preview */}
-        {stylusDrawingData && (
-          <div className="border border-[#262626] bg-[#0F0F0F] p-4 space-y-2">
-            <div className="flex items-center justify-between text-xs font-mono text-[#737373]">
-              <span>Stylus Drawing Annotation</span>
-              <button onClick={() => setStylusDrawingData(null)} className="hover:text-[#FF3D00]">
-                Remove Annotation
-              </button>
-            </div>
-            <img
-              src={stylusDrawingData}
-              alt="Stylus Drawing"
-              className="w-full max-h-96 object-contain border border-[#262626] bg-[#0A0A0A]"
-            />
-          </div>
         )}
       </main>
 
       {/* Telemetry Status Footer */}
       {!isZenMode && (
-        <footer className="h-10 border-t border-[#262626] bg-[#0F0F0F] px-8 flex items-center justify-between font-mono text-[11px] text-[#737373]">
+        <footer className="h-10 border-t border-[#262626] bg-[#0F0F0F] px-8 flex items-center justify-between font-mono text-[11px] text-[#737373] fixed bottom-0 left-0 right-0 z-30">
           <div className="flex items-center gap-6">
             <span className="flex items-center gap-1.5">
               <FileText className="w-3.5 h-3.5 text-[#FF3D00]" />
@@ -494,17 +596,51 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="uppercase tracking-widest text-[10px]">hunghg255/reactjs-tiptap-editor (MindSpace Dark)</span>
+            <span className="uppercase tracking-widest text-[10px]">MindSpace Native Stylus Engine (Active)</span>
           </div>
         </footer>
       )}
 
-      {/* Stylus Freehand Canvas Modal */}
-      <StylusAnnotationCanvas
-        isOpen={isStylusOpen}
-        onClose={() => setIsStylusOpen(false)}
-        initialDrawingData={stylusDrawingData}
-        onSaveDrawing={(dataUrl) => setStylusDrawingData(dataUrl)}
+      {/* Floating Bottom Stylus Control Dock */}
+      <StylusDock
+        activeTool={activeTool}
+        onSelectTool={setActiveTool}
+        activePenSubtype={activePenSubtype}
+        onSelectPenSubtype={setActivePenSubtype}
+        activeColor={activeColor}
+        onChangeColor={setActiveColor}
+        strokeWidth={strokeWidth}
+        onChangeWidth={setStrokeWidth}
+        lineType={lineType}
+        onChangeLineType={setLineType}
+        settings={stylusSettings}
+        onToggleStylusMode={() =>
+          setStylusSettings((prev) => ({
+            ...prev,
+            isStylusModeActive: !prev.isStylusModeActive,
+          }))
+        }
+        onToggleAutoShape={() =>
+          setStylusSettings((prev) => ({
+            ...prev,
+            autoShapeRecognition: !prev.autoShapeRecognition,
+          }))
+        }
+        onUndo={handleUndo}
+        onRedo={handleRedo}
+        onClear={handleClearStrokes}
+        onConvertInkToText={handleConvertInkToText}
+        onOpenSettings={() => setIsStylusSettingsOpen(true)}
+      />
+
+      {/* Hardware Button & Gesture Settings Drawer */}
+      <StylusSettingsModal
+        isOpen={isStylusSettingsOpen}
+        onClose={() => setIsStylusSettingsOpen(false)}
+        settings={stylusSettings}
+        onUpdateSettings={(newSettings) =>
+          setStylusSettings((prev) => ({ ...prev, ...newSettings }))
+        }
       />
 
       {/* Reminder Scheduling Modal */}

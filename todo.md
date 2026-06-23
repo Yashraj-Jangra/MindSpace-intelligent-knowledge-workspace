@@ -23,9 +23,20 @@
   - Eliminated duplicate Radix Popper card background layer behind table grid selector popover.
   - Built **ThemeToggle** component (`src/components/ui/ThemeToggle.tsx`) supporting persistent Dark / Light Mode.
   - Wrapped inside client-only dynamic loading container (`NoteEditorContainer.tsx` with `ssr: false`) to eliminate Next.js hydration issues.
+  - [x] Built **Enterprise Native Stylus & Digital Ink Engine**:
+  - **Native Canvas Overlay (`NativeStylusCanvas.tsx`)**: Direct freehand writing overlay over notes, tables, code blocks, and images with zero popups or paste steps.
+  - **Touch Palm Rejection**: Filters touch inputs (`pointerType === 'touch'`) to prevent hand/palm interference while writing with stylus (`pointerType === 'pen'`).
+  - **Unified Pen Tool**: Sub-type picker for **Ballpoint**, **Fountain Pen** (calligraphic angle & tilt calculations), and **Pencil** (textured graphite shading).
+  - **Highlighter & Pressure-Sensitive Eraser**: Translucent highlighter overlay and pressure-proportional eraser radius with Pixel and Stroke deletion modes.
+  - **Editable Vector Elements & Control Handles (`vector-selection.ts`)**: Lasso select, bounding boxes, and draggable control handles to edit line curves, endpoints, arrow directions, and shape bounds.
+  - **Real-Time Auto-Shape Recognition (`shape-recognition.ts`)**: Converts rough sketches into clean vector primitives (Squares/Rectangles, Circles/Ellipses, Triangles, Diamonds, Lines, Arrows).
+  - **Ink-to-Text OCR Recognition (`ink-to-text.ts`)**: Framework for converting freehand handwriting into structured text/markdown.
+  - **Multi-Brand Stylus Hardware & Web Haptics Integration (`useStylusHardware.ts` & `stylus-haptics.ts`)**: Custom button/gesture shortcuts supporting Xiaomi Focus Pen Pro, Apple Pencil, Samsung S-Pen, Surface Pen, and Web Haptics vibration ticks (`navigator.vibrate`).
+  - **Floating Stylus Control Dock (`StylusDock.tsx`)** & **Settings Drawer (`StylusSettingsModal.tsx`)**: Custom stroke thickness, line styles (Solid, Dashed, Dotted), pressure curves, smoothing levels, and hardware shortcut bindings.
+  - **Draggable Table Blocks (`DraggableTableWrapper.tsx`)**: Draggable table containers in note workspace with spatial ink anchoring.
   - Integrated **StylusAnnotationCanvas** overlay: HTML5 Canvas with pressure sensitivity (`PointerEvent.pressure`), pen, marker, highlighter, eraser, and color swatches.
   - Built File Upload API (`/api/upload`) for note media attachments.
   - Integrated Document Telemetry bar (Word count, character count, estimated reading time) & Zen Focus writing mode.
 
 ## Next Steps
-- [ ] Test live note creation and rich text editing in browser.
+- [ ] Test live note creation, rich text editing, and freehand stylus writing in browser.

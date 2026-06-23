@@ -32,7 +32,8 @@
   - **Real-Time Auto-Shape Recognition (`shape-recognition.ts`)**: Converts rough sketches into clean vector primitives (Squares/Rectangles, Circles/Ellipses, Triangles, Diamonds, Lines, Arrows).
   - **Ink-to-Text OCR Recognition (`ink-to-text.ts`)**: Framework for converting freehand handwriting into structured text/markdown.
   - **Multi-Brand Stylus Hardware & Web Haptics Integration (`useStylusHardware.ts` & `stylus-haptics.ts`)**: Custom button/gesture shortcuts supporting Xiaomi Focus Pen Pro, Apple Pencil, Samsung S-Pen, Surface Pen, and Web Haptics vibration ticks (`navigator.vibrate`).
-  - **Floating Stylus Control Dock (`StylusDock.tsx`)** & **Settings Drawer (`StylusSettingsModal.tsx`)**: Custom stroke thickness, line styles (Solid, Dashed, Dotted), pressure curves, smoothing levels, and hardware shortcut bindings.
+  - **Pro Pen Settings Popover (`PenSettingsPopover.tsx`)**: Built popover matching user's exact design reference featuring 5 visual nib icons (Fountain 1, Fountain 2, Fineliner, Ballpoint, Pencil), line type pills (Solid, Dashed, Dotted), thickness slider with mm/px readout, stroke stabilization slider with % readout, color swatches, and "Add to pen box" preset button.
+  - **Vertical Left Stylus Sidebar (`VerticalStylusSidebar.tsx`)**: Sleek left sidebar toolbar with Pen Box shelf pinned at the bottom for 1-tap preset switching.
   - **React Flow Mind Map Integration (`MindSpaceCanvas.tsx`)**: Mounted Stylus Canvas overlay, Stylus Dock, and Palm Rejection directly over the React Flow Mind Map graph.
   - Integrated **StylusAnnotationCanvas** overlay: HTML5 Canvas with pressure sensitivity (`PointerEvent.pressure`), pen, marker, highlighter, eraser, and color swatches.
   - Built File Upload API (`/api/upload`) for note media attachments.
@@ -40,4 +41,5 @@
 
 ## Next Steps
 - [ ] Test live note creation, rich text editing, freehand stylus writing, and mind map canvas drawing in browser.
+
 

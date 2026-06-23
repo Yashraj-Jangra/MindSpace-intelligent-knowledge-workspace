@@ -93,7 +93,7 @@ export function extractControlPoints(stroke: VectorStroke): ControlPoint[] {
       y: pts[pts.length - 1].y,
       type: 'endpoint',
     });
-  } else if (stroke.recognizedShape === 'rectangle' || stroke.recognizedShape === 'square') {
+  } else if (stroke.recognizedShape === 'rectangle') {
     // 4 Corner handles for rectangle
     const bbox = getStrokeBoundingBox(stroke);
     controlPoints.push(

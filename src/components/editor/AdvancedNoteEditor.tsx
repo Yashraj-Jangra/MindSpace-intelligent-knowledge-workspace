@@ -41,7 +41,6 @@ import {
 import 'reactjs-tiptap-editor/style.css';
 
 import {
-  ArrowLeft,
   Check,
   Loader2,
   Bell,
@@ -53,7 +52,6 @@ import {
   FileText,
   Clock,
   Network,
-  PenTool,
   ShieldCheck,
 } from 'lucide-react';
 
@@ -72,7 +70,8 @@ import {
   StylusButtonAction,
 } from '@/lib/stylus/stylus-types';
 import { NativeStylusCanvas } from './stylus/NativeStylusCanvas';
-import { StylusDock } from './stylus/StylusDock';
+import { VerticalStylusSidebar } from './stylus/VerticalStylusSidebar';
+import { PenSettingsPopover, PenPreset } from './stylus/PenSettingsPopover';
 import { StylusSettingsModal } from './stylus/StylusSettingsModal';
 import { useStylusHardware } from '@/hooks/useStylusHardware';
 import { recognizeInkToText } from '@/lib/stylus/ink-to-text';
@@ -80,6 +79,13 @@ import { recognizeInkToText } from '@/lib/stylus/ink-to-text';
 interface AdvancedNoteEditorProps {
   initialNote: StoredNote;
 }
+
+const DEFAULT_PEN_BOX_PRESETS: PenPreset[] = [
+  { id: 'p1', name: 'White Ballpoint', subtype: 'ballpoint', color: '#FAFAFA', width: 3, lineType: 'solid', smoothing: 'mild' },
+  { id: 'p2', name: 'Red Crimson', subtype: 'fountain', color: '#D32F2F', width: 4, lineType: 'solid', smoothing: 'high' },
+  { id: 'p3', name: 'Deep Blue', subtype: 'ballpoint', color: '#1976D2', width: 3, lineType: 'solid', smoothing: 'mild' },
+  { id: 'p4', name: 'Vermillion Accent', subtype: 'fountain', color: '#FF3D00', width: 5, lineType: 'solid', smoothing: 'high' },
+];
 
 export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
   const router = useRouter();
@@ -104,6 +110,10 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
   const [strokes, setStrokes] = useState<VectorStroke[]>([]);
   const [undoStack, setUndoStack] = useState<VectorStroke[][]>([]);
   const [redoStack, setRedoStack] = useState<VectorStroke[][]>([]);
+
+  // Pen Box Presets & Popover State
+  const [isPenPopoverOpen, setIsPenPopoverOpen] = useState(false);
+  const [penBoxPresets, setPenBoxPresets] = useState<PenPreset[]>(DEFAULT_PEN_BOX_PRESETS);
 
   // Editor View Mode & Status
   const [isZenMode, setIsZenMode] = useState(false);
@@ -210,6 +220,22 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
     if (confirm('Clear all freehand stylus strokes on this note?')) {
       handleStrokesChange([]);
     }
+  };
+
+  // Select Preset from Pen Box
+  const handleSelectPreset = (preset: PenPreset) => {
+    setActivePenSubtype(preset.subtype);
+    setActiveColor(preset.color);
+    setStrokeWidth(preset.width);
+    setLineType(preset.lineType);
+    setStylusSettings((prev) => ({ ...prev, smoothingLevel: preset.smoothing }));
+    setActiveTool('pen');
+  };
+
+  // Add Preset to Pen Box
+  const handleAddToPenBox = (preset: PenPreset) => {
+    setPenBoxPresets((prev) => [...prev, preset]);
+    setIsPenPopoverOpen(false);
   };
 
   // Convert Ink to Text OCR Callback
@@ -345,21 +371,53 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
 
   return (
     <div
-      className={`min-h-screen w-full bg-[#0A0A0A] text-[#FAFAFA] flex flex-col font-sans select-text pb-28 ${
+      className={`min-h-screen w-full bg-[#0A0A0A] text-[#FAFAFA] flex flex-col font-sans select-text pl-14 ${
         isZenMode ? 'fixed inset-0 z-50 overflow-y-auto bg-[#0A0A0A]' : ''
       }`}
     >
+      {/* Vertical Stylus Sidebar Dock */}
+      <VerticalStylusSidebar
+        activeTool={activeTool}
+        onSelectTool={setActiveTool}
+        onTogglePenPopover={() => setIsPenPopoverOpen(!isPenPopoverOpen)}
+        settings={stylusSettings}
+        onToggleStylusMode={() =>
+          setStylusSettings((prev) => ({
+            ...prev,
+            isStylusModeActive: !prev.isStylusModeActive,
+          }))
+        }
+        onUndo={handleUndo}
+        onRedo={handleRedo}
+        penBoxPresets={penBoxPresets}
+        onSelectPreset={handleSelectPreset}
+        onBackToDashboard={() => router.push('/dashboard')}
+      />
+
+      {/* Popover Settings matching User Reference Image */}
+      <PenSettingsPopover
+        isOpen={isPenPopoverOpen}
+        onClose={() => setIsPenPopoverOpen(false)}
+        activePenSubtype={activePenSubtype}
+        onSelectPenSubtype={setActivePenSubtype}
+        activeColor={activeColor}
+        onChangeColor={setActiveColor}
+        strokeWidth={strokeWidth}
+        onChangeWidth={setStrokeWidth}
+        lineType={lineType}
+        onChangeLineType={setLineType}
+        settings={stylusSettings}
+        onUpdateSettings={(newSettings) => setStylusSettings((prev) => ({ ...prev, ...newSettings }))}
+        onAddToPenBox={handleAddToPenBox}
+      />
+
       {/* Top Header Control Bar */}
       {!isZenMode && (
         <header className="h-16 border-b border-[#262626] bg-[#0A0A0A]/95 px-6 flex items-center justify-between sticky top-0 z-30">
           <div className="flex items-center gap-4">
-            <button
-              onClick={() => router.push('/dashboard')}
-              className="flex items-center gap-1.5 text-xs font-mono uppercase tracking-wider text-[#737373] hover:text-[#FAFAFA] transition-colors"
-            >
-              <ArrowLeft className="w-4 h-4 stroke-[1.5]" />
-              <span>Dashboard</span>
-            </button>
+            <span className="font-mono text-xs uppercase tracking-wider text-[#FAFAFA] font-bold">
+              {title || 'Untitled Note'}
+            </span>
 
             <div className="h-4 w-px bg-[#262626]" />
 
@@ -434,7 +492,7 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
               }
               className={`flex items-center gap-1.5 px-3 py-1.5 border text-xs font-mono uppercase tracking-wider font-bold transition-colors ${
                 stylusSettings.isStylusModeActive
-                  ? 'border-[#FF3D00] bg-[#FF3D00] text-[#0A0A0A]'
+                  ? 'border-[#00B4D8] bg-[#00B4D8] text-[#0A0A0A]'
                   : 'border-[#262626] text-[#737373] hover:text-[#FAFAFA]'
               }`}
             >
@@ -582,7 +640,7 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
 
       {/* Telemetry Status Footer */}
       {!isZenMode && (
-        <footer className="h-10 border-t border-[#262626] bg-[#0F0F0F] px-8 flex items-center justify-between font-mono text-[11px] text-[#737373] fixed bottom-0 left-0 right-0 z-30">
+        <footer className="h-10 border-t border-[#262626] bg-[#0F0F0F] px-8 flex items-center justify-between font-mono text-[11px] text-[#737373] fixed bottom-0 left-0 right-0 z-30 pl-20">
           <div className="flex items-center gap-6">
             <span className="flex items-center gap-1.5">
               <FileText className="w-3.5 h-3.5 text-[#FF3D00]" />
@@ -596,42 +654,10 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="uppercase tracking-widest text-[10px]">MindSpace Native Stylus Engine (Active)</span>
+            <span className="uppercase tracking-widest text-[10px]">Pro Stylus Popover Engine (Active)</span>
           </div>
         </footer>
       )}
-
-      {/* Floating Bottom Stylus Control Dock */}
-      <StylusDock
-        activeTool={activeTool}
-        onSelectTool={setActiveTool}
-        activePenSubtype={activePenSubtype}
-        onSelectPenSubtype={setActivePenSubtype}
-        activeColor={activeColor}
-        onChangeColor={setActiveColor}
-        strokeWidth={strokeWidth}
-        onChangeWidth={setStrokeWidth}
-        lineType={lineType}
-        onChangeLineType={setLineType}
-        settings={stylusSettings}
-        onToggleStylusMode={() =>
-          setStylusSettings((prev) => ({
-            ...prev,
-            isStylusModeActive: !prev.isStylusModeActive,
-          }))
-        }
-        onToggleAutoShape={() =>
-          setStylusSettings((prev) => ({
-            ...prev,
-            autoShapeRecognition: !prev.autoShapeRecognition,
-          }))
-        }
-        onUndo={handleUndo}
-        onRedo={handleRedo}
-        onClear={handleClearStrokes}
-        onConvertInkToText={handleConvertInkToText}
-        onOpenSettings={() => setIsStylusSettingsOpen(true)}
-      />
 
       {/* Hardware Button & Gesture Settings Drawer */}
       <StylusSettingsModal

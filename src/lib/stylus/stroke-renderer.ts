@@ -1,43 +1,24 @@
 import { getStroke } from 'perfect-freehand';
-import { VectorStroke, PointerPoint, PenSubtype, LineType, PressureCurve } from './stylus-types';
-
-export interface PerfectFreehandOptions {
-  size: number;
-  thinning: number;
-  smoothing: number;
-  streamline: number;
-  easing: (t: number) => number;
-  start: {
-    taper: number;
-    easing: (t: number) => number;
-    cap: boolean;
-  };
-  end: {
-    taper: number;
-    easing: (t: number) => number;
-    cap: boolean;
-  };
-  simulatePressure: boolean;
-}
+import { VectorStroke, PointerPoint, PenSubtype } from './stylus-types';
 
 /**
- * Returns perfect-freehand stroke settings based on Pen Subtype and Line Thickness
+ * Returns perfect-freehand stroke options for realistic pen physics
  */
 export function getPenFreehandOptions(
   subtype: PenSubtype,
   baseWidth: number,
   smoothingLevel: 'none' | 'mild' | 'high'
 ) {
-  const streamline = smoothingLevel === 'high' ? 0.75 : smoothingLevel === 'mild' ? 0.45 : 0.15;
+  const streamline = smoothingLevel === 'high' ? 0.8 : smoothingLevel === 'mild' ? 0.5 : 0.15;
 
   if (subtype === 'fountain') {
     return {
       size: baseWidth * 1.8,
-      thinning: 0.75, // High pressure variation
-      smoothing: 0.65,
+      thinning: 0.75, // Dynamic calligraphic width variation
+      smoothing: 0.7,
       streamline,
-      start: { taper: baseWidth * 2, cap: false },
-      end: { taper: baseWidth * 2, cap: false },
+      start: { taper: baseWidth * 1.5, cap: false },
+      end: { taper: baseWidth * 1.5, cap: false },
       simulatePressure: false,
     };
   }
@@ -45,8 +26,8 @@ export function getPenFreehandOptions(
   if (subtype === 'pencil') {
     return {
       size: baseWidth * 1.2,
-      thinning: 0.25, // Subtle variation
-      smoothing: 0.5,
+      thinning: 0.2, // Textured graphite, lower variation
+      smoothing: 0.45,
       streamline,
       start: { taper: 0, cap: true },
       end: { taper: 0, cap: true },
@@ -57,19 +38,24 @@ export function getPenFreehandOptions(
   // Ballpoint Pen (Default)
   return {
     size: baseWidth * 1.4,
-    thinning: 0.4,
+    thinning: 0.45,
     smoothing: 0.55,
     streamline,
-    start: { taper: baseWidth * 0.8, cap: true },
-    end: { taper: baseWidth * 0.8, cap: true },
+    start: { taper: baseWidth * 0.5, cap: true },
+    end: { taper: baseWidth * 0.5, cap: true },
     simulatePressure: false,
   };
 }
 
 /**
- * Generates an SVG Path string (d attribute) from an array of [x, y, pressure] points using perfect-freehand
+ * Generates an SVG Path string (d attribute) from an array of PointerPoints
  */
-export function getSvgPathFromPoints(points: PointerPoint[], subtype: PenSubtype, baseWidth: number, smoothing: 'none' | 'mild' | 'high'): string {
+export function getSvgPathFromPoints(
+  points: PointerPoint[],
+  subtype: PenSubtype,
+  baseWidth: number,
+  smoothing: 'none' | 'mild' | 'high'
+): string {
   if (!points || points.length === 0) return '';
 
   const inputPoints = points.map((p) => [p.x, p.y, p.pressure > 0 ? p.pressure : 0.5]);
@@ -79,9 +65,6 @@ export function getSvgPathFromPoints(points: PointerPoint[], subtype: PenSubtype
   return getSvgPathFromStrokeOutline(strokeOutline);
 }
 
-/**
- * Converts array of polygon outline points from getStroke into SVG Path data
- */
 export function getSvgPathFromStrokeOutline(outlinePoints: number[][]): string {
   if (outlinePoints.length < 2) return '';
 
@@ -97,35 +80,74 @@ export function getSvgPathFromStrokeOutline(outlinePoints: number[][]): string {
 }
 
 /**
- * Renders stroke outline directly onto Canvas context with sub-pixel anti-aliasing
+ * Renders vector stroke onto Canvas context, fully supporting Solid, Dashed, Dotted, Fountain Pen, Ballpoint, Pencil, and Highlighter
  */
 export function renderStrokeOnCanvas(ctx: CanvasRenderingContext2D, stroke: VectorStroke) {
-  if (!stroke.points || stroke.points.length === 0) return;
-
-  const svgPathData = getSvgPathFromPoints(stroke.points, stroke.penSubtype, stroke.width, stroke.smoothing);
-  if (!svgPathData) return;
+  const points = stroke.points;
+  if (!points || points.length === 0) return;
 
   ctx.save();
 
+  // 1. Check for Dashed or Dotted line types
+  if (stroke.lineType === 'dashed' || stroke.lineType === 'dotted') {
+    ctx.beginPath();
+    ctx.strokeStyle = stroke.color;
+    ctx.lineWidth = stroke.width;
+
+    if (stroke.lineType === 'dashed') {
+      ctx.setLineDash([stroke.width * 3, stroke.width * 2]);
+    } else {
+      ctx.setLineDash([stroke.width * 0.8, stroke.width * 1.5]);
+      ctx.lineCap = 'round';
+    }
+
+    if (stroke.tool === 'highlighter') {
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.strokeStyle = stroke.color + '66';
+      ctx.lineWidth = stroke.width * 3;
+    }
+
+    ctx.moveTo(points[0].x, points[0].y);
+    for (let i = 1; i < points.length; i++) {
+      ctx.lineTo(points[i].x, points[i].y);
+    }
+    ctx.stroke();
+    ctx.restore();
+    return;
+  }
+
+  // 2. Solid Lines (Polygon Path generated by perfect-freehand)
+  const svgPathData = getSvgPathFromPoints(stroke.points, stroke.penSubtype, stroke.width, stroke.smoothing);
+  if (!svgPathData) {
+    ctx.restore();
+    return;
+  }
+
   if (stroke.tool === 'highlighter') {
     ctx.globalCompositeOperation = 'source-over';
-    ctx.fillStyle = stroke.color + '55'; // Translucent alpha
+    ctx.fillStyle = stroke.color + '55'; // Translucent highlighter
+  } else if (stroke.penSubtype === 'pencil') {
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.globalAlpha = 0.7; // Graphite pencil texture opacity
+    ctx.fillStyle = stroke.color;
   } else {
     ctx.globalCompositeOperation = 'source-over';
+    ctx.globalAlpha = 1.0;
     ctx.fillStyle = stroke.color;
   }
 
-  // Use Path2D for hardware accelerated GPU polygon rendering
   try {
     const path2d = new Path2D(svgPathData);
     ctx.fill(path2d);
   } catch {
-    // Fallback if Path2D unsupported
     ctx.beginPath();
-    for (const p of stroke.points) {
-      ctx.arc(p.x, p.y, stroke.width / 2, 0, Math.PI * 2);
+    ctx.moveTo(points[0].x, points[0].y);
+    for (let i = 1; i < points.length; i++) {
+      ctx.lineTo(points[i].x, points[i].y);
     }
-    ctx.fill();
+    ctx.lineWidth = stroke.width;
+    ctx.strokeStyle = stroke.color;
+    ctx.stroke();
   }
 
   ctx.restore();

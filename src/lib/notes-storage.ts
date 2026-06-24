@@ -13,6 +13,7 @@ export interface StoredNote {
   isPinned: boolean;
   isArchived: boolean;
   reminderAt?: string | null;
+  drawingData?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -89,6 +90,7 @@ export async function getUserNotes(userId: string, search = '', tag = ''): Promi
         isPinned: n.isPinned || false,
         isArchived: n.isArchived || false,
         reminderAt: n.reminderAt ? n.reminderAt.toISOString() : null,
+        drawingData: n.drawingData || null,
         createdAt: n.createdAt.toISOString(),
         updatedAt: n.updatedAt.toISOString(),
       }));
@@ -131,6 +133,7 @@ export async function getNoteById(id: string): Promise<StoredNote | null> {
         isPinned: n.isPinned || false,
         isArchived: n.isArchived || false,
         reminderAt: n.reminderAt ? n.reminderAt.toISOString() : null,
+        drawingData: n.drawingData || null,
         createdAt: n.createdAt.toISOString(),
         updatedAt: n.updatedAt.toISOString(),
       };

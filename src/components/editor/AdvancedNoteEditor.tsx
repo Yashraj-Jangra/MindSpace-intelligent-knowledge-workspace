@@ -281,6 +281,20 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
     onExecuteAction: handleHardwareAction,
   });
 
+  // Deserialize initial drawing data
+  useEffect(() => {
+    if (initialNote.drawingData) {
+      try {
+        const parsed = JSON.parse(initialNote.drawingData);
+        if (Array.isArray(parsed)) {
+          setStrokes(parsed);
+        }
+      } catch (err) {
+        console.error('Failed to parse drawing data:', err);
+      }
+    }
+  }, [initialNote.drawingData]);
+
   // Auto-save Debounce
   const saveNote = useCallback(
     async (updatedFields: Partial<StoredNote>) => {
@@ -298,6 +312,7 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
             priority,
             isPinned,
             reminderAt,
+            drawingData: JSON.stringify(strokes),
             ...updatedFields,
           }),
         });
@@ -307,7 +322,7 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
         setSaveStatus('unsaved');
       }
     },
-    [editor, initialNote.id, title, tags, priority, isPinned, reminderAt]
+    [editor, initialNote.id, title, tags, priority, isPinned, reminderAt, strokes]
   );
 
   useEffect(() => {

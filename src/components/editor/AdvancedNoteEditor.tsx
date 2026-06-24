@@ -41,6 +41,7 @@ import {
 import 'reactjs-tiptap-editor/style.css';
 
 import {
+  ArrowLeft,
   Check,
   Loader2,
   Bell,
@@ -52,6 +53,7 @@ import {
   FileText,
   Clock,
   Network,
+  PenTool,
   ShieldCheck,
 } from 'lucide-react';
 
@@ -99,14 +101,16 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
   const [isPinned, setIsPinned] = useState(initialNote.isPinned || false);
   const [reminderAt, setReminderAt] = useState<string | null>(initialNote.reminderAt || null);
 
-  // Stylus Vector Stroke & Engine State
-  const [isStylusOverlayOpen, setIsStylusOverlayOpen] = useState(true);
+  // Stylus Vector Stroke & Engine State (OFF by default for normal note editing)
   const [activeTool, setActiveTool] = useState<StylusTool>('pen');
   const [activePenSubtype, setActivePenSubtype] = useState<PenSubtype>('ballpoint');
   const [activeColor, setActiveColor] = useState<string>('#FF3D00');
   const [strokeWidth, setStrokeWidth] = useState<number>(3);
   const [lineType, setLineType] = useState<LineType>('solid');
-  const [stylusSettings, setStylusSettings] = useState<StylusSettings>(DEFAULT_STYLUS_SETTINGS);
+  const [stylusSettings, setStylusSettings] = useState<StylusSettings>({
+    ...DEFAULT_STYLUS_SETTINGS,
+    isStylusModeActive: false, // Default to normal note editor
+  });
   const [strokes, setStrokes] = useState<VectorStroke[]>([]);
   const [undoStack, setUndoStack] = useState<VectorStroke[][]>([]);
   const [redoStack, setRedoStack] = useState<VectorStroke[][]>([]);
@@ -371,50 +375,64 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
 
   return (
     <div
-      className={`min-h-screen w-full bg-[#0A0A0A] text-[#FAFAFA] flex flex-col font-sans select-text pl-14 ${
-        isZenMode ? 'fixed inset-0 z-50 overflow-y-auto bg-[#0A0A0A]' : ''
-      }`}
+      className={`min-h-screen w-full bg-[#0A0A0A] text-[#FAFAFA] flex flex-col font-sans select-text transition-all duration-200 ${
+        stylusSettings.isStylusModeActive ? 'pl-12' : 'pl-0'
+      } ${isZenMode ? 'fixed inset-0 z-50 overflow-y-auto bg-[#0A0A0A]' : ''}`}
     >
-      {/* Vertical Stylus Sidebar Dock */}
-      <VerticalStylusSidebar
-        activeTool={activeTool}
-        onSelectTool={setActiveTool}
-        onTogglePenPopover={() => setIsPenPopoverOpen(!isPenPopoverOpen)}
-        settings={stylusSettings}
-        onToggleStylusMode={() =>
-          setStylusSettings((prev) => ({
-            ...prev,
-            isStylusModeActive: !prev.isStylusModeActive,
-          }))
-        }
-        onUndo={handleUndo}
-        onRedo={handleRedo}
-        penBoxPresets={penBoxPresets}
-        onSelectPreset={handleSelectPreset}
-        onBackToDashboard={() => router.push('/dashboard')}
-      />
+      {/* Vertical Stylus Sidebar Dock (ONLY visible when Stylus Mode is ACTIVE) */}
+      {stylusSettings.isStylusModeActive && (
+        <VerticalStylusSidebar
+          activeTool={activeTool}
+          onSelectTool={setActiveTool}
+          onTogglePenPopover={() => setIsPenPopoverOpen(!isPenPopoverOpen)}
+          settings={stylusSettings}
+          onToggleStylusMode={() =>
+            setStylusSettings((prev) => ({
+              ...prev,
+              isStylusModeActive: !prev.isStylusModeActive,
+            }))
+          }
+          onUndo={handleUndo}
+          onRedo={handleRedo}
+          penBoxPresets={penBoxPresets}
+          onSelectPreset={handleSelectPreset}
+          onBackToDashboard={() => router.push('/dashboard')}
+        />
+      )}
 
-      {/* Popover Settings matching User Reference Image */}
-      <PenSettingsPopover
-        isOpen={isPenPopoverOpen}
-        onClose={() => setIsPenPopoverOpen(false)}
-        activePenSubtype={activePenSubtype}
-        onSelectPenSubtype={setActivePenSubtype}
-        activeColor={activeColor}
-        onChangeColor={setActiveColor}
-        strokeWidth={strokeWidth}
-        onChangeWidth={setStrokeWidth}
-        lineType={lineType}
-        onChangeLineType={setLineType}
-        settings={stylusSettings}
-        onUpdateSettings={(newSettings) => setStylusSettings((prev) => ({ ...prev, ...newSettings }))}
-        onAddToPenBox={handleAddToPenBox}
-      />
+      {/* Popover Settings (ONLY visible when Stylus Mode is ACTIVE & Pen Popover open) */}
+      {stylusSettings.isStylusModeActive && (
+        <PenSettingsPopover
+          isOpen={isPenPopoverOpen}
+          onClose={() => setIsPenPopoverOpen(false)}
+          activePenSubtype={activePenSubtype}
+          onSelectPenSubtype={setActivePenSubtype}
+          activeColor={activeColor}
+          onChangeColor={setActiveColor}
+          strokeWidth={strokeWidth}
+          onChangeWidth={setStrokeWidth}
+          lineType={lineType}
+          onChangeLineType={setLineType}
+          settings={stylusSettings}
+          onUpdateSettings={(newSettings) => setStylusSettings((prev) => ({ ...prev, ...newSettings }))}
+          onAddToPenBox={handleAddToPenBox}
+        />
+      )}
 
       {/* Top Header Control Bar */}
       {!isZenMode && (
         <header className="h-16 border-b border-[#262626] bg-[#0A0A0A]/95 px-6 flex items-center justify-between sticky top-0 z-30">
           <div className="flex items-center gap-4">
+            <button
+              onClick={() => router.push('/dashboard')}
+              className="flex items-center gap-1.5 text-xs font-mono uppercase tracking-wider text-[#737373] hover:text-[#FAFAFA] transition-colors"
+            >
+              <ArrowLeft className="w-4 h-4 stroke-[1.5]" />
+              <span>Dashboard</span>
+            </button>
+
+            <div className="h-4 w-px bg-[#262626]" />
+
             <span className="font-mono text-xs uppercase tracking-wider text-[#FAFAFA] font-bold">
               {title || 'Untitled Note'}
             </span>
@@ -482,22 +500,26 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
               <span>{reminderAt ? new Date(reminderAt).toLocaleDateString() : 'Remind'}</span>
             </button>
 
-            {/* Stylus Mode Quick Toggle */}
+            {/* Stylus Mode Toggle (Turns Stylus Mode ON / OFF) */}
             <button
-              onClick={() =>
+              onClick={() => {
+                const nextActive = !stylusSettings.isStylusModeActive;
                 setStylusSettings((prev) => ({
                   ...prev,
-                  isStylusModeActive: !prev.isStylusModeActive,
-                }))
-              }
-              className={`flex items-center gap-1.5 px-3 py-1.5 border text-xs font-mono uppercase tracking-wider font-bold transition-colors ${
+                  isStylusModeActive: nextActive,
+                }));
+                if (!nextActive) {
+                  setIsPenPopoverOpen(false);
+                }
+              }}
+              className={`flex items-center gap-1.5 px-3.5 py-1.5 border text-xs font-mono uppercase tracking-wider font-bold transition-all ${
                 stylusSettings.isStylusModeActive
-                  ? 'border-[#00B4D8] bg-[#00B4D8] text-[#0A0A0A]'
-                  : 'border-[#262626] text-[#737373] hover:text-[#FAFAFA]'
+                  ? 'border-[#FF3D00] bg-[#FF3D00] text-[#0A0A0A] shadow-lg shadow-[#FF3D00]/20'
+                  : 'border-[#262626] text-[#737373] hover:text-[#FAFAFA] hover:border-[#FAFAFA]'
               }`}
             >
-              <ShieldCheck className="w-3.5 h-3.5" />
-              <span>{stylusSettings.isStylusModeActive ? 'Stylus Mode ON' : 'Stylus Mode OFF'}</span>
+              <PenTool className="w-3.5 h-3.5" />
+              <span>{stylusSettings.isStylusModeActive ? 'Stylus Mode ON' : 'Stylus Mode'}</span>
             </button>
 
             {/* Convert to Mind Map CTA */}
@@ -578,7 +600,7 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
           />
         </div>
 
-        {/* Editor Workspace Container with Integrated Native Stylus Canvas Overlay */}
+        {/* Editor Workspace Container */}
         {editor && (
           <RichTextProvider editor={editor}>
             <div className="border border-[#262626] bg-[#0F0F0F] shadow-2xl relative min-h-[650px] text-[#FAFAFA]">
@@ -621,9 +643,9 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
               {/* Tiptap Core Editor Content */}
               <EditorContent editor={editor} />
 
-              {/* Native Freehand Stylus Overlay Canvas */}
+              {/* Native Freehand Stylus Overlay Canvas (Completely DISABLED & non-interactive when Stylus Mode is OFF) */}
               <NativeStylusCanvas
-                isActive={isStylusOverlayOpen}
+                isActive={stylusSettings.isStylusModeActive}
                 activeTool={activeTool}
                 activePenSubtype={activePenSubtype}
                 activeColor={activeColor}
@@ -640,7 +662,11 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
 
       {/* Telemetry Status Footer */}
       {!isZenMode && (
-        <footer className="h-10 border-t border-[#262626] bg-[#0F0F0F] px-8 flex items-center justify-between font-mono text-[11px] text-[#737373] fixed bottom-0 left-0 right-0 z-30 pl-20">
+        <footer
+          className={`h-10 border-t border-[#262626] bg-[#0F0F0F] px-8 flex items-center justify-between font-mono text-[11px] text-[#737373] fixed bottom-0 left-0 right-0 z-30 transition-all duration-200 ${
+            stylusSettings.isStylusModeActive ? 'pl-20' : 'pl-8'
+          }`}
+        >
           <div className="flex items-center gap-6">
             <span className="flex items-center gap-1.5">
               <FileText className="w-3.5 h-3.5 text-[#FF3D00]" />
@@ -654,7 +680,9 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="uppercase tracking-widest text-[10px]">Pro Stylus Popover Engine (Active)</span>
+            <span className="uppercase tracking-widest text-[10px]">
+              {stylusSettings.isStylusModeActive ? 'Stylus Mode (Active)' : 'Normal Text Editor Mode'}
+            </span>
           </div>
         </footer>
       )}

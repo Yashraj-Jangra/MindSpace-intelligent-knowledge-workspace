@@ -10,11 +10,6 @@ import {
   StylusSettings,
 } from '@/lib/stylus/stylus-types';
 import { StylusHaptics } from '@/lib/stylus/stylus-haptics';
-import {
-  interpolateCatmullRom,
-  applyLazyMouseSmoothing,
-  getPenSubtypeStyle,
-} from '@/lib/stylus/stroke-smoothing';
 import { recognizeShape } from '@/lib/stylus/shape-recognition';
 import {
   getStrokeBoundingBox,
@@ -22,6 +17,7 @@ import {
   isPointNearStroke,
   translateStroke,
 } from '@/lib/stylus/vector-selection';
+import { renderStrokeOnCanvas } from '@/lib/stylus/stroke-renderer';
 
 interface NativeStylusCanvasProps {
   isActive: boolean;
@@ -47,14 +43,44 @@ export function NativeStylusCanvas({
   onStrokesChange,
 }: NativeStylusCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const offscreenCanvasRef = useRef<HTMLCanvasElement | null>(null);
 
-  const [isDrawing, setIsDrawing] = useState(false);
-  const [currentPoints, setCurrentPoints] = useState<PointerPoint[]>([]);
+  // Mutable refs for zero-lag drawing (NO React state updates on pointermove!)
+  const isDrawingRef = useRef(false);
+  const activePointsRef = useRef<PointerPoint[]>([]);
+  const animFrameIdRef = useRef<number | null>(null);
+
   const [selectedStrokeId, setSelectedStrokeId] = useState<string | null>(null);
   const [dragOffset, setDragOffset] = useState<{ x: number; y: number } | null>(null);
 
-  // Resize Canvas to parent bounds & scale devicePixelRatio
-  const updateCanvasBounds = useCallback(() => {
+  // Offscreen canvas buffer update (Renders committed strokes once into background cache)
+  const updateOffscreenBuffer = useCallback(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    if (!offscreenCanvasRef.current) {
+      offscreenCanvasRef.current = document.createElement('canvas');
+    }
+
+    const offscreen = offscreenCanvasRef.current;
+    offscreen.width = canvas.width;
+    offscreen.height = canvas.height;
+
+    const offCtx = offscreen.getContext('2d');
+    if (!offCtx) return;
+
+    const dpr = window.devicePixelRatio || 1;
+    offCtx.scale(dpr, dpr);
+    offCtx.clearRect(0, 0, canvas.width / dpr, canvas.height / dpr);
+
+    // Draw all static committed strokes into cache
+    for (const stroke of strokes) {
+      renderStrokeOnCanvas(offCtx, stroke);
+    }
+  }, [strokes]);
+
+  // Update canvas dimensions on resize
+  const handleResize = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const parent = canvas.parentElement;
@@ -66,22 +92,25 @@ export function NativeStylusCanvas({
     canvas.width = rect.width * dpr;
     canvas.height = rect.height * dpr;
 
-    const ctx = canvas.getContext('2d');
-    if (ctx) {
-      ctx.scale(dpr, dpr);
-    }
-  }, []);
+    updateOffscreenBuffer();
+  }, [updateOffscreenBuffer]);
 
   useEffect(() => {
-    updateCanvasBounds();
-    window.addEventListener('resize', updateCanvasBounds);
-    return () => window.removeEventListener('resize', updateCanvasBounds);
-  }, [updateCanvasBounds]);
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [handleResize]);
 
-  // Main Canvas Render Loop
-  const redrawCanvas = useCallback(() => {
+  useEffect(() => {
+    updateOffscreenBuffer();
+  }, [strokes, updateOffscreenBuffer]);
+
+  // Fast animation frame render loop
+  const renderFrame = useCallback(() => {
     const canvas = canvasRef.current;
+    const offscreen = offscreenCanvasRef.current;
     if (!canvas) return;
+
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
@@ -91,18 +120,13 @@ export function NativeStylusCanvas({
 
     ctx.clearRect(0, 0, width, height);
 
-    // 1. Render all committed vector strokes
-    for (const stroke of strokes) {
-      drawVectorStroke(ctx, stroke, settings);
-
-      // If stroke is selected, render bounding box & control handles
-      if (stroke.id === selectedStrokeId) {
-        drawSelectionHandles(ctx, stroke);
-      }
+    // 1. Draw cached static strokes from offscreen buffer (0ms lag!)
+    if (offscreen) {
+      ctx.drawImage(offscreen, 0, 0, width, height);
     }
 
-    // 2. Render active in-progress stroke
-    if (isDrawing && currentPoints.length > 0) {
+    // 2. Draw active in-progress stroke with perfect-freehand
+    if (isDrawingRef.current && activePointsRef.current.length > 0) {
       const activeStroke: VectorStroke = {
         id: 'active-stroke',
         tool: activeTool,
@@ -111,30 +135,40 @@ export function NativeStylusCanvas({
         width: strokeWidth,
         lineType,
         smoothing: settings.smoothingLevel,
-        points: currentPoints,
+        points: activePointsRef.current,
         createdAt: Date.now(),
       };
-      drawVectorStroke(ctx, activeStroke, settings);
+      renderStrokeOnCanvas(ctx, activeStroke);
     }
-  }, [strokes, isDrawing, currentPoints, selectedStrokeId, activeTool, activePenSubtype, activeColor, strokeWidth, lineType, settings]);
 
-  useEffect(() => {
-    redrawCanvas();
-  }, [redrawCanvas]);
+    // 3. Draw selection handles if selected
+    if (selectedStrokeId) {
+      const selected = strokes.find((s) => s.id === selectedStrokeId);
+      if (selected) {
+        drawSelectionHandles(ctx, selected);
+      }
+    }
+  }, [activeTool, activePenSubtype, activeColor, strokeWidth, lineType, settings, selectedStrokeId, strokes]);
 
-  // Pointer Down (Stylus Writing & Touch Palm Rejection)
+  // Pointer Down (High-frequency pointer capture & Palm Rejection)
   const handlePointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
     if (!isActive) return;
 
-    // Strict Palm Rejection: If Stylus Mode active & touch input, drop or ignore stroke
+    // Strict Palm Rejection: Filter touch pointer events when Stylus Mode active
     if (settings.isStylusModeActive && settings.enablePalmRejection && e.pointerType === 'touch') {
       return;
     }
 
+    e.preventDefault();
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    canvas.setPointerCapture(e.pointerId);
+    try {
+      canvas.setPointerCapture(e.pointerId);
+    } catch {
+      // Ignore pointer capture errors
+    }
+
     const rect = canvas.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
@@ -151,7 +185,6 @@ export function NativeStylusCanvas({
     StylusHaptics.trigger('strokeStart', settings);
 
     if (activeTool === 'select') {
-      // Find clicked stroke
       const clicked = strokes.find((s) => isPointNearStroke(s, x, y));
       if (clicked) {
         setSelectedStrokeId(clicked.id);
@@ -165,8 +198,7 @@ export function NativeStylusCanvas({
     }
 
     if (activeTool === 'eraser') {
-      // Erase stroke hit by point
-      const remaining = strokes.filter((s) => !isPointNearStroke(s, x, y, strokeWidth * 2));
+      const remaining = strokes.filter((s) => !isPointNearStroke(s, x, y, strokeWidth * 2.5));
       if (remaining.length !== strokes.length) {
         StylusHaptics.trigger('eraserScrub', settings);
         onStrokesChange(remaining);
@@ -174,22 +206,31 @@ export function NativeStylusCanvas({
       return;
     }
 
-    // Freehand stroke start
-    setIsDrawing(true);
-    setCurrentPoints([point]);
+    // Active stroke initialization
+    isDrawingRef.current = true;
+    activePointsRef.current = [point];
+
+    // Start fast 120fps render loop
+    const loop = () => {
+      renderFrame();
+      if (isDrawingRef.current) {
+        animFrameIdRef.current = requestAnimationFrame(loop);
+      }
+    };
+    animFrameIdRef.current = requestAnimationFrame(loop);
   };
 
-  // Pointer Move
+  // Pointer Move (Reads hardware coalesced events for 240Hz sub-pixel accuracy)
   const handlePointerMove = (e: React.PointerEvent<HTMLCanvasElement>) => {
     if (!isActive) return;
 
     const canvas = canvasRef.current;
     if (!canvas) return;
     const rect = canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
 
     if (activeTool === 'select' && selectedStrokeId && dragOffset && (e.buttons === 1 || e.buttons === 2)) {
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
       const dx = x - dragOffset.x;
       const dy = y - dragOffset.y;
 
@@ -200,7 +241,9 @@ export function NativeStylusCanvas({
     }
 
     if (activeTool === 'eraser' && e.buttons === 1) {
-      const remaining = strokes.filter((s) => !isPointNearStroke(s, x, y, strokeWidth * 2));
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const remaining = strokes.filter((s) => !isPointNearStroke(s, x, y, strokeWidth * 2.5));
       if (remaining.length !== strokes.length) {
         StylusHaptics.trigger('eraserScrub', settings);
         onStrokesChange(remaining);
@@ -208,45 +251,50 @@ export function NativeStylusCanvas({
       return;
     }
 
-    if (!isDrawing) return;
+    if (!isDrawingRef.current) return;
 
-    const point: PointerPoint = {
-      x,
-      y,
-      pressure: e.pressure && e.pressure > 0 ? e.pressure : 0.5,
-      tiltX: e.tiltX || 0,
-      tiltY: e.tiltY || 0,
-      timeStamp: e.timeStamp,
-    };
+    // Read high-frequency hardware coalesced events if available
+    const nativeEvent = e.nativeEvent as PointerEvent;
+    const coalesced = typeof nativeEvent.getCoalescedEvents === 'function' ? nativeEvent.getCoalescedEvents() : [nativeEvent];
 
-    setCurrentPoints((prev) => [...prev, point]);
+    for (const pe of coalesced) {
+      const x = pe.clientX - rect.left;
+      const y = pe.clientY - rect.top;
+      activePointsRef.current.push({
+        x,
+        y,
+        pressure: pe.pressure && pe.pressure > 0 ? pe.pressure : 0.5,
+        tiltX: pe.tiltX || 0,
+        tiltY: pe.tiltY || 0,
+        timeStamp: pe.timeStamp,
+      });
+    }
   };
 
-  // Pointer Up (Stroke Completion & Auto Shape Recognition)
+  // Pointer Up (Stroke Completion & Auto-Shape Recognition)
   const handlePointerUp = (e: React.PointerEvent<HTMLCanvasElement>) => {
     if (!isActive) return;
+
     const canvas = canvasRef.current;
     if (canvas) {
       try {
         canvas.releasePointerCapture(e.pointerId);
       } catch {
-        // Ignore if pointer capture lost
+        // Ignore pointer capture release error
       }
     }
 
-    if (!isDrawing || currentPoints.length === 0) {
-      setIsDrawing(false);
-      return;
+    if (!isDrawingRef.current) return;
+    isDrawingRef.current = false;
+
+    if (animFrameIdRef.current) {
+      cancelAnimationFrame(animFrameIdRef.current);
     }
 
-    setIsDrawing(false);
+    const finalPoints = activePointsRef.current;
+    activePointsRef.current = [];
 
-    // Apply smoothing algorithms
-    let processedPoints = currentPoints;
-    if (settings.smoothingLevel !== 'none') {
-      processedPoints = interpolateCatmullRom(processedPoints);
-      processedPoints = applyLazyMouseSmoothing(processedPoints, settings.smoothingLevel);
-    }
+    if (finalPoints.length === 0) return;
 
     let newStroke: VectorStroke = {
       id: `stroke-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
@@ -256,11 +304,11 @@ export function NativeStylusCanvas({
       width: strokeWidth,
       lineType,
       smoothing: settings.smoothingLevel,
-      points: processedPoints,
+      points: finalPoints,
       createdAt: Date.now(),
     };
 
-    // Auto-Shape Recognition Check
+    // Auto-Shape Recognition
     if (settings.autoShapeRecognition && activeTool === 'pen') {
       const recognized = recognizeShape(newStroke);
       if (recognized && recognized.type !== 'none') {
@@ -274,11 +322,10 @@ export function NativeStylusCanvas({
       }
     }
 
-    // Extract control points for editability
     newStroke.controlPoints = extractControlPoints(newStroke);
 
     onStrokesChange([...strokes, newStroke]);
-    setCurrentPoints([]);
+    renderFrame();
   };
 
   return (
@@ -296,100 +343,17 @@ export function NativeStylusCanvas({
 }
 
 /**
- * Render Vector Stroke onto HTML5 Canvas Context
- */
-function drawVectorStroke(ctx: CanvasRenderingContext2D, stroke: VectorStroke, settings: StylusSettings) {
-  const points = stroke.points;
-  if (!points || points.length === 0) return;
-
-  ctx.save();
-  ctx.beginPath();
-
-  // Line Type Styling (Solid, Dashed, Dotted)
-  if (stroke.lineType === 'dashed') {
-    ctx.setLineDash([12, 6]);
-  } else if (stroke.lineType === 'dotted') {
-    ctx.setLineDash([3, 6]);
-  } else {
-    ctx.setLineDash([]);
-  }
-
-  if (stroke.tool === 'highlighter') {
-    ctx.globalCompositeOperation = 'source-over';
-    ctx.strokeStyle = stroke.color + '66'; // Translucent
-    ctx.lineWidth = stroke.width * 3.5;
-    ctx.lineCap = 'square';
-    ctx.lineJoin = 'miter';
-  } else {
-    ctx.globalCompositeOperation = 'source-over';
-    ctx.strokeStyle = stroke.color;
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-  }
-
-  if (points.length === 1) {
-    const p = points[0];
-    const style = getPenSubtypeStyle(p, null, stroke.width, stroke.penSubtype, settings.pressureCurve);
-    ctx.arc(p.x, p.y, style.width / 2, 0, Math.PI * 2);
-    ctx.fillStyle = stroke.color;
-    ctx.fill();
-    ctx.restore();
-    return;
-  }
-
-  ctx.moveTo(points[0].x, points[0].y);
-
-  for (let i = 1; i < points.length; i++) {
-    const prev = points[i - 1];
-    const curr = points[i];
-
-    const style = getPenSubtypeStyle(curr, prev, stroke.width, stroke.penSubtype, settings.pressureCurve);
-    ctx.lineWidth = style.width;
-    ctx.globalAlpha = style.alpha;
-
-    ctx.lineTo(curr.x, curr.y);
-  }
-
-  ctx.stroke();
-
-  // Render Arrowhead if shape is arrow
-  if (stroke.recognizedShape === 'arrow' && points.length >= 2) {
-    const end = points[points.length - 1];
-    const prev = points[points.length - 2];
-    const angle = Math.atan2(end.y - prev.y, end.x - prev.x);
-    const arrowLength = Math.max(12, stroke.width * 3);
-
-    ctx.beginPath();
-    ctx.moveTo(end.x, end.y);
-    ctx.lineTo(
-      end.x - arrowLength * Math.cos(angle - Math.PI / 6),
-      end.y - arrowLength * Math.sin(angle - Math.PI / 6)
-    );
-    ctx.moveTo(end.x, end.y);
-    ctx.lineTo(
-      end.x - arrowLength * Math.cos(angle + Math.PI / 6),
-      end.y - arrowLength * Math.sin(angle + Math.PI / 6)
-    );
-    ctx.stroke();
-  }
-
-  ctx.restore();
-}
-
-/**
- * Render selection bounding box & control point vertices
+ * Render selection bounding box & control point handles
  */
 function drawSelectionHandles(ctx: CanvasRenderingContext2D, stroke: VectorStroke) {
   const bbox = getStrokeBoundingBox(stroke);
   ctx.save();
 
-  // Bounding Box
   ctx.strokeStyle = '#FF3D00';
   ctx.lineWidth = 1.5;
   ctx.setLineDash([4, 4]);
   ctx.strokeRect(bbox.minX - 6, bbox.minY - 6, bbox.width + 12, bbox.height + 12);
 
-  // Control Points
   if (stroke.controlPoints) {
     ctx.setLineDash([]);
     ctx.fillStyle = '#FAFAFA';

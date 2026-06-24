@@ -47,6 +47,7 @@
     "lucide-react": "^1.25.0",
     "next": "^16.2.11",
     "nodemailer": "^6.9.14",
+    "perfect-freehand": "^1.2.3",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "reactjs-tiptap-editor": "^1.0.29",

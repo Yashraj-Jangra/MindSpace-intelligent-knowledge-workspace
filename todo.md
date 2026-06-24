@@ -35,12 +35,14 @@
   - **Pro Pen Settings Popover (`PenSettingsPopover.tsx`)**: Built popover matching user's exact design reference featuring 5 visual nib icons (Fountain 1, Fountain 2, Fineliner, Ballpoint, Pencil), line type pills (Solid, Dashed, Dotted), thickness slider with mm/px readout, stroke stabilization slider with % readout, color swatches, and "Add to pen box" preset button.
   - **Vertical Left Stylus Sidebar (`VerticalStylusSidebar.tsx`)**: Sleek left sidebar toolbar with Pen Box shelf pinned at the bottom for 1-tap preset switching.
   - **Ultra-Compact Minimalist Styling**: Polished Pen Settings Popover (`PenSettingsPopover.tsx`) and Vertical Stylus Sidebar (`VerticalStylusSidebar.tsx`) into a sleek, compact dark-glass UI with sharp high-contrast typography, micro-nib icons, minimal sliders, line pills, and quick Pen Box preset swatches.
+  - **Low-Latency Zero-Lag Ink Engine (`stroke-renderer.ts` & `NativeStylusCanvas.tsx`)**: Rebuilt drawing pipeline using `perfect-freehand` polygon path generation, high-frequency hardware coalesced pointer sampling (`PointerEvent.getCoalescedEvents()`), zero-render `useRef` point streaming, offscreen double-buffering cache, and Path2D GPU path fill acceleration.
   - Integrated **StylusAnnotationCanvas** overlay: HTML5 Canvas with pressure sensitivity (`PointerEvent.pressure`), pen, marker, highlighter, eraser, and color swatches.
   - Built File Upload API (`/api/upload`) for note media attachments.
   - Integrated Document Telemetry bar (Word count, character count, estimated reading time) & Zen Focus writing mode.
 
 ## Next Steps
 - [ ] Test live note creation, rich text editing, freehand stylus writing, and mind map canvas drawing in browser.
+
 
 
 

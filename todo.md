@@ -36,12 +36,14 @@
   - **Vertical Left Stylus Sidebar (`VerticalStylusSidebar.tsx`)**: Sleek left sidebar toolbar with Pen Box shelf pinned at the bottom for 1-tap preset switching.
   - **Ultra-Compact Minimalist Styling**: Polished Pen Settings Popover (`PenSettingsPopover.tsx`) and Vertical Stylus Sidebar (`VerticalStylusSidebar.tsx`) into a sleek, compact dark-glass UI with sharp high-contrast typography, micro-nib icons, minimal sliders, line pills, and quick Pen Box preset swatches.
   - **Rebuilt 3-Pen Suite & Fixed-Width Settings Dialog (`PenSettingsPopover.tsx` & `stroke-renderer.ts`)**: Completely rebuilt pen tool into 3 dedicated pens: Fountain (Pressure + Speed velocity flex tapering), Ballpoint (100% constant width with Solid, Dashed, and Dotted SVG line previews), and Pencil (pressure-dependent graphite opacity darkness with adjustable Graphite Density slider). Built fixed 340px popover width and removed "Add to Pen Box" button.
+  - **Canvas DPR Coordinate & Visibility Lifecycle Fix (`NativeStylusCanvas.tsx`)**: Standardized DPR physical pixel scaling between active stroke rendering and offscreen canvas buffer (`ctx.scale(dpr, dpr)`), eliminating offset/jumping coordinate bugs and keeping static strokes permanently visible on screen after stroke completion.
   - Integrated **StylusAnnotationCanvas** overlay: HTML5 Canvas with pressure sensitivity (`PointerEvent.pressure`), pen, marker, highlighter, eraser, and color swatches.
   - Built File Upload API (`/api/upload`) for note media attachments.
   - Integrated Document Telemetry bar (Word count, character count, estimated reading time) & Zen Focus writing mode.
 
 ## Next Steps
 - [ ] Test live note creation, rich text editing, freehand stylus writing, and mind map canvas drawing in browser.
+
 
 
 

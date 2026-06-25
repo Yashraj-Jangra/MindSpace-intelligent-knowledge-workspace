@@ -1,12 +1,13 @@
 'use client';
 
 import React from 'react';
-import { Camera, Crop, Mic, Plus, Sparkles, X } from 'lucide-react';
+import { Camera, Crop, Mic, Plus, X, SlidersHorizontal } from 'lucide-react';
 import {
   PenSubtype,
   LineType,
   SmoothingLevel,
   StylusSettings,
+  PencilLeadGrade,
 } from '@/lib/stylus/stylus-types';
 import {
   FountainNibIcon,
@@ -24,6 +25,8 @@ export interface PenPreset {
   width: number;
   lineType: LineType;
   smoothing: SmoothingLevel;
+  calligraphyNibAngle?: number;
+  pencilLeadGrade?: PencilLeadGrade;
 }
 
 interface PenSettingsPopoverProps {
@@ -52,8 +55,10 @@ const COLOR_SWATCHES = [
 ];
 
 const PEN_NAMES: Record<PenSubtype, string> = {
-  ballpoint: 'Ballpoint Pen',
   fountain: 'Fountain Pen',
+  calligraphy: 'Calligraphy Pen',
+  fineliner: 'Fineliner Tech Pen',
+  ballpoint: 'Ballpoint Pen',
   pencil: 'Textured Pencil',
 };
 
@@ -91,12 +96,14 @@ export function PenSettingsPopover({
       width: strokeWidth,
       lineType,
       smoothing: settings.smoothingLevel,
+      calligraphyNibAngle: settings.perPenSettings.calligraphyNibAngle,
+      pencilLeadGrade: settings.perPenSettings.pencilLeadGrade,
     };
     onAddToPenBox(newPreset);
   };
 
   return (
-    <div className="fixed top-14 left-16 z-50 w-80 bg-[#0A0A0A]/95 backdrop-blur-xl border border-[#262626] rounded-none shadow-2xl p-4 text-[#FAFAFA] font-sans select-none animate-in fade-in zoom-in-95 duration-150">
+    <div className="fixed top-14 left-16 z-50 w-84 bg-[#0A0A0A]/95 backdrop-blur-xl border border-[#262626] rounded-none shadow-2xl p-4 text-[#FAFAFA] font-sans select-none animate-in fade-in zoom-in-95 duration-150">
       {/* Top Header & Quick Actions */}
       <div className="flex items-center justify-between border-b border-[#262626] pb-2.5 mb-3">
         <div className="flex items-center gap-2 text-[#737373]">
@@ -114,8 +121,9 @@ export function PenSettingsPopover({
         </button>
       </div>
 
-      {/* Compact 5 Nib Selection Bar */}
+      {/* 5 Distinct Nib Selection Bar (Strict 1-to-1 Highlighting!) */}
       <div className="flex items-center justify-between bg-[#0F0F0F] border border-[#262626] p-1.5 mb-3.5">
+        {/* 1. Fountain Pen */}
         <button
           onClick={() => onSelectPenSubtype('fountain')}
           className={`p-1.5 transition-all ${
@@ -123,23 +131,38 @@ export function PenSettingsPopover({
               ? 'bg-[#1A1A1A] border border-[#FF3D00]'
               : 'border border-transparent hover:border-[#262626]'
           }`}
-          title="Fountain Pen 1"
+          title="Fountain Pen (Flex Pressure Nib)"
         >
           <FountainNibIcon className="w-5 h-8" isSelected={activePenSubtype === 'fountain'} />
         </button>
 
+        {/* 2. Calligraphy Pen */}
         <button
-          onClick={() => onSelectPenSubtype('fountain')}
+          onClick={() => onSelectPenSubtype('calligraphy')}
           className={`p-1.5 transition-all ${
-            activePenSubtype === 'fountain'
+            activePenSubtype === 'calligraphy'
               ? 'bg-[#1A1A1A] border border-[#FF3D00]'
               : 'border border-transparent hover:border-[#262626]'
           }`}
-          title="Calligraphy Pen 2"
+          title="Calligraphy Pen (Chisel Angle Nib)"
         >
-          <CalligraphyNibIcon className="w-5 h-8" isSelected={activePenSubtype === 'fountain'} />
+          <CalligraphyNibIcon className="w-5 h-8" isSelected={activePenSubtype === 'calligraphy'} />
         </button>
 
+        {/* 3. Fineliner Tech Pen */}
+        <button
+          onClick={() => onSelectPenSubtype('fineliner')}
+          className={`p-1.5 transition-all ${
+            activePenSubtype === 'fineliner'
+              ? 'bg-[#1A1A1A] border border-[#FF3D00]'
+              : 'border border-transparent hover:border-[#262626]'
+          }`}
+          title="Fineliner (Constant Technical Width)"
+        >
+          <FinelinerNibIcon className="w-5 h-8" isSelected={activePenSubtype === 'fineliner'} />
+        </button>
+
+        {/* 4. Ballpoint Pen */}
         <button
           onClick={() => onSelectPenSubtype('ballpoint')}
           className={`p-1.5 transition-all ${
@@ -147,23 +170,12 @@ export function PenSettingsPopover({
               ? 'bg-[#1A1A1A] border border-[#FF3D00]'
               : 'border border-transparent hover:border-[#262626]'
           }`}
-          title="Fineliner / Technical Pen"
-        >
-          <FinelinerNibIcon className="w-5 h-8" isSelected={activePenSubtype === 'ballpoint'} />
-        </button>
-
-        <button
-          onClick={() => onSelectPenSubtype('ballpoint')}
-          className={`p-1.5 transition-all ${
-            activePenSubtype === 'ballpoint'
-              ? 'bg-[#1A1A1A] border border-[#FF3D00]'
-              : 'border border-transparent hover:border-[#262626]'
-          }`}
-          title="Ballpoint Pen"
+          title="Ballpoint Pen (Rolling Friction)"
         >
           <BallpointNibIcon className="w-5 h-8" isSelected={activePenSubtype === 'ballpoint'} />
         </button>
 
+        {/* 5. Textured Pencil */}
         <button
           onClick={() => onSelectPenSubtype('pencil')}
           className={`p-1.5 transition-all ${
@@ -171,10 +183,108 @@ export function PenSettingsPopover({
               ? 'bg-[#1A1A1A] border border-[#FF3D00]'
               : 'border border-transparent hover:border-[#262626]'
           }`}
-          title="Textured Pencil"
+          title="Textured Pencil (Graphite Grain & Tilt)"
         >
           <PencilNibIcon className="w-5 h-8" isSelected={activePenSubtype === 'pencil'} />
         </button>
+      </div>
+
+      {/* Per-Pen Specialized Controls Drawer */}
+      <div className="p-2.5 bg-[#0F0F0F] border border-[#262626] mb-3.5 space-y-2">
+        {activePenSubtype === 'calligraphy' && (
+          <div className="space-y-1">
+            <div className="flex items-center justify-between text-[11px] font-mono">
+              <span className="text-[#737373] uppercase">Chisel Nib Angle</span>
+              <span className="text-[#FF3D00]">{settings.perPenSettings.calligraphyNibAngle}°</span>
+            </div>
+            <input
+              type="range"
+              min="0"
+              max="90"
+              value={settings.perPenSettings.calligraphyNibAngle}
+              onChange={(e) =>
+                onUpdateSettings({
+                  perPenSettings: {
+                    ...settings.perPenSettings,
+                    calligraphyNibAngle: Number(e.target.value),
+                  },
+                })
+              }
+              className="w-full accent-[#FF3D00] cursor-pointer h-1 bg-[#262626]"
+            />
+          </div>
+        )}
+
+        {activePenSubtype === 'pencil' && (
+          <div className="space-y-1.5">
+            <span className="text-[10px] font-mono text-[#737373] uppercase tracking-wider block">
+              Graphite Lead Grade
+            </span>
+            <div className="grid grid-cols-3 gap-1.5">
+              {(['2B', 'HB', '2H'] as PencilLeadGrade[]).map((grade) => (
+                <button
+                  key={grade}
+                  onClick={() =>
+                    onUpdateSettings({
+                      perPenSettings: {
+                        ...settings.perPenSettings,
+                        pencilLeadGrade: grade,
+                      },
+                    })
+                  }
+                  className={`py-1 border text-[10px] font-mono uppercase tracking-wider transition-colors ${
+                    settings.perPenSettings.pencilLeadGrade === grade
+                      ? 'border-[#FF3D00] bg-[#1A1A1A] text-[#FF3D00] font-bold'
+                      : 'border-[#262626] text-[#737373] hover:text-[#FAFAFA]'
+                  }`}
+                >
+                  {grade} {grade === '2B' ? '(Soft)' : grade === 'HB' ? '(Med)' : '(Hard)'}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {activePenSubtype === 'fountain' && (
+          <div className="space-y-1">
+            <div className="flex items-center justify-between text-[11px] font-mono">
+              <span className="text-[#737373] uppercase">Flex Nib Sensitivity</span>
+              <span className="text-[#FF3D00]">
+                {Math.round(settings.perPenSettings.fountainFlexSensitivity * 100)}%
+              </span>
+            </div>
+            <input
+              type="range"
+              min="0.2"
+              max="1.5"
+              step="0.1"
+              value={settings.perPenSettings.fountainFlexSensitivity}
+              onChange={(e) =>
+                onUpdateSettings({
+                  perPenSettings: {
+                    ...settings.perPenSettings,
+                    fountainFlexSensitivity: Number(e.target.value),
+                  },
+                })
+              }
+              className="w-full accent-[#FF3D00] cursor-pointer h-1 bg-[#262626]"
+            />
+          </div>
+        )}
+
+        {activePenSubtype === 'fineliner' && (
+          <div className="flex items-center justify-between text-[11px] font-mono text-[#737373]">
+            <span>Technical Caliber:</span>
+            <span className="text-[#FF3D00] font-bold">{(strokeWidth * 0.1).toFixed(2)}mm Constant</span>
+          </div>
+        )}
+
+        {activePenSubtype === 'ballpoint' && (
+          <div className="flex items-center justify-between text-[11px] font-mono text-[#737373]">
+            <span>Rolling Friction:</span>
+            <span className="text-[#FAFAFA]">Standard Dynamic Drag</span>
+          </div>
+        )}
       </div>
 
       {/* Minimal Line Type Pills */}

@@ -1,9 +1,10 @@
-export type PenSubtype = 'ballpoint' | 'fountain' | 'pencil';
+export type PenSubtype = 'fountain' | 'calligraphy' | 'fineliner' | 'ballpoint' | 'pencil';
 export type StylusTool = 'select' | 'pen' | 'highlighter' | 'eraser' | 'laser';
 export type LineType = 'solid' | 'dashed' | 'dotted';
 export type PressureCurve = 'linear' | 'soft' | 'hard';
 export type SmoothingLevel = 'none' | 'mild' | 'high';
 export type RecognizedShapeType = 'rectangle' | 'circle' | 'ellipse' | 'triangle' | 'diamond' | 'line' | 'arrow' | 'none';
+export type PencilLeadGrade = '2B' | 'HB' | '2H';
 
 export type StylusButtonAction =
   | 'toggle_eraser'
@@ -33,6 +34,13 @@ export interface ControlPoint {
   type: 'endpoint' | 'vertex' | 'center' | 'handle';
 }
 
+export interface PerPenSettings {
+  fountainFlexSensitivity: number; // 0.1 to 1.5
+  calligraphyNibAngle: number; // 0 to 90 degrees
+  pencilLeadGrade: PencilLeadGrade;
+  finelinerLineSnap: boolean;
+}
+
 export interface VectorStroke {
   id: string;
   tool: StylusTool;
@@ -41,6 +49,8 @@ export interface VectorStroke {
   width: number;
   lineType: LineType;
   smoothing: SmoothingLevel;
+  calligraphyNibAngle?: number;
+  pencilLeadGrade?: PencilLeadGrade;
   points: PointerPoint[];
   controlPoints?: ControlPoint[];
   recognizedShape?: RecognizedShapeType;
@@ -64,6 +74,7 @@ export interface StylusSettings {
   hapticIntensity: 'light' | 'medium' | 'strong';
   pressureCurve: PressureCurve;
   smoothingLevel: SmoothingLevel;
+  perPenSettings: PerPenSettings;
   // Hardware button mappings
   barrelButton1Action: StylusButtonAction;
   barrelButton2Action: StylusButtonAction;
@@ -81,6 +92,12 @@ export const DEFAULT_STYLUS_SETTINGS: StylusSettings = {
   hapticIntensity: 'medium',
   pressureCurve: 'linear',
   smoothingLevel: 'mild',
+  perPenSettings: {
+    fountainFlexSensitivity: 0.8,
+    calligraphyNibAngle: 45,
+    pencilLeadGrade: '2B',
+    finelinerLineSnap: false,
+  },
   barrelButton1Action: 'toggle_eraser',
   barrelButton2Action: 'undo',
   eraserCapAction: 'clear_ink',

@@ -135,6 +135,8 @@ export function NativeStylusCanvas({
         width: strokeWidth,
         lineType,
         smoothing: settings.smoothingLevel,
+        calligraphyNibAngle: settings.perPenSettings.calligraphyNibAngle,
+        pencilLeadGrade: settings.perPenSettings.pencilLeadGrade,
         points: activePointsRef.current,
         createdAt: Date.now(),
       };
@@ -304,6 +306,8 @@ export function NativeStylusCanvas({
       width: strokeWidth,
       lineType,
       smoothing: settings.smoothingLevel,
+      calligraphyNibAngle: settings.perPenSettings.calligraphyNibAngle,
+      pencilLeadGrade: settings.perPenSettings.pencilLeadGrade,
       points: finalPoints,
       createdAt: Date.now(),
     };

@@ -53,7 +53,7 @@ export function NativeStylusCanvas({
   const [selectedStrokeId, setSelectedStrokeId] = useState<string | null>(null);
   const [dragOffset, setDragOffset] = useState<{ x: number; y: number } | null>(null);
 
-  // Offscreen canvas buffer update (Renders committed strokes once into background cache)
+  // Offscreen canvas buffer update (Renders static strokes into high-DPI physical pixel cache)
   const updateOffscreenBuffer = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -70,42 +70,20 @@ export function NativeStylusCanvas({
     if (!offCtx) return;
 
     const dpr = window.devicePixelRatio || 1;
-    offCtx.scale(dpr, dpr);
-    offCtx.clearRect(0, 0, canvas.width / dpr, canvas.height / dpr);
+    offCtx.clearRect(0, 0, offscreen.width, offscreen.height);
 
-    // Draw all static committed strokes into cache
+    offCtx.save();
+    offCtx.scale(dpr, dpr);
+
+    // Draw all static committed strokes into offscreen buffer at DPR scale
     for (const stroke of strokes) {
       renderStrokeOnCanvas(offCtx, stroke);
     }
+
+    offCtx.restore();
   }, [strokes]);
 
-  // Update canvas dimensions on resize
-  const handleResize = useCallback(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const parent = canvas.parentElement;
-    if (!parent) return;
-
-    const rect = parent.getBoundingClientRect();
-    const dpr = window.devicePixelRatio || 1;
-
-    canvas.width = rect.width * dpr;
-    canvas.height = rect.height * dpr;
-
-    updateOffscreenBuffer();
-  }, [updateOffscreenBuffer]);
-
-  useEffect(() => {
-    handleResize();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, [handleResize]);
-
-  useEffect(() => {
-    updateOffscreenBuffer();
-  }, [strokes, updateOffscreenBuffer]);
-
-  // Fast animation frame render loop
+  // Fast, DPR-accurate animation frame render loop
   const renderFrame = useCallback(() => {
     const canvas = canvasRef.current;
     const offscreen = offscreenCanvasRef.current;
@@ -115,18 +93,20 @@ export function NativeStylusCanvas({
     if (!ctx) return;
 
     const dpr = window.devicePixelRatio || 1;
-    const width = canvas.width / dpr;
-    const height = canvas.height / dpr;
 
-    ctx.clearRect(0, 0, width, height);
+    // 1. Clear physical canvas buffer
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // 1. Draw cached static strokes from offscreen buffer (0ms lag!)
-    if (offscreen) {
-      ctx.drawImage(offscreen, 0, 0, width, height);
+    // 2. Draw cached static strokes from offscreen buffer (1-to-1 physical pixel copy!)
+    if (offscreen && offscreen.width > 0 && offscreen.height > 0) {
+      ctx.drawImage(offscreen, 0, 0, canvas.width, canvas.height);
     }
 
-    // 2. Draw active in-progress stroke with perfect-freehand
+    // 3. Draw active in-progress stroke with exact DPR scaling
     if (isDrawingRef.current && activePointsRef.current.length > 0) {
+      ctx.save();
+      ctx.scale(dpr, dpr);
+
       const activeStroke: VectorStroke = {
         id: 'active-stroke',
         tool: activeTool,
@@ -140,16 +120,51 @@ export function NativeStylusCanvas({
         createdAt: Date.now(),
       };
       renderStrokeOnCanvas(ctx, activeStroke);
+      ctx.restore();
     }
 
-    // 3. Draw selection handles if selected
+    // 4. Draw selection handles if selected
     if (selectedStrokeId) {
       const selected = strokes.find((s) => s.id === selectedStrokeId);
       if (selected) {
+        ctx.save();
+        ctx.scale(dpr, dpr);
         drawSelectionHandles(ctx, selected);
+        ctx.restore();
       }
     }
   }, [activeTool, activePenSubtype, activeColor, strokeWidth, lineType, settings, selectedStrokeId, strokes]);
+
+  // Update canvas dimensions on resize with exact DPR physical pixel matching
+  const handleResize = useCallback(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const parent = canvas.parentElement;
+    if (!parent) return;
+
+    const rect = parent.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+
+    canvas.width = Math.floor(rect.width * dpr);
+    canvas.height = Math.floor(rect.height * dpr);
+    canvas.style.width = `${rect.width}px`;
+    canvas.style.height = `${rect.height}px`;
+
+    updateOffscreenBuffer();
+    renderFrame();
+  }, [updateOffscreenBuffer, renderFrame]);
+
+  useEffect(() => {
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [handleResize]);
+
+  // Re-render when strokes array changes
+  useEffect(() => {
+    updateOffscreenBuffer();
+    renderFrame();
+  }, [strokes, updateOffscreenBuffer, renderFrame]);
 
   // Pointer Down (High-frequency pointer capture & Palm Rejection)
   const handlePointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
@@ -272,7 +287,7 @@ export function NativeStylusCanvas({
     }
   };
 
-  // Pointer Up (Stroke Completion & Auto-Shape Recognition)
+  // Pointer Up (Stroke Completion & Immediate Canvas Refresh)
   const handlePointerUp = (e: React.PointerEvent<HTMLCanvasElement>) => {
     if (!isActive) return;
 
@@ -292,7 +307,7 @@ export function NativeStylusCanvas({
       cancelAnimationFrame(animFrameIdRef.current);
     }
 
-    const finalPoints = activePointsRef.current;
+    const finalPoints = [...activePointsRef.current];
     activePointsRef.current = [];
 
     if (finalPoints.length === 0) return;
@@ -327,7 +342,12 @@ export function NativeStylusCanvas({
     newStroke.controlPoints = extractControlPoints(newStroke);
 
     onStrokesChange([...strokes, newStroke]);
-    renderFrame();
+
+    // Force immediate offscreen buffer refresh and canvas repaint
+    setTimeout(() => {
+      updateOffscreenBuffer();
+      renderFrame();
+    }, 0);
   };
 
   return (

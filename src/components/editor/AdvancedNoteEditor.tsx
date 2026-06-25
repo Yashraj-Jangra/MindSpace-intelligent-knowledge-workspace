@@ -409,8 +409,6 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
           }
           onUndo={handleUndo}
           onRedo={handleRedo}
-          penBoxPresets={penBoxPresets}
-          onSelectPreset={handleSelectPreset}
           onBackToDashboard={() => router.push('/dashboard')}
         />
       )}
@@ -430,7 +428,6 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
           onChangeLineType={setLineType}
           settings={stylusSettings}
           onUpdateSettings={(newSettings) => setStylusSettings((prev) => ({ ...prev, ...newSettings }))}
-          onAddToPenBox={handleAddToPenBox}
         />
       )}
 

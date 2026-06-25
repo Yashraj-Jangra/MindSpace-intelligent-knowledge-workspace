@@ -1,18 +1,15 @@
 'use client';
 
 import React from 'react';
-import { Camera, Crop, Mic, Plus, X, SlidersHorizontal } from 'lucide-react';
+import { Camera, Crop, Mic, X } from 'lucide-react';
 import {
   PenSubtype,
   LineType,
   SmoothingLevel,
   StylusSettings,
-  PencilLeadGrade,
 } from '@/lib/stylus/stylus-types';
 import {
   FountainNibIcon,
-  CalligraphyNibIcon,
-  FinelinerNibIcon,
   BallpointNibIcon,
   PencilNibIcon,
 } from './PenNibIcons';
@@ -25,8 +22,6 @@ export interface PenPreset {
   width: number;
   lineType: LineType;
   smoothing: SmoothingLevel;
-  calligraphyNibAngle?: number;
-  pencilLeadGrade?: PencilLeadGrade;
 }
 
 interface PenSettingsPopoverProps {
@@ -42,7 +37,6 @@ interface PenSettingsPopoverProps {
   onChangeLineType: (lineType: LineType) => void;
   settings: StylusSettings;
   onUpdateSettings: (newSettings: Partial<StylusSettings>) => void;
-  onAddToPenBox: (preset: PenPreset) => void;
 }
 
 const COLOR_SWATCHES = [
@@ -56,8 +50,6 @@ const COLOR_SWATCHES = [
 
 const PEN_NAMES: Record<PenSubtype, string> = {
   fountain: 'Fountain Pen',
-  calligraphy: 'Calligraphy Pen',
-  fineliner: 'Fineliner Tech Pen',
   ballpoint: 'Ballpoint Pen',
   pencil: 'Textured Pencil',
 };
@@ -75,7 +67,6 @@ export function PenSettingsPopover({
   onChangeLineType,
   settings,
   onUpdateSettings,
-  onAddToPenBox,
 }: PenSettingsPopoverProps) {
   if (!isOpen) return null;
 
@@ -87,24 +78,20 @@ export function PenSettingsPopover({
     onUpdateSettings({ smoothingLevel: level });
   };
 
-  const handleAddPreset = () => {
-    const newPreset: PenPreset = {
-      id: `preset-${Date.now()}`,
-      name: PEN_NAMES[activePenSubtype] || 'Custom Pen',
-      subtype: activePenSubtype,
-      color: activeColor,
-      width: strokeWidth,
-      lineType,
-      smoothing: settings.smoothingLevel,
-      calligraphyNibAngle: settings.perPenSettings.calligraphyNibAngle,
-      pencilLeadGrade: settings.perPenSettings.pencilLeadGrade,
-    };
-    onAddToPenBox(newPreset);
+  const graphiteDensityPercent = Math.round((settings.perPenSettings.pencilDensity ?? 0.85) * 100);
+
+  const handleGraphiteDensityChange = (val: number) => {
+    onUpdateSettings({
+      perPenSettings: {
+        ...settings.perPenSettings,
+        pencilDensity: val / 100,
+      },
+    });
   };
 
   return (
-    <div className="fixed top-14 left-16 z-50 w-84 bg-[#0A0A0A]/95 backdrop-blur-xl border border-[#262626] rounded-none shadow-2xl p-4 text-[#FAFAFA] font-sans select-none animate-in fade-in zoom-in-95 duration-150">
-      {/* Top Header & Quick Actions */}
+    <div className="fixed top-14 left-16 z-50 w-[340px] bg-[#0A0A0A]/95 backdrop-blur-xl border border-[#262626] rounded-none shadow-2xl p-4 text-[#FAFAFA] font-sans select-none animate-in fade-in zoom-in-95 duration-150">
+      {/* Top Header */}
       <div className="flex items-center justify-between border-b border-[#262626] pb-2.5 mb-3">
         <div className="flex items-center gap-2 text-[#737373]">
           <Camera className="w-3.5 h-3.5 hover:text-[#FAFAFA] cursor-pointer transition-colors" />
@@ -121,210 +108,151 @@ export function PenSettingsPopover({
         </button>
       </div>
 
-      {/* 5 Distinct Nib Selection Bar (Strict 1-to-1 Highlighting!) */}
-      <div className="flex items-center justify-between bg-[#0F0F0F] border border-[#262626] p-1.5 mb-3.5">
+      {/* 3 Pen Subtype Selector Bar (Equal 3-Grid Layout) */}
+      <div className="grid grid-cols-3 gap-2 bg-[#0F0F0F] border border-[#262626] p-2 mb-4">
         {/* 1. Fountain Pen */}
         <button
           onClick={() => onSelectPenSubtype('fountain')}
-          className={`p-1.5 transition-all ${
+          className={`flex flex-col items-center justify-center p-2 transition-all ${
             activePenSubtype === 'fountain'
               ? 'bg-[#1A1A1A] border border-[#FF3D00]'
               : 'border border-transparent hover:border-[#262626]'
           }`}
-          title="Fountain Pen (Flex Pressure Nib)"
+          title="Fountain Pen (Pressure & Speed Sensitive)"
         >
-          <FountainNibIcon className="w-5 h-8" isSelected={activePenSubtype === 'fountain'} />
+          <FountainNibIcon className="w-5 h-8 mb-1" isSelected={activePenSubtype === 'fountain'} />
+          <span className="text-[10px] font-mono uppercase tracking-wider text-[#FAFAFA]">Fountain</span>
         </button>
 
-        {/* 2. Calligraphy Pen */}
-        <button
-          onClick={() => onSelectPenSubtype('calligraphy')}
-          className={`p-1.5 transition-all ${
-            activePenSubtype === 'calligraphy'
-              ? 'bg-[#1A1A1A] border border-[#FF3D00]'
-              : 'border border-transparent hover:border-[#262626]'
-          }`}
-          title="Calligraphy Pen (Chisel Angle Nib)"
-        >
-          <CalligraphyNibIcon className="w-5 h-8" isSelected={activePenSubtype === 'calligraphy'} />
-        </button>
-
-        {/* 3. Fineliner Tech Pen */}
-        <button
-          onClick={() => onSelectPenSubtype('fineliner')}
-          className={`p-1.5 transition-all ${
-            activePenSubtype === 'fineliner'
-              ? 'bg-[#1A1A1A] border border-[#FF3D00]'
-              : 'border border-transparent hover:border-[#262626]'
-          }`}
-          title="Fineliner (Constant Technical Width)"
-        >
-          <FinelinerNibIcon className="w-5 h-8" isSelected={activePenSubtype === 'fineliner'} />
-        </button>
-
-        {/* 4. Ballpoint Pen */}
+        {/* 2. Ballpoint Pen */}
         <button
           onClick={() => onSelectPenSubtype('ballpoint')}
-          className={`p-1.5 transition-all ${
+          className={`flex flex-col items-center justify-center p-2 transition-all ${
             activePenSubtype === 'ballpoint'
               ? 'bg-[#1A1A1A] border border-[#FF3D00]'
               : 'border border-transparent hover:border-[#262626]'
           }`}
-          title="Ballpoint Pen (Rolling Friction)"
+          title="Ballpoint Pen (Same Width All The Way)"
         >
-          <BallpointNibIcon className="w-5 h-8" isSelected={activePenSubtype === 'ballpoint'} />
+          <BallpointNibIcon className="w-5 h-8 mb-1" isSelected={activePenSubtype === 'ballpoint'} />
+          <span className="text-[10px] font-mono uppercase tracking-wider text-[#FAFAFA]">Ballpoint</span>
         </button>
 
-        {/* 5. Textured Pencil */}
+        {/* 3. Textured Pencil */}
         <button
           onClick={() => onSelectPenSubtype('pencil')}
-          className={`p-1.5 transition-all ${
+          className={`flex flex-col items-center justify-center p-2 transition-all ${
             activePenSubtype === 'pencil'
               ? 'bg-[#1A1A1A] border border-[#FF3D00]'
               : 'border border-transparent hover:border-[#262626]'
           }`}
-          title="Textured Pencil (Graphite Grain & Tilt)"
+          title="Textured Pencil (Pressure Darkness Shading)"
         >
-          <PencilNibIcon className="w-5 h-8" isSelected={activePenSubtype === 'pencil'} />
+          <PencilNibIcon className="w-5 h-8 mb-1" isSelected={activePenSubtype === 'pencil'} />
+          <span className="text-[10px] font-mono uppercase tracking-wider text-[#FAFAFA]">Pencil</span>
         </button>
       </div>
 
-      {/* Per-Pen Specialized Controls Drawer */}
-      <div className="p-2.5 bg-[#0F0F0F] border border-[#262626] mb-3.5 space-y-2">
-        {activePenSubtype === 'calligraphy' && (
-          <div className="space-y-1">
-            <div className="flex items-center justify-between text-[11px] font-mono">
-              <span className="text-[#737373] uppercase">Chisel Nib Angle</span>
-              <span className="text-[#FF3D00]">{settings.perPenSettings.calligraphyNibAngle}°</span>
+      {/* Dynamic Settings Area (Strictly Maintained Container Height for Zero Layout Shifting!) */}
+      <div className="min-h-[70px] flex flex-col justify-center mb-3.5">
+        {activePenSubtype === 'ballpoint' && (
+          <div className="space-y-1.5">
+            <span className="text-[10px] font-mono text-[#737373] uppercase tracking-wider block">
+              Line Style (With Previews)
+            </span>
+            <div className="grid grid-cols-3 gap-2">
+              {/* Normal / Solid */}
+              <button
+                onClick={() => onChangeLineType('solid')}
+                className={`h-9 border px-2 flex flex-col items-center justify-center gap-1 transition-colors ${
+                  lineType === 'solid'
+                    ? 'border-[#FF3D00] bg-[#1A1A1A] text-[#FF3D00]'
+                    : 'border-[#262626] text-[#737373] hover:text-[#FAFAFA]'
+                }`}
+              >
+                <svg className="w-full h-2" viewBox="0 0 60 6" fill="none">
+                  <line x1="0" y1="3" x2="60" y2="3" stroke={lineType === 'solid' ? '#FF3D00' : '#FAFAFA'} strokeWidth="2" />
+                </svg>
+                <span className="text-[9px] font-mono uppercase">Solid</span>
+              </button>
+
+              {/* Dashed */}
+              <button
+                onClick={() => onChangeLineType('dashed')}
+                className={`h-9 border px-2 flex flex-col items-center justify-center gap-1 transition-colors ${
+                  lineType === 'dashed'
+                    ? 'border-[#FF3D00] bg-[#1A1A1A] text-[#FF3D00]'
+                    : 'border-[#262626] text-[#737373] hover:text-[#FAFAFA]'
+                }`}
+              >
+                <svg className="w-full h-2" viewBox="0 0 60 6" fill="none">
+                  <line
+                    x1="0"
+                    y1="3"
+                    x2="60"
+                    y2="3"
+                    stroke={lineType === 'dashed' ? '#FF3D00' : '#FAFAFA'}
+                    strokeWidth="2"
+                    strokeDasharray="6 4"
+                  />
+                </svg>
+                <span className="text-[9px] font-mono uppercase">Dashed</span>
+              </button>
+
+              {/* Dotted */}
+              <button
+                onClick={() => onChangeLineType('dotted')}
+                className={`h-9 border px-2 flex flex-col items-center justify-center gap-1 transition-colors ${
+                  lineType === 'dotted'
+                    ? 'border-[#FF3D00] bg-[#1A1A1A] text-[#FF3D00]'
+                    : 'border-[#262626] text-[#737373] hover:text-[#FAFAFA]'
+                }`}
+              >
+                <svg className="w-full h-2" viewBox="0 0 60 6" fill="none">
+                  <line
+                    x1="0"
+                    y1="3"
+                    x2="60"
+                    y2="3"
+                    stroke={lineType === 'dotted' ? '#FF3D00' : '#FAFAFA'}
+                    strokeWidth="2"
+                    strokeDasharray="2 4"
+                    strokeLinecap="round"
+                  />
+                </svg>
+                <span className="text-[9px] font-mono uppercase">Dotted</span>
+              </button>
             </div>
-            <input
-              type="range"
-              min="0"
-              max="90"
-              value={settings.perPenSettings.calligraphyNibAngle}
-              onChange={(e) =>
-                onUpdateSettings({
-                  perPenSettings: {
-                    ...settings.perPenSettings,
-                    calligraphyNibAngle: Number(e.target.value),
-                  },
-                })
-              }
-              className="w-full accent-[#FF3D00] cursor-pointer h-1 bg-[#262626]"
-            />
           </div>
         )}
 
         {activePenSubtype === 'pencil' && (
-          <div className="space-y-1.5">
-            <span className="text-[10px] font-mono text-[#737373] uppercase tracking-wider block">
-              Graphite Lead Grade
-            </span>
-            <div className="grid grid-cols-3 gap-1.5">
-              {(['2B', 'HB', '2H'] as PencilLeadGrade[]).map((grade) => (
-                <button
-                  key={grade}
-                  onClick={() =>
-                    onUpdateSettings({
-                      perPenSettings: {
-                        ...settings.perPenSettings,
-                        pencilLeadGrade: grade,
-                      },
-                    })
-                  }
-                  className={`py-1 border text-[10px] font-mono uppercase tracking-wider transition-colors ${
-                    settings.perPenSettings.pencilLeadGrade === grade
-                      ? 'border-[#FF3D00] bg-[#1A1A1A] text-[#FF3D00] font-bold'
-                      : 'border-[#262626] text-[#737373] hover:text-[#FAFAFA]'
-                  }`}
-                >
-                  {grade} {grade === '2B' ? '(Soft)' : grade === 'HB' ? '(Med)' : '(Hard)'}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {activePenSubtype === 'fountain' && (
-          <div className="space-y-1">
+          <div className="space-y-1 bg-[#0F0F0F] border border-[#262626] p-2.5">
             <div className="flex items-center justify-between text-[11px] font-mono">
-              <span className="text-[#737373] uppercase">Flex Nib Sensitivity</span>
-              <span className="text-[#FF3D00]">
-                {Math.round(settings.perPenSettings.fountainFlexSensitivity * 100)}%
-              </span>
+              <span className="text-[#737373] uppercase">Graphite Density</span>
+              <span className="text-[#FF3D00] font-bold">{graphiteDensityPercent}%</span>
             </div>
             <input
               type="range"
-              min="0.2"
-              max="1.5"
-              step="0.1"
-              value={settings.perPenSettings.fountainFlexSensitivity}
-              onChange={(e) =>
-                onUpdateSettings({
-                  perPenSettings: {
-                    ...settings.perPenSettings,
-                    fountainFlexSensitivity: Number(e.target.value),
-                  },
-                })
-              }
+              min="20"
+              max="100"
+              step="5"
+              value={graphiteDensityPercent}
+              onChange={(e) => handleGraphiteDensityChange(Number(e.target.value))}
               className="w-full accent-[#FF3D00] cursor-pointer h-1 bg-[#262626]"
             />
           </div>
         )}
 
-        {activePenSubtype === 'fineliner' && (
-          <div className="flex items-center justify-between text-[11px] font-mono text-[#737373]">
-            <span>Technical Caliber:</span>
-            <span className="text-[#FF3D00] font-bold">{(strokeWidth * 0.1).toFixed(2)}mm Constant</span>
-          </div>
-        )}
-
-        {activePenSubtype === 'ballpoint' && (
-          <div className="flex items-center justify-between text-[11px] font-mono text-[#737373]">
-            <span>Rolling Friction:</span>
-            <span className="text-[#FAFAFA]">Standard Dynamic Drag</span>
+        {activePenSubtype === 'fountain' && (
+          <div className="bg-[#0F0F0F] border border-[#262626] p-2.5 text-[11px] font-mono text-[#737373] flex items-center justify-between">
+            <span>Flex Dynamics:</span>
+            <span className="text-[#FF3D00] font-bold">Pressure & Velocity Sensitive</span>
           </div>
         )}
       </div>
 
-      {/* Minimal Line Type Pills */}
-      <div className="space-y-1.5 mb-3.5">
-        <span className="text-[10px] font-mono text-[#737373] uppercase tracking-wider block">Line Type</span>
-        <div className="grid grid-cols-3 gap-1.5">
-          <button
-            onClick={() => onChangeLineType('solid')}
-            className={`h-7 border text-[10px] font-mono uppercase tracking-wider flex items-center justify-center transition-colors ${
-              lineType === 'solid'
-                ? 'border-[#FF3D00] bg-[#1A1A1A] text-[#FF3D00] font-bold'
-                : 'border-[#262626] text-[#737373] hover:text-[#FAFAFA]'
-            }`}
-          >
-            Solid
-          </button>
-          <button
-            onClick={() => onChangeLineType('dashed')}
-            className={`h-7 border text-[10px] font-mono uppercase tracking-wider flex items-center justify-center transition-colors ${
-              lineType === 'dashed'
-                ? 'border-[#FF3D00] bg-[#1A1A1A] text-[#FF3D00] font-bold'
-                : 'border-[#262626] text-[#737373] hover:text-[#FAFAFA]'
-            }`}
-          >
-            Dashed
-          </button>
-          <button
-            onClick={() => onChangeLineType('dotted')}
-            className={`h-7 border text-[10px] font-mono uppercase tracking-wider flex items-center justify-center transition-colors ${
-              lineType === 'dotted'
-                ? 'border-[#FF3D00] bg-[#1A1A1A] text-[#FF3D00] font-bold'
-                : 'border-[#262626] text-[#737373] hover:text-[#FAFAFA]'
-            }`}
-          >
-            Dotted
-          </button>
-        </div>
-      </div>
-
-      {/* Compact Thickness Slider */}
+      {/* Thickness Slider */}
       <div className="space-y-1 mb-3">
         <div className="flex items-center justify-between text-[11px] font-mono">
           <span className="text-[#737373] uppercase">Thickness</span>
@@ -340,10 +268,10 @@ export function PenSettingsPopover({
         />
       </div>
 
-      {/* Compact Stabilization Slider */}
+      {/* Stroke Stabilization Slider */}
       <div className="space-y-1 mb-4">
         <div className="flex items-center justify-between text-[11px] font-mono">
-          <span className="text-[#737373] uppercase">Stabilization</span>
+          <span className="text-[#737373] uppercase">Stroke Stabilization</span>
           <span className="text-[#FAFAFA]">{stabilizationPercent}%</span>
         </div>
         <input
@@ -358,14 +286,14 @@ export function PenSettingsPopover({
       </div>
 
       {/* Colour Swatches Row */}
-      <div className="space-y-1.5 mb-4">
+      <div className="space-y-1.5">
         <span className="text-[10px] font-mono text-[#737373] uppercase tracking-wider block">Colour</span>
         <div className="flex items-center justify-between">
           {COLOR_SWATCHES.map((c) => (
             <button
               key={c.name}
               onClick={() => onChangeColor(c.hex)}
-              className={`w-6 h-6 border transition-transform ${
+              className={`w-7 h-7 border transition-transform ${
                 activeColor === c.hex
                   ? 'border-[#FAFAFA] scale-110 ring-2 ring-[#FF3D00]'
                   : 'border-[#262626]'
@@ -376,15 +304,6 @@ export function PenSettingsPopover({
           ))}
         </div>
       </div>
-
-      {/* Minimalist Add to Pen Box Button */}
-      <button
-        onClick={handleAddPreset}
-        className="w-full py-2 bg-[#FF3D00] hover:bg-[#FAFAFA] text-[#0A0A0A] font-mono text-xs font-bold uppercase tracking-wider transition-colors flex items-center justify-center gap-1.5"
-      >
-        <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
-        <span>Add to pen box</span>
-      </button>
     </div>
   );
 }

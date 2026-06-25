@@ -1,8 +1,8 @@
 import { getStroke } from 'perfect-freehand';
-import { VectorStroke, PointerPoint, PenSubtype, PencilLeadGrade } from './stylus-types';
+import { VectorStroke, PointerPoint, PenSubtype } from './stylus-types';
 
 /**
- * Returns perfect-freehand stroke options for 5 distinct pen subtypes
+ * Returns perfect-freehand stroke options for Fountain, Ballpoint, and Pencil
  */
 export function getPenFreehandOptions(
   subtype: PenSubtype,
@@ -15,7 +15,7 @@ export function getPenFreehandOptions(
     case 'fountain':
       return {
         size: baseWidth * 1.8,
-        thinning: 0.8, // Flex-nib pressure expansion
+        thinning: 0.85, // Flex pressure + speed sensitivity
         smoothing: 0.7,
         streamline,
         start: { taper: baseWidth * 2, cap: false },
@@ -23,34 +23,12 @@ export function getPenFreehandOptions(
         simulatePressure: false,
       };
 
-    case 'calligraphy':
-      return {
-        size: baseWidth * 1.6,
-        thinning: 0.0, // Calligraphy stroke width depends on direction angle, not pressure
-        smoothing: 0.6,
-        streamline,
-        start: { taper: 0, cap: true },
-        end: { taper: 0, cap: true },
-        simulatePressure: false,
-      };
-
-    case 'fineliner':
-      return {
-        size: baseWidth * 1.2,
-        thinning: 0.0, // 100% constant, uniform technical caliber
-        smoothing: 0.4,
-        streamline: 0.1,
-        start: { taper: 0, cap: true },
-        end: { taper: 0, cap: true },
-        simulatePressure: false,
-      };
-
     case 'pencil':
       return {
-        size: baseWidth * 1.3,
-        thinning: 0.2, // Low variation, textured graphite
+        size: baseWidth * 1.2,
+        thinning: 0.15, // Subtle graphite width variation
         smoothing: 0.45,
-        streamline: 0.25,
+        streamline: 0.2,
         start: { taper: 0, cap: true },
         end: { taper: 0, cap: true },
         simulatePressure: false,
@@ -59,19 +37,19 @@ export function getPenFreehandOptions(
     case 'ballpoint':
     default:
       return {
-        size: baseWidth * 1.4,
-        thinning: 0.4, // Rolling ball mild pressure variance
-        smoothing: 0.55,
-        streamline,
-        start: { taper: baseWidth * 0.5, cap: true },
-        end: { taper: baseWidth * 0.5, cap: true },
+        size: baseWidth * 1.2,
+        thinning: 0.0, // 100% constant width all the way (pressure & speed NO effect)
+        smoothing: 0.4,
+        streamline: 0.1,
+        start: { taper: 0, cap: true },
+        end: { taper: 0, cap: true },
         simulatePressure: false,
       };
   }
 }
 
 /**
- * Generates SVG Path data for a given stroke
+ * Generates SVG Path string for a stroke
  */
 export function getSvgPathFromPoints(
   points: PointerPoint[],
@@ -81,7 +59,22 @@ export function getSvgPathFromPoints(
 ): string {
   if (!points || points.length === 0) return '';
 
-  const inputPoints = points.map((p) => [p.x, p.y, p.pressure > 0 ? p.pressure : 0.5]);
+  // For Fountain Pen: factor in point-to-point drawing speed for velocity tapering
+  const inputPoints = points.map((p, idx, arr) => {
+    let speedFactor = 1.0;
+    if (subtype === 'fountain' && idx > 0) {
+      const prev = arr[idx - 1];
+      const dist = Math.hypot(p.x - prev.x, p.y - prev.y);
+      const dt = Math.max(1, p.timeStamp - prev.timeStamp);
+      const speed = dist / dt; // pixels per millisecond
+      // Faster drawing speed reduces effective pressure for natural tapering
+      speedFactor = Math.max(0.2, 1.0 - Math.min(0.8, speed * 0.15));
+    }
+
+    const pressure = subtype === 'ballpoint' ? 0.5 : (p.pressure > 0 ? p.pressure : 0.5) * speedFactor;
+    return [p.x, p.y, pressure];
+  });
+
   const options = getPenFreehandOptions(subtype, baseWidth, smoothing);
   const strokeOutline = getStroke(inputPoints, options);
 
@@ -103,7 +96,7 @@ export function getSvgPathFromStrokeOutline(outlinePoints: number[][]): string {
 }
 
 /**
- * Renders stroke onto Canvas context, implementing exact per-pen physics
+ * Renders vector stroke onto Canvas context with exact per-pen physics
  */
 export function renderStrokeOnCanvas(ctx: CanvasRenderingContext2D, stroke: VectorStroke) {
   const points = stroke.points;
@@ -111,17 +104,18 @@ export function renderStrokeOnCanvas(ctx: CanvasRenderingContext2D, stroke: Vect
 
   ctx.save();
 
-  // 1. Dashed & Dotted Line rendering
+  // 1. Ballpoint Line Styles (Solid, Dashed, Dotted)
   if (stroke.lineType === 'dashed' || stroke.lineType === 'dotted') {
     ctx.beginPath();
     ctx.strokeStyle = stroke.color;
     ctx.lineWidth = stroke.width;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
 
     if (stroke.lineType === 'dashed') {
-      ctx.setLineDash([stroke.width * 3, stroke.width * 2]);
+      ctx.setLineDash([stroke.width * 3.5, stroke.width * 2]);
     } else {
-      ctx.setLineDash([stroke.width * 0.8, stroke.width * 1.5]);
-      ctx.lineCap = 'round';
+      ctx.setLineDash([stroke.width * 0.5, stroke.width * 1.8]);
     }
 
     if (stroke.tool === 'highlighter') {
@@ -139,35 +133,37 @@ export function renderStrokeOnCanvas(ctx: CanvasRenderingContext2D, stroke: Vect
     return;
   }
 
-  // 2. Calligraphy Nib Physics (Nib Angle & Directional Width)
-  if (stroke.penSubtype === 'calligraphy' && points.length >= 2) {
-    const nibAngleRad = ((stroke.calligraphyNibAngle || 45) * Math.PI) / 180;
-    ctx.beginPath();
-    ctx.strokeStyle = stroke.color;
-    ctx.lineCap = 'square';
-    ctx.lineJoin = 'miter';
+  // 2. Pencil Graphite Grain Shading (Pressure dictates darkness/opacity)
+  if (stroke.penSubtype === 'pencil') {
+    const density = stroke.pencilDensity ?? 0.85;
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.fillStyle = stroke.color;
 
-    for (let i = 1; i < points.length; i++) {
-      const prev = points[i - 1];
-      const curr = points[i];
-      const moveAngle = Math.atan2(curr.y - prev.y, curr.x - prev.x);
-      const angleDiff = Math.abs(Math.cos(moveAngle - nibAngleRad));
+    const svgPathData = getSvgPathFromPoints(points, 'pencil', stroke.width, stroke.smoothing);
+    if (svgPathData) {
+      const avgPressure = points.reduce((acc, p) => acc + (p.pressure || 0.5), 0) / points.length;
+      const alpha = Math.min(1.0, Math.max(0.15, avgPressure * density));
+      ctx.globalAlpha = alpha;
 
-      // Calculate chisel width: max width on perpendicular stroke, min width on parallel stroke
-      const chiselWidth = Math.max(1, stroke.width * (0.25 + angleDiff * 1.5));
-      ctx.lineWidth = chiselWidth;
-
-      ctx.beginPath();
-      ctx.moveTo(prev.x, prev.y);
-      ctx.lineTo(curr.x, curr.y);
-      ctx.stroke();
+      try {
+        const path2d = new Path2D(svgPathData);
+        ctx.fill(path2d);
+      } catch {
+        ctx.beginPath();
+        ctx.moveTo(points[0].x, points[0].y);
+        for (let i = 1; i < points.length; i++) {
+          ctx.lineTo(points[i].x, points[i].y);
+        }
+        ctx.lineWidth = stroke.width;
+        ctx.strokeStyle = stroke.color;
+        ctx.stroke();
+      }
     }
-
     ctx.restore();
     return;
   }
 
-  // 3. Solid Polygon Path rendering (Fountain, Ballpoint, Pencil, Fineliner)
+  // 3. Solid Fountain Pen & Ballpoint Pen
   const svgPathData = getSvgPathFromPoints(stroke.points, stroke.penSubtype, stroke.width, stroke.smoothing);
   if (!svgPathData) {
     ctx.restore();
@@ -177,13 +173,6 @@ export function renderStrokeOnCanvas(ctx: CanvasRenderingContext2D, stroke: Vect
   if (stroke.tool === 'highlighter') {
     ctx.globalCompositeOperation = 'source-over';
     ctx.fillStyle = stroke.color + '55'; // Translucent highlighter
-  } else if (stroke.penSubtype === 'pencil') {
-    ctx.globalCompositeOperation = 'source-over';
-    // Graphite lead hardness opacity grade
-    const leadGrade = stroke.pencilLeadGrade || '2B';
-    const alpha = leadGrade === '2B' ? 0.85 : leadGrade === 'HB' ? 0.65 : 0.45;
-    ctx.globalAlpha = alpha;
-    ctx.fillStyle = stroke.color;
   } else {
     ctx.globalCompositeOperation = 'source-over';
     ctx.globalAlpha = 1.0;

@@ -11,10 +11,8 @@ import {
   MousePointer,
   Sparkles,
   ShieldCheck,
-  Star,
 } from 'lucide-react';
 import { StylusTool, StylusSettings } from '@/lib/stylus/stylus-types';
-import { PenPreset } from './PenSettingsPopover';
 
 interface VerticalStylusSidebarProps {
   activeTool: StylusTool;
@@ -24,8 +22,6 @@ interface VerticalStylusSidebarProps {
   onToggleStylusMode: () => void;
   onUndo: () => void;
   onRedo: () => void;
-  penBoxPresets: PenPreset[];
-  onSelectPreset: (preset: PenPreset) => void;
   onBackToDashboard: () => void;
 }
 
@@ -37,8 +33,6 @@ export function VerticalStylusSidebar({
   onToggleStylusMode,
   onUndo,
   onRedo,
-  penBoxPresets,
-  onSelectPreset,
   onBackToDashboard,
 }: VerticalStylusSidebarProps) {
   return (
@@ -154,21 +148,9 @@ export function VerticalStylusSidebar({
         </button>
       </div>
 
-      {/* Bottom Section: Pen Box Presets */}
+      {/* Bottom Section */}
       <div className="flex flex-col items-center gap-1.5 pt-2 border-t border-[#262626] w-full px-1">
-        <Star className="w-3 h-3 text-[#FF3D00]" />
-
-        <div className="flex flex-col gap-1.5 max-h-32 overflow-y-auto no-scrollbar">
-          {penBoxPresets.map((preset) => (
-            <button
-              key={preset.id}
-              onClick={() => onSelectPreset(preset)}
-              className="w-5 h-5 border border-[#262626] hover:border-[#FAFAFA] transition-transform hover:scale-110"
-              style={{ backgroundColor: preset.color }}
-              title={`${preset.name} (${preset.width}px)`}
-            />
-          ))}
-        </div>
+        <div className="w-2 h-2 rounded-full bg-[#FF3D00]" title="Stylus Connected" />
       </div>
     </aside>
   );

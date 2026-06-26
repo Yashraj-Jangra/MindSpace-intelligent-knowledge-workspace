@@ -53,8 +53,8 @@ export function NativeStylusCanvas({
   const [selectedStrokeId, setSelectedStrokeId] = useState<string | null>(null);
   const [dragOffset, setDragOffset] = useState<{ x: number; y: number } | null>(null);
 
-  // Offscreen canvas buffer update (Renders static strokes into high-DPI physical pixel cache)
-  const updateOffscreenBuffer = useCallback(() => {
+  // Synchronous offscreen canvas buffer update (Accepts targetStrokes to eliminate state lag)
+  const updateOffscreenBuffer = useCallback((targetStrokes?: VectorStroke[]) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -75,8 +75,8 @@ export function NativeStylusCanvas({
     offCtx.save();
     offCtx.scale(dpr, dpr);
 
-    // Draw all static committed strokes into offscreen buffer at DPR scale
-    for (const stroke of strokes) {
+    const strokeList = targetStrokes || strokes;
+    for (const stroke of strokeList) {
       renderStrokeOnCanvas(offCtx, stroke);
     }
 
@@ -218,6 +218,8 @@ export function NativeStylusCanvas({
       if (remaining.length !== strokes.length) {
         StylusHaptics.trigger('eraserScrub', settings);
         onStrokesChange(remaining);
+        updateOffscreenBuffer(remaining);
+        renderFrame();
       }
       return;
     }
@@ -252,6 +254,8 @@ export function NativeStylusCanvas({
 
       const updated = strokes.map((s) => (s.id === selectedStrokeId ? translateStroke(s, dx, dy) : s));
       onStrokesChange(updated);
+      updateOffscreenBuffer(updated);
+      renderFrame();
       setDragOffset({ x, y });
       return;
     }
@@ -263,6 +267,8 @@ export function NativeStylusCanvas({
       if (remaining.length !== strokes.length) {
         StylusHaptics.trigger('eraserScrub', settings);
         onStrokesChange(remaining);
+        updateOffscreenBuffer(remaining);
+        renderFrame();
       }
       return;
     }
@@ -287,7 +293,7 @@ export function NativeStylusCanvas({
     }
   };
 
-  // Pointer Up (Stroke Completion & Immediate Canvas Refresh)
+  // Pointer Up (Immediate 0ms Synchronous Buffer Commit)
   const handlePointerUp = (e: React.PointerEvent<HTMLCanvasElement>) => {
     if (!isActive) return;
 
@@ -341,13 +347,12 @@ export function NativeStylusCanvas({
 
     newStroke.controlPoints = extractControlPoints(newStroke);
 
-    onStrokesChange([...strokes, newStroke]);
+    const nextStrokes = [...strokes, newStroke];
+    onStrokesChange(nextStrokes);
 
-    // Force immediate offscreen buffer refresh and canvas repaint
-    setTimeout(() => {
-      updateOffscreenBuffer();
-      renderFrame();
-    }, 0);
+    // Synchronously render new stroke into offscreen buffer & repaint canvas immediately!
+    updateOffscreenBuffer(nextStrokes);
+    renderFrame();
   };
 
   return (

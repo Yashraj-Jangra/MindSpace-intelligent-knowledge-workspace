@@ -105,7 +105,7 @@ export function renderStrokeOnCanvas(ctx: CanvasRenderingContext2D, stroke: Vect
   ctx.save();
 
   // 1. Ballpoint Line Styles (Solid, Dashed, Dotted)
-  if (stroke.lineType === 'dashed' || stroke.lineType === 'dotted') {
+  if (stroke.penSubtype === 'ballpoint' && (stroke.lineType === 'dashed' || stroke.lineType === 'dotted')) {
     ctx.beginPath();
     ctx.strokeStyle = stroke.color;
     ctx.lineWidth = stroke.width;

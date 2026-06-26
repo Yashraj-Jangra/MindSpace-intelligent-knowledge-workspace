@@ -112,7 +112,10 @@ export function PenSettingsPopover({
       <div className="grid grid-cols-3 gap-2 bg-[#0F0F0F] border border-[#262626] p-2 mb-4">
         {/* 1. Fountain Pen */}
         <button
-          onClick={() => onSelectPenSubtype('fountain')}
+          onClick={() => {
+            onSelectPenSubtype('fountain');
+            onChangeLineType('solid');
+          }}
           className={`flex flex-col items-center justify-center p-2 transition-all ${
             activePenSubtype === 'fountain'
               ? 'bg-[#1A1A1A] border border-[#FF3D00]'
@@ -140,7 +143,10 @@ export function PenSettingsPopover({
 
         {/* 3. Textured Pencil */}
         <button
-          onClick={() => onSelectPenSubtype('pencil')}
+          onClick={() => {
+            onSelectPenSubtype('pencil');
+            onChangeLineType('solid');
+          }}
           className={`flex flex-col items-center justify-center p-2 transition-all ${
             activePenSubtype === 'pencil'
               ? 'bg-[#1A1A1A] border border-[#FF3D00]'

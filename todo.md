@@ -39,12 +39,14 @@
   - **Canvas DPR Coordinate & Visibility Lifecycle Fix (`NativeStylusCanvas.tsx`)**: Standardized DPR physical pixel scaling between active stroke rendering and offscreen canvas buffer (`ctx.scale(dpr, dpr)`), eliminating offset/jumping coordinate bugs and keeping static strokes permanently visible on screen after stroke completion.
   - **Zero-Delay Synchronous Stroke Commit (`NativeStylusCanvas.tsx`)**: Resolved stroke rendering delay bug by passing updated strokes synchronously to `updateOffscreenBuffer(updatedStrokes)` on `handlePointerUp`, eliminating closure state lag so completed strokes paint on screen instantly (0ms delay).
   - **Line Style Scoping Fix (`PenSettingsPopover.tsx` & `stroke-renderer.ts`)**: Restricted dashed and dotted line styles exclusively to the Ballpoint pen. Switching to Fountain Pen or Pencil automatically resets line style to solid and prevents dashed/dotted line styles from leaking onto other pens.
+  - **Procedural Graphite Pencil Texture Engine (`stroke-renderer.ts`)**: Built a true procedural paper grain pattern generator (`getGraphitePattern`) that generates realistic fibrous graphite specks and paper tooth textures. Stylus pressure controls lead darkness while Pencil Texture Grain controls particle density and speckle count.
   - Integrated **StylusAnnotationCanvas** overlay: HTML5 Canvas with pressure sensitivity (`PointerEvent.pressure`), pen, marker, highlighter, eraser, and color swatches.
   - Built File Upload API (`/api/upload`) for note media attachments.
   - Integrated Document Telemetry bar (Word count, character count, estimated reading time) & Zen Focus writing mode.
 
 ## Next Steps
 - [ ] Test live note creation, rich text editing, freehand stylus writing, and mind map canvas drawing in browser.
+
 
 
 

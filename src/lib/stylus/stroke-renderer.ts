@@ -1,6 +1,57 @@
 import { getStroke } from 'perfect-freehand';
 import { VectorStroke, PointerPoint, PenSubtype } from './stylus-types';
 
+// Graphite texture pattern cache
+const patternCache = new Map<string, CanvasPattern>();
+
+/**
+ * Creates a procedural graphite paper grain pattern based on texture density
+ */
+export function getGraphitePattern(
+  ctx: CanvasRenderingContext2D,
+  color: string,
+  density: number
+): CanvasPattern | string {
+  const normalizedDensity = Math.min(1.0, Math.max(0.1, density));
+  const cacheKey = `${color}_${normalizedDensity.toFixed(2)}`;
+
+  if (patternCache.has(cacheKey)) {
+    return patternCache.get(cacheKey)!;
+  }
+
+  const size = 32;
+  const pCanvas = document.createElement('canvas');
+  pCanvas.width = size;
+  pCanvas.height = size;
+  const pCtx = pCanvas.getContext('2d');
+  if (!pCtx) return color;
+
+  pCtx.clearRect(0, 0, size, size);
+  pCtx.fillStyle = color;
+
+  // Generate randomized graphite micro-particles & fibrous specks
+  const particleCount = Math.floor(size * size * 0.4 * normalizedDensity);
+  for (let i = 0; i < particleCount; i++) {
+    const x = Math.random() * size;
+    const y = Math.random() * size;
+    const radius = 0.35 + Math.random() * 0.85;
+    const alpha = 0.25 + Math.random() * 0.75;
+
+    pCtx.globalAlpha = alpha;
+    pCtx.beginPath();
+    pCtx.arc(x, y, radius, 0, Math.PI * 2);
+    pCtx.fill();
+  }
+
+  const pattern = ctx.createPattern(pCanvas, 'repeat');
+  if (pattern) {
+    patternCache.set(cacheKey, pattern);
+    return pattern;
+  }
+
+  return color;
+}
+
 /**
  * Returns perfect-freehand stroke options for Fountain, Ballpoint, and Pencil
  */
@@ -25,10 +76,10 @@ export function getPenFreehandOptions(
 
     case 'pencil':
       return {
-        size: baseWidth * 1.2,
-        thinning: 0.15, // Subtle graphite width variation
-        smoothing: 0.45,
-        streamline: 0.2,
+        size: baseWidth * 1.4,
+        thinning: 0.2, // Textured graphite stroke variation
+        smoothing: 0.4,
+        streamline: 0.15,
         start: { taper: 0, cap: true },
         end: { taper: 0, cap: true },
         simulatePressure: false,
@@ -59,15 +110,13 @@ export function getSvgPathFromPoints(
 ): string {
   if (!points || points.length === 0) return '';
 
-  // For Fountain Pen: factor in point-to-point drawing speed for velocity tapering
   const inputPoints = points.map((p, idx, arr) => {
     let speedFactor = 1.0;
     if (subtype === 'fountain' && idx > 0) {
       const prev = arr[idx - 1];
       const dist = Math.hypot(p.x - prev.x, p.y - prev.y);
       const dt = Math.max(1, p.timeStamp - prev.timeStamp);
-      const speed = dist / dt; // pixels per millisecond
-      // Faster drawing speed reduces effective pressure for natural tapering
+      const speed = dist / dt;
       speedFactor = Math.max(0.2, 1.0 - Math.min(0.8, speed * 0.15));
     }
 
@@ -133,21 +182,33 @@ export function renderStrokeOnCanvas(ctx: CanvasRenderingContext2D, stroke: Vect
     return;
   }
 
-  // 2. Pencil Graphite Grain Shading (Pressure dictates darkness/opacity)
+  // 2. Realistic Procedural Graphite Texture Pencil
   if (stroke.penSubtype === 'pencil') {
-    const density = stroke.pencilDensity ?? 0.85;
-    ctx.globalCompositeOperation = 'source-over';
-    ctx.fillStyle = stroke.color;
-
+    const grainDensity = stroke.pencilDensity ?? 0.85;
     const svgPathData = getSvgPathFromPoints(points, 'pencil', stroke.width, stroke.smoothing);
+
     if (svgPathData) {
       const avgPressure = points.reduce((acc, p) => acc + (p.pressure || 0.5), 0) / points.length;
-      const alpha = Math.min(1.0, Math.max(0.15, avgPressure * density));
-      ctx.globalAlpha = alpha;
+      // Stylus pressure controls lead darkness
+      const darkAlpha = Math.min(1.0, Math.max(0.4, avgPressure * 1.25));
+
+      ctx.save();
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.globalAlpha = darkAlpha;
+
+      // Fill with procedural graphite grain pattern
+      const pattern = getGraphitePattern(ctx, stroke.color, grainDensity);
+      ctx.fillStyle = pattern;
 
       try {
         const path2d = new Path2D(svgPathData);
         ctx.fill(path2d);
+
+        // Add fibrous graphite edge stipple
+        ctx.strokeStyle = stroke.color;
+        ctx.lineWidth = 0.6;
+        ctx.globalAlpha = darkAlpha * 0.5;
+        ctx.stroke(path2d);
       } catch {
         ctx.beginPath();
         ctx.moveTo(points[0].x, points[0].y);
@@ -158,6 +219,7 @@ export function renderStrokeOnCanvas(ctx: CanvasRenderingContext2D, stroke: Vect
         ctx.strokeStyle = stroke.color;
         ctx.stroke();
       }
+      ctx.restore();
     }
     ctx.restore();
     return;

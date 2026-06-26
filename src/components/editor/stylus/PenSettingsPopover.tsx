@@ -235,7 +235,7 @@ export function PenSettingsPopover({
         {activePenSubtype === 'pencil' && (
           <div className="space-y-1 bg-[#0F0F0F] border border-[#262626] p-2.5">
             <div className="flex items-center justify-between text-[11px] font-mono">
-              <span className="text-[#737373] uppercase">Graphite Density</span>
+              <span className="text-[#737373] uppercase">Pencil Texture Grain</span>
               <span className="text-[#FF3D00] font-bold">{graphiteDensityPercent}%</span>
             </div>
             <input

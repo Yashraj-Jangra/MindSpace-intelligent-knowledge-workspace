@@ -1,57 +1,6 @@
 import { getStroke } from 'perfect-freehand';
 import { VectorStroke, PointerPoint, PenSubtype } from './stylus-types';
 
-// Graphite texture pattern cache
-const patternCache = new Map<string, CanvasPattern>();
-
-/**
- * Creates a procedural graphite paper grain pattern based on texture density
- */
-export function getGraphitePattern(
-  ctx: CanvasRenderingContext2D,
-  color: string,
-  density: number
-): CanvasPattern | string {
-  const normalizedDensity = Math.min(1.0, Math.max(0.1, density));
-  const cacheKey = `${color}_${normalizedDensity.toFixed(2)}`;
-
-  if (patternCache.has(cacheKey)) {
-    return patternCache.get(cacheKey)!;
-  }
-
-  const size = 32;
-  const pCanvas = document.createElement('canvas');
-  pCanvas.width = size;
-  pCanvas.height = size;
-  const pCtx = pCanvas.getContext('2d');
-  if (!pCtx) return color;
-
-  pCtx.clearRect(0, 0, size, size);
-  pCtx.fillStyle = color;
-
-  // Generate randomized graphite micro-particles & fibrous specks
-  const particleCount = Math.floor(size * size * 0.4 * normalizedDensity);
-  for (let i = 0; i < particleCount; i++) {
-    const x = Math.random() * size;
-    const y = Math.random() * size;
-    const radius = 0.35 + Math.random() * 0.85;
-    const alpha = 0.25 + Math.random() * 0.75;
-
-    pCtx.globalAlpha = alpha;
-    pCtx.beginPath();
-    pCtx.arc(x, y, radius, 0, Math.PI * 2);
-    pCtx.fill();
-  }
-
-  const pattern = ctx.createPattern(pCanvas, 'repeat');
-  if (pattern) {
-    patternCache.set(cacheKey, pattern);
-    return pattern;
-  }
-
-  return color;
-}
-
 /**
  * Returns perfect-freehand stroke options for Fountain, Ballpoint, and Pencil
  */
@@ -145,6 +94,84 @@ export function getSvgPathFromStrokeOutline(outlinePoints: number[][]): string {
 }
 
 /**
+ * High-realism Pencil Graphite Stipple Engine with Layer-by-Layer Overlapping & Paper Grain Particle Scattering
+ */
+export function renderPencilStroke(ctx: CanvasRenderingContext2D, stroke: VectorStroke) {
+  const points = stroke.points;
+  if (!points || points.length === 0) return;
+
+  const density = stroke.pencilDensity ?? 0.85;
+  const baseRadius = Math.max(1, stroke.width / 2);
+
+  ctx.save();
+  ctx.globalCompositeOperation = 'source-over';
+  ctx.fillStyle = stroke.color;
+
+  // Interpolate trajectory points for continuous micro-particle graphite shading
+  const samplePoints: { x: number; y: number; pressure: number }[] = [];
+
+  for (let i = 0; i < points.length; i++) {
+    const curr = points[i];
+    samplePoints.push({ x: curr.x, y: curr.y, pressure: curr.pressure || 0.5 });
+
+    if (i < points.length - 1) {
+      const next = points[i + 1];
+      const dist = Math.hypot(next.x - curr.x, next.y - curr.y);
+      const step = Math.max(1.5, baseRadius * 0.35);
+
+      if (dist > step) {
+        const steps = Math.floor(dist / step);
+        for (let s = 1; s < steps; s++) {
+          const t = s / steps;
+          samplePoints.push({
+            x: curr.x + (next.x - curr.x) * t,
+            y: curr.y + (next.y - curr.y) * t,
+            pressure: (curr.pressure || 0.5) * (1 - t) + (next.pressure || 0.5) * t,
+          });
+        }
+      }
+    }
+  }
+
+  // Render high-frequency graphite particle clusters along trajectory (Natural layer stacking!)
+  for (let i = 0; i < samplePoints.length; i++) {
+    const p = samplePoints[i];
+    const pressure = Math.max(0.15, p.pressure);
+    const radius = baseRadius * (0.5 + pressure * 0.75);
+    const particleCount = Math.floor(Math.max(4, radius * 3.5 * density));
+
+    // Deterministic pseudo-random seed per point for crisp re-rendering
+    let seed = Math.sin(p.x * 12.9898 + p.y * 78.233 + i * 43.23) * 43758.5453;
+    const pseudoRandom = () => {
+      seed = Math.sin(seed) * 43758.5453;
+      return seed - Math.floor(seed);
+    };
+
+    for (let k = 0; k < particleCount; k++) {
+      // Gaussian radial scatter for paper tooth texture
+      const u1 = pseudoRandom();
+      const u2 = pseudoRandom();
+      const dist = Math.sqrt(-2 * Math.log(u1 || 0.001)) * radius * 0.42;
+      const angle = u2 * Math.PI * 2;
+
+      const px = p.x + Math.cos(angle) * dist;
+      const py = p.y + Math.sin(angle) * dist;
+
+      // Micro-grain particle size & alpha (Stacks naturally when drawn over same area)
+      const dotRadius = 0.35 + pseudoRandom() * 0.85;
+      const alpha = Math.min(0.65, (0.06 + pseudoRandom() * 0.18) * pressure * (0.6 + density * 0.7));
+
+      ctx.globalAlpha = alpha;
+      ctx.beginPath();
+      ctx.arc(px, py, dotRadius, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  ctx.restore();
+}
+
+/**
  * Renders vector stroke onto Canvas context with exact per-pen physics
  */
 export function renderStrokeOnCanvas(ctx: CanvasRenderingContext2D, stroke: VectorStroke) {
@@ -182,45 +209,9 @@ export function renderStrokeOnCanvas(ctx: CanvasRenderingContext2D, stroke: Vect
     return;
   }
 
-  // 2. Realistic Procedural Graphite Texture Pencil
+  // 2. High-Realism Pencil Graphite Particle Overlapping & Paper Grain
   if (stroke.penSubtype === 'pencil') {
-    const grainDensity = stroke.pencilDensity ?? 0.85;
-    const svgPathData = getSvgPathFromPoints(points, 'pencil', stroke.width, stroke.smoothing);
-
-    if (svgPathData) {
-      const avgPressure = points.reduce((acc, p) => acc + (p.pressure || 0.5), 0) / points.length;
-      // Stylus pressure controls lead darkness
-      const darkAlpha = Math.min(1.0, Math.max(0.4, avgPressure * 1.25));
-
-      ctx.save();
-      ctx.globalCompositeOperation = 'source-over';
-      ctx.globalAlpha = darkAlpha;
-
-      // Fill with procedural graphite grain pattern
-      const pattern = getGraphitePattern(ctx, stroke.color, grainDensity);
-      ctx.fillStyle = pattern;
-
-      try {
-        const path2d = new Path2D(svgPathData);
-        ctx.fill(path2d);
-
-        // Add fibrous graphite edge stipple
-        ctx.strokeStyle = stroke.color;
-        ctx.lineWidth = 0.6;
-        ctx.globalAlpha = darkAlpha * 0.5;
-        ctx.stroke(path2d);
-      } catch {
-        ctx.beginPath();
-        ctx.moveTo(points[0].x, points[0].y);
-        for (let i = 1; i < points.length; i++) {
-          ctx.lineTo(points[i].x, points[i].y);
-        }
-        ctx.lineWidth = stroke.width;
-        ctx.strokeStyle = stroke.color;
-        ctx.stroke();
-      }
-      ctx.restore();
-    }
+    renderPencilStroke(ctx, stroke);
     ctx.restore();
     return;
   }

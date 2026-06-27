@@ -400,6 +400,7 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
           activeTool={activeTool}
           onSelectTool={setActiveTool}
           onTogglePenPopover={() => setIsPenPopoverOpen(!isPenPopoverOpen)}
+          onClosePenPopover={() => setIsPenPopoverOpen(false)}
           settings={stylusSettings}
           onToggleStylusMode={() =>
             setStylusSettings((prev) => ({

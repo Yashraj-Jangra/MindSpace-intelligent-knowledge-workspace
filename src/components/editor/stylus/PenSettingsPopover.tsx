@@ -1,7 +1,7 @@
 'use client';
 
-import React from 'react';
-import { Camera, Crop, Mic, X } from 'lucide-react';
+import React, { useEffect, useRef } from 'react';
+import { X, SlidersHorizontal } from 'lucide-react';
 import {
   PenSubtype,
   LineType,
@@ -68,6 +68,31 @@ export function PenSettingsPopover({
   settings,
   onUpdateSettings,
 }: PenSettingsPopoverProps) {
+  const popoverRef = useRef<HTMLDivElement | null>(null);
+
+  // Click Outside Listener to close popover when clicking elsewhere
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handlePointerDownOutside = (e: MouseEvent | TouchEvent) => {
+      if (popoverRef.current && !popoverRef.current.contains(e.target as Node)) {
+        // Prevent closing if clicking on the vertical sidebar pen button
+        const target = e.target as HTMLElement;
+        if (target.closest('.vertical-stylus-sidebar')) return;
+
+        onClose();
+      }
+    };
+
+    document.addEventListener('mousedown', handlePointerDownOutside);
+    document.addEventListener('touchstart', handlePointerDownOutside);
+
+    return () => {
+      document.removeEventListener('mousedown', handlePointerDownOutside);
+      document.removeEventListener('touchstart', handlePointerDownOutside);
+    };
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   const stabilizationPercent =
@@ -90,18 +115,18 @@ export function PenSettingsPopover({
   };
 
   return (
-    <div className="fixed top-14 left-16 z-50 w-[340px] bg-[#0A0A0A]/95 backdrop-blur-xl border border-[#262626] rounded-none shadow-2xl p-4 text-[#FAFAFA] font-sans select-none animate-in fade-in zoom-in-95 duration-150">
+    <div
+      ref={popoverRef}
+      className="fixed top-14 left-16 z-50 w-[340px] bg-[#0A0A0A]/95 backdrop-blur-xl border border-[#262626] rounded-none shadow-2xl p-4 text-[#FAFAFA] font-sans select-none animate-in fade-in zoom-in-95 duration-150"
+    >
       {/* Top Header */}
       <div className="flex items-center justify-between border-b border-[#262626] pb-2.5 mb-3">
-        <div className="flex items-center gap-2 text-[#737373]">
-          <Camera className="w-3.5 h-3.5 hover:text-[#FAFAFA] cursor-pointer transition-colors" />
-          <Crop className="w-3.5 h-3.5 hover:text-[#FAFAFA] cursor-pointer transition-colors" />
-          <Mic className="w-3.5 h-3.5 hover:text-[#FAFAFA] cursor-pointer transition-colors" />
+        <div className="flex items-center gap-1.5 text-[#FF3D00]">
+          <SlidersHorizontal className="w-3.5 h-3.5" />
+          <span className="font-mono text-xs uppercase font-bold tracking-wider text-[#FAFAFA]">
+            {PEN_NAMES[activePenSubtype]} Settings
+          </span>
         </div>
-
-        <span className="font-mono text-xs uppercase font-bold tracking-wider text-[#FAFAFA]">
-          {PEN_NAMES[activePenSubtype]}
-        </span>
 
         <button onClick={onClose} className="text-[#737373] hover:text-[#FAFAFA] p-0.5">
           <X className="w-3.5 h-3.5" />
@@ -159,7 +184,7 @@ export function PenSettingsPopover({
         </button>
       </div>
 
-      {/* Dynamic Settings Area (Strictly Maintained Container Height for Zero Layout Shifting!) */}
+      {/* Dynamic Settings Area */}
       <div className="min-h-[70px] flex flex-col justify-center mb-3.5">
         {activePenSubtype === 'ballpoint' && (
           <div className="space-y-1.5">

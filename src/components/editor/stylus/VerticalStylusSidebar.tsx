@@ -18,6 +18,7 @@ interface VerticalStylusSidebarProps {
   activeTool: StylusTool;
   onSelectTool: (tool: StylusTool) => void;
   onTogglePenPopover: () => void;
+  onClosePenPopover: () => void;
   settings: StylusSettings;
   onToggleStylusMode: () => void;
   onUndo: () => void;
@@ -29,6 +30,7 @@ export function VerticalStylusSidebar({
   activeTool,
   onSelectTool,
   onTogglePenPopover,
+  onClosePenPopover,
   settings,
   onToggleStylusMode,
   onUndo,
@@ -36,7 +38,7 @@ export function VerticalStylusSidebar({
   onBackToDashboard,
 }: VerticalStylusSidebarProps) {
   return (
-    <aside className="fixed top-0 left-0 bottom-0 z-40 w-12 bg-[#0F0F0F] border-r border-[#262626] flex flex-col justify-between items-center py-3 font-sans select-none shadow-2xl">
+    <aside className="fixed top-0 left-0 bottom-0 z-40 w-12 bg-[#0F0F0F] border-r border-[#262626] flex flex-col justify-between items-center py-3 font-sans select-none shadow-2xl vertical-stylus-sidebar">
       {/* Top Section: Dashboard, Undo, Redo */}
       <div className="flex flex-col items-center gap-3">
         <button
@@ -101,7 +103,10 @@ export function VerticalStylusSidebar({
 
         {/* Highlighter Tool */}
         <button
-          onClick={() => onSelectTool('highlighter')}
+          onClick={() => {
+            onSelectTool('highlighter');
+            onClosePenPopover();
+          }}
           className={`p-2 border transition-colors ${
             activeTool === 'highlighter'
               ? 'border-[#FF3D00] bg-[#1A1A1A] text-[#FF3D00]'
@@ -114,7 +119,10 @@ export function VerticalStylusSidebar({
 
         {/* Eraser Tool */}
         <button
-          onClick={() => onSelectTool('eraser')}
+          onClick={() => {
+            onSelectTool('eraser');
+            onClosePenPopover();
+          }}
           className={`p-2 border transition-colors ${
             activeTool === 'eraser'
               ? 'border-[#FF3D00] bg-[#1A1A1A] text-[#FF3D00]'
@@ -127,7 +135,10 @@ export function VerticalStylusSidebar({
 
         {/* Lasso Select Tool */}
         <button
-          onClick={() => onSelectTool('select')}
+          onClick={() => {
+            onSelectTool('select');
+            onClosePenPopover();
+          }}
           className={`p-2 border transition-colors ${
             activeTool === 'select'
               ? 'border-[#FF3D00] bg-[#1A1A1A] text-[#FF3D00]'
@@ -140,7 +151,10 @@ export function VerticalStylusSidebar({
 
         {/* Auto-Shape Recognition */}
         <button
-          onClick={() => onSelectTool('pen')}
+          onClick={() => {
+            onSelectTool('pen');
+            onClosePenPopover();
+          }}
           className="p-2 text-[#737373] hover:text-[#FAFAFA] transition-colors"
           title="Auto-Shape Recognizer"
         >

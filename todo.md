@@ -43,12 +43,14 @@
   - **Realistic Pencil Layer Overlapping & Particle Stipple Engine (`stroke-renderer.ts`)**: Built point trajectory interpolation with Gaussian particle scatter stamps (`renderPencilStroke`). Overlapping strokes or shading back-and-forth over the same area deposits cumulative layers of graphite specks, progressively building darkness from light 2H sketch to dark charcoal lead.
   - **Popover State & Click-Outside Dismissal (`PenSettingsPopover.tsx` & `VerticalStylusSidebar.tsx`)**: Removed non-functional camera/crop/mic icons from header bar. Added global click-outside listener to automatically dismiss Pen Settings when clicking anywhere outside, and automatically close popover when switching to non-pen tools (Highlighter, Eraser, Select).
   - **Auto-Shape Recognition Engine & Interactive Geometric Handles (`ShapeSettingsPopover.tsx`, `NativeStylusCanvas.tsx`, `vector-selection.ts`)**: Built real-time hold conversion timer (0.3s to 1.5s) that automatically converts rough sketches into clean vector shapes instantly while stylus is held still. Built dedicated Shape Settings Box (Pen & Highlighter toggles) and interactive control handles for Circles (Center + Radius handle) and Triangles (3 Corner Angle Handles).
+  - **Highlighter Settings Suite & Straight Line Auto-Snap (`HighlighterSettingsPopover.tsx`, `stroke-renderer.ts`, `NativeStylusCanvas.tsx`)**: Built dedicated 340px Highlighter popover with 2 nib subtypes (Flat Chisel angled marker & Round Bullet soft circular marker), "Draw Straight Lines" auto-snap mode, thickness slider (10px to 50px), and translucent neon color swatches.
   - Integrated **StylusAnnotationCanvas** overlay: HTML5 Canvas with pressure sensitivity (`PointerEvent.pressure`), pen, marker, highlighter, eraser, and color swatches.
   - Built File Upload API (`/api/upload`) for note media attachments.
   - Integrated Document Telemetry bar (Word count, character count, estimated reading time) & Zen Focus writing mode.
 
 ## Next Steps
 - [ ] Test live note creation, rich text editing, freehand stylus writing, and mind map canvas drawing in browser.
+
 
 
 

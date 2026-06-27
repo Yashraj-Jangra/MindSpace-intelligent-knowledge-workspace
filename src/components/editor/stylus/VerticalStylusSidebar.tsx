@@ -20,6 +20,7 @@ interface VerticalStylusSidebarProps {
   onTogglePenPopover: () => void;
   onClosePenPopover: () => void;
   onToggleHighlighterPopover: () => void;
+  onToggleEraserPopover: () => void;
   onToggleShapePopover: () => void;
   settings: StylusSettings;
   onToggleStylusMode: () => void;
@@ -34,6 +35,7 @@ export function VerticalStylusSidebar({
   onTogglePenPopover,
   onClosePenPopover,
   onToggleHighlighterPopover,
+  onToggleEraserPopover,
   onToggleShapePopover,
   settings,
   onToggleStylusMode,
@@ -121,18 +123,18 @@ export function VerticalStylusSidebar({
           <Highlighter className="w-4 h-4 stroke-[2]" />
         </button>
 
-        {/* Eraser Tool */}
+        {/* Eraser Tool (Click for Eraser Settings) */}
         <button
           onClick={() => {
             onSelectTool('eraser');
-            onClosePenPopover();
+            onToggleEraserPopover();
           }}
           className={`p-2 border transition-colors ${
             activeTool === 'eraser'
               ? 'border-[#FF3D00] bg-[#1A1A1A] text-[#FF3D00]'
               : 'border-transparent text-[#737373] hover:text-[#FAFAFA]'
           }`}
-          title="Pressure Eraser"
+          title="Eraser Tool (Click for Eraser Settings)"
         >
           <Eraser className="w-4 h-4 stroke-[2]" />
         </button>

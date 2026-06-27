@@ -76,6 +76,7 @@ import { VerticalStylusSidebar } from './stylus/VerticalStylusSidebar';
 import { PenSettingsPopover, PenPreset } from './stylus/PenSettingsPopover';
 import { ShapeSettingsPopover } from './stylus/ShapeSettingsPopover';
 import { HighlighterSettingsPopover } from './stylus/HighlighterSettingsPopover';
+import { EraserSettingsPopover } from './stylus/EraserSettingsPopover';
 import { StylusSettingsModal } from './stylus/StylusSettingsModal';
 import { useStylusHardware } from '@/hooks/useStylusHardware';
 import { recognizeInkToText } from '@/lib/stylus/ink-to-text';
@@ -121,6 +122,7 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
   const [isPenPopoverOpen, setIsPenPopoverOpen] = useState(false);
   const [isShapePopoverOpen, setIsShapePopoverOpen] = useState(false);
   const [isHighlighterPopoverOpen, setIsHighlighterPopoverOpen] = useState(false);
+  const [isEraserPopoverOpen, setIsEraserPopoverOpen] = useState(false);
   const [penBoxPresets, setPenBoxPresets] = useState<PenPreset[]>(DEFAULT_PEN_BOX_PRESETS);
 
   // Editor View Mode & Status
@@ -407,20 +409,30 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
             setIsPenPopoverOpen(!isPenPopoverOpen);
             setIsShapePopoverOpen(false);
             setIsHighlighterPopoverOpen(false);
+            setIsEraserPopoverOpen(false);
           }}
           onClosePenPopover={() => {
             setIsPenPopoverOpen(false);
             setIsHighlighterPopoverOpen(false);
+            setIsEraserPopoverOpen(false);
           }}
           onToggleHighlighterPopover={() => {
             setIsHighlighterPopoverOpen(!isHighlighterPopoverOpen);
             setIsPenPopoverOpen(false);
+            setIsShapePopoverOpen(false);
+            setIsEraserPopoverOpen(false);
+          }}
+          onToggleEraserPopover={() => {
+            setIsEraserPopoverOpen(!isEraserPopoverOpen);
+            setIsPenPopoverOpen(false);
+            setIsHighlighterPopoverOpen(false);
             setIsShapePopoverOpen(false);
           }}
           onToggleShapePopover={() => {
             setIsShapePopoverOpen(!isShapePopoverOpen);
             setIsPenPopoverOpen(false);
             setIsHighlighterPopoverOpen(false);
+            setIsEraserPopoverOpen(false);
           }}
           settings={stylusSettings}
           onToggleStylusMode={() =>
@@ -460,6 +472,16 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
           onClose={() => setIsHighlighterPopoverOpen(false)}
           activeColor={activeColor}
           onChangeColor={setActiveColor}
+          settings={stylusSettings}
+          onUpdateSettings={(newSettings) => setStylusSettings((prev) => ({ ...prev, ...newSettings }))}
+        />
+      )}
+
+      {/* Eraser Popover Settings */}
+      {stylusSettings.isStylusModeActive && (
+        <EraserSettingsPopover
+          isOpen={isEraserPopoverOpen}
+          onClose={() => setIsEraserPopoverOpen(false)}
           settings={stylusSettings}
           onUpdateSettings={(newSettings) => setStylusSettings((prev) => ({ ...prev, ...newSettings }))}
         />

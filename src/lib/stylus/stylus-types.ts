@@ -1,5 +1,6 @@
 export type PenSubtype = 'fountain' | 'ballpoint' | 'pencil';
 export type HighlighterSubtype = 'flat' | 'round';
+export type EraserMode = 'pixel' | 'stroke' | 'circular';
 export type StylusTool = 'select' | 'pen' | 'highlighter' | 'eraser' | 'laser';
 export type LineType = 'solid' | 'dashed' | 'dotted';
 export type PressureCurve = 'linear' | 'soft' | 'hard';
@@ -87,6 +88,11 @@ export interface StylusSettings {
   activeHighlighterSubtype: HighlighterSubtype;
   highlighterDrawStraightLines: boolean;
   highlighterThickness: number;
+  eraserMode: EraserMode;
+  eraserSize: number;
+  eraserPressureThreshold: number; // 0.2 to 0.9
+  erasePenStrokes: boolean;
+  eraseHighlighterStrokes: boolean;
   hapticsEnabled: boolean;
   hapticIntensity: 'light' | 'medium' | 'strong';
   pressureCurve: PressureCurve;
@@ -111,6 +117,11 @@ export const DEFAULT_STYLUS_SETTINGS: StylusSettings = {
   activeHighlighterSubtype: 'flat',
   highlighterDrawStraightLines: false,
   highlighterThickness: 24,
+  eraserMode: 'stroke',
+  eraserSize: 20,
+  eraserPressureThreshold: 0.35, // 35% pressure threshold
+  erasePenStrokes: true,
+  eraseHighlighterStrokes: true,
   hapticsEnabled: true,
   hapticIntensity: 'medium',
   pressureCurve: 'linear',

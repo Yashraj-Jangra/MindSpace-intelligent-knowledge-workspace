@@ -180,7 +180,35 @@ export function renderStrokeOnCanvas(ctx: CanvasRenderingContext2D, stroke: Vect
 
   ctx.save();
 
-  // 1. Ballpoint Line Styles (Solid, Dashed, Dotted)
+  // 1. Translucent Neon Highlighter (Flat Chisel or Round Bullet + Straight Line Snap)
+  if (stroke.tool === 'highlighter') {
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.globalAlpha = 0.45;
+    ctx.strokeStyle = stroke.color;
+    ctx.lineWidth = stroke.width;
+
+    const cap = stroke.highlighterSubtype === 'flat' ? 'butt' : 'round';
+    const join = stroke.highlighterSubtype === 'flat' ? 'miter' : 'round';
+
+    ctx.lineCap = cap;
+    ctx.lineJoin = join;
+
+    ctx.beginPath();
+    if (stroke.isStraightLine || points.length <= 2) {
+      ctx.moveTo(points[0].x, points[0].y);
+      ctx.lineTo(points[points.length - 1].x, points[points.length - 1].y);
+    } else {
+      ctx.moveTo(points[0].x, points[0].y);
+      for (let i = 1; i < points.length; i++) {
+        ctx.lineTo(points[i].x, points[i].y);
+      }
+    }
+    ctx.stroke();
+    ctx.restore();
+    return;
+  }
+
+  // 2. Ballpoint Line Styles (Solid, Dashed, Dotted)
   if (stroke.penSubtype === 'ballpoint' && (stroke.lineType === 'dashed' || stroke.lineType === 'dotted')) {
     ctx.beginPath();
     ctx.strokeStyle = stroke.color;
@@ -194,12 +222,6 @@ export function renderStrokeOnCanvas(ctx: CanvasRenderingContext2D, stroke: Vect
       ctx.setLineDash([stroke.width * 0.5, stroke.width * 1.8]);
     }
 
-    if (stroke.tool === 'highlighter') {
-      ctx.globalCompositeOperation = 'source-over';
-      ctx.strokeStyle = stroke.color + '66';
-      ctx.lineWidth = stroke.width * 3;
-    }
-
     ctx.moveTo(points[0].x, points[0].y);
     for (let i = 1; i < points.length; i++) {
       ctx.lineTo(points[i].x, points[i].y);
@@ -209,28 +231,23 @@ export function renderStrokeOnCanvas(ctx: CanvasRenderingContext2D, stroke: Vect
     return;
   }
 
-  // 2. High-Realism Pencil Graphite Particle Overlapping & Paper Grain
+  // 3. High-Realism Pencil Graphite Particle Overlapping & Paper Grain
   if (stroke.penSubtype === 'pencil') {
     renderPencilStroke(ctx, stroke);
     ctx.restore();
     return;
   }
 
-  // 3. Solid Fountain Pen & Ballpoint Pen
+  // 4. Solid Fountain Pen & Ballpoint Pen
   const svgPathData = getSvgPathFromPoints(stroke.points, stroke.penSubtype, stroke.width, stroke.smoothing);
   if (!svgPathData) {
     ctx.restore();
     return;
   }
 
-  if (stroke.tool === 'highlighter') {
-    ctx.globalCompositeOperation = 'source-over';
-    ctx.fillStyle = stroke.color + '55'; // Translucent highlighter
-  } else {
-    ctx.globalCompositeOperation = 'source-over';
-    ctx.globalAlpha = 1.0;
-    ctx.fillStyle = stroke.color;
-  }
+  ctx.globalCompositeOperation = 'source-over';
+  ctx.globalAlpha = 1.0;
+  ctx.fillStyle = stroke.color;
 
   try {
     const path2d = new Path2D(svgPathData);

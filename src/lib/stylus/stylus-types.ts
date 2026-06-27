@@ -1,4 +1,5 @@
 export type PenSubtype = 'fountain' | 'ballpoint' | 'pencil';
+export type HighlighterSubtype = 'flat' | 'round';
 export type StylusTool = 'select' | 'pen' | 'highlighter' | 'eraser' | 'laser';
 export type LineType = 'solid' | 'dashed' | 'dotted';
 export type PressureCurve = 'linear' | 'soft' | 'hard';
@@ -51,6 +52,8 @@ export interface VectorStroke {
   id: string;
   tool: StylusTool;
   penSubtype: PenSubtype;
+  highlighterSubtype?: HighlighterSubtype;
+  isStraightLine?: boolean;
   color: string;
   width: number;
   lineType: LineType;
@@ -81,6 +84,9 @@ export interface StylusSettings {
   shapeHoldTimerMs: number; // 300ms to 1500ms
   enableShapeForPen: boolean;
   enableShapeForHighlighter: boolean;
+  activeHighlighterSubtype: HighlighterSubtype;
+  highlighterDrawStraightLines: boolean;
+  highlighterThickness: number;
   hapticsEnabled: boolean;
   hapticIntensity: 'light' | 'medium' | 'strong';
   pressureCurve: PressureCurve;
@@ -102,6 +108,9 @@ export const DEFAULT_STYLUS_SETTINGS: StylusSettings = {
   shapeHoldTimerMs: 500, // 0.5s default hold timer
   enableShapeForPen: true,
   enableShapeForHighlighter: false,
+  activeHighlighterSubtype: 'flat',
+  highlighterDrawStraightLines: false,
+  highlighterThickness: 24,
   hapticsEnabled: true,
   hapticIntensity: 'medium',
   pressureCurve: 'linear',

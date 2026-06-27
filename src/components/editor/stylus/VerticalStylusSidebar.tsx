@@ -19,6 +19,7 @@ interface VerticalStylusSidebarProps {
   onSelectTool: (tool: StylusTool) => void;
   onTogglePenPopover: () => void;
   onClosePenPopover: () => void;
+  onToggleHighlighterPopover: () => void;
   onToggleShapePopover: () => void;
   settings: StylusSettings;
   onToggleStylusMode: () => void;
@@ -32,6 +33,7 @@ export function VerticalStylusSidebar({
   onSelectTool,
   onTogglePenPopover,
   onClosePenPopover,
+  onToggleHighlighterPopover,
   onToggleShapePopover,
   settings,
   onToggleStylusMode,
@@ -103,18 +105,18 @@ export function VerticalStylusSidebar({
           <Pen className="w-4 h-4 stroke-[2]" />
         </button>
 
-        {/* Highlighter Tool */}
+        {/* Highlighter Tool (Click for Highlighter Settings) */}
         <button
           onClick={() => {
             onSelectTool('highlighter');
-            onClosePenPopover();
+            onToggleHighlighterPopover();
           }}
           className={`p-2 border transition-colors ${
             activeTool === 'highlighter'
               ? 'border-[#FF3D00] bg-[#1A1A1A] text-[#FF3D00]'
               : 'border-transparent text-[#737373] hover:text-[#FAFAFA]'
           }`}
-          title="Translucent Highlighter"
+          title="Translucent Highlighter (Click for Highlighter Settings)"
         >
           <Highlighter className="w-4 h-4 stroke-[2]" />
         </button>

@@ -71,15 +71,53 @@ export function getGroupBoundingBox(strokes: VectorStroke[]): BoundingBox | null
 }
 
 /**
- * Extracts editable control handles for line endpoints, shape corners, or Bezier vertices
+ * Extracts editable geometric control handles for Circles, Triangles, Rectangles, Lines, Arrows, and Arcs
  */
 export function extractControlPoints(stroke: VectorStroke): ControlPoint[] {
   const pts = stroke.points;
   if (!pts.length) return [];
 
   const controlPoints: ControlPoint[] = [];
+  const bbox = getStrokeBoundingBox(stroke);
 
-  if (stroke.recognizedShape === 'line' || stroke.recognizedShape === 'arrow' || pts.length <= 4) {
+  if (stroke.recognizedShape === 'circle' || stroke.recognizedShape === 'ellipse') {
+    const radius = stroke.shapeBounds?.radius || Math.max(bbox.width, bbox.height) / 2;
+    const center = stroke.shapeBounds?.center || { x: bbox.centerX, y: bbox.centerY };
+
+    // Center handle + Radius handle on circumference
+    controlPoints.push({
+      id: `${stroke.id}-center`,
+      x: center.x,
+      y: center.y,
+      type: 'center',
+    });
+    controlPoints.push({
+      id: `${stroke.id}-radius`,
+      x: center.x + radius,
+      y: center.y,
+      type: 'radius',
+    });
+  } else if (stroke.recognizedShape === 'triangle') {
+    // 3 Corner Angle Vertices
+    const v = stroke.shapeBounds?.vertices || [
+      { x: bbox.centerX, y: bbox.minY },
+      { x: bbox.minX, y: bbox.maxY },
+      { x: bbox.maxX, y: bbox.maxY },
+    ];
+    controlPoints.push(
+      { id: `${stroke.id}-v0`, x: v[0].x, y: v[0].y, type: 'vertex' },
+      { id: `${stroke.id}-v1`, x: v[1].x, y: v[1].y, type: 'vertex' },
+      { id: `${stroke.id}-v2`, x: v[2].x, y: v[2].y, type: 'vertex' }
+    );
+  } else if (stroke.recognizedShape === 'rectangle' || stroke.recognizedShape === 'square') {
+    // 4 Corner handles for rectangle
+    controlPoints.push(
+      { id: `${stroke.id}-tl`, x: bbox.minX, y: bbox.minY, type: 'vertex' },
+      { id: `${stroke.id}-tr`, x: bbox.maxX, y: bbox.minY, type: 'vertex' },
+      { id: `${stroke.id}-br`, x: bbox.maxX, y: bbox.maxY, type: 'vertex' },
+      { id: `${stroke.id}-bl`, x: bbox.minX, y: bbox.maxY, type: 'vertex' }
+    );
+  } else if (stroke.recognizedShape === 'line' || stroke.recognizedShape === 'arrow' || pts.length <= 4) {
     // Endpoints for line or arrow
     controlPoints.push({
       id: `${stroke.id}-start`,
@@ -93,15 +131,6 @@ export function extractControlPoints(stroke: VectorStroke): ControlPoint[] {
       y: pts[pts.length - 1].y,
       type: 'endpoint',
     });
-  } else if (stroke.recognizedShape === 'rectangle') {
-    // 4 Corner handles for rectangle
-    const bbox = getStrokeBoundingBox(stroke);
-    controlPoints.push(
-      { id: `${stroke.id}-tl`, x: bbox.minX, y: bbox.minY, type: 'vertex' },
-      { id: `${stroke.id}-tr`, x: bbox.maxX, y: bbox.minY, type: 'vertex' },
-      { id: `${stroke.id}-br`, x: bbox.maxX, y: bbox.maxY, type: 'vertex' },
-      { id: `${stroke.id}-bl`, x: bbox.minX, y: bbox.maxY, type: 'vertex' }
-    );
   } else {
     // Freehand stroke endpoints + midpoint handle
     controlPoints.push({ id: `${stroke.id}-p0`, x: pts[0].x, y: pts[0].y, type: 'endpoint' });

@@ -8,6 +8,7 @@ import {
   PenSubtype,
   LineType,
   StylusSettings,
+  ControlPoint,
 } from '@/lib/stylus/stylus-types';
 import { StylusHaptics } from '@/lib/stylus/stylus-haptics';
 import { recognizeShape } from '@/lib/stylus/shape-recognition';
@@ -50,10 +51,16 @@ export function NativeStylusCanvas({
   const activePointsRef = useRef<PointerPoint[]>([]);
   const animFrameIdRef = useRef<number | null>(null);
 
+  // Live Stationary Hold Conversion Timer Refs
+  const lastMoveTimeRef = useRef<number>(0);
+  const lastMovePointRef = useRef<{ x: number; y: number } | null>(null);
+  const hasConvertedShapeRef = useRef(false);
+
   const [selectedStrokeId, setSelectedStrokeId] = useState<string | null>(null);
+  const [activeHandleId, setActiveHandleId] = useState<string | null>(null);
   const [dragOffset, setDragOffset] = useState<{ x: number; y: number } | null>(null);
 
-  // Synchronous offscreen canvas buffer update (Accepts targetStrokes to eliminate state lag)
+  // Synchronous offscreen canvas buffer update
   const updateOffscreenBuffer = useCallback((targetStrokes?: VectorStroke[]) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -123,7 +130,7 @@ export function NativeStylusCanvas({
       ctx.restore();
     }
 
-    // 4. Draw selection handles if selected
+    // 4. Draw interactive geometric handles if selected
     if (selectedStrokeId) {
       const selected = strokes.find((s) => s.id === selectedStrokeId);
       if (selected) {
@@ -135,7 +142,7 @@ export function NativeStylusCanvas({
     }
   }, [activeTool, activePenSubtype, activeColor, strokeWidth, lineType, settings, selectedStrokeId, strokes]);
 
-  // Update canvas dimensions on resize with exact DPR physical pixel matching
+  // Update canvas dimensions on resize
   const handleResize = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -165,6 +172,14 @@ export function NativeStylusCanvas({
     updateOffscreenBuffer();
     renderFrame();
   }, [strokes, updateOffscreenBuffer, renderFrame]);
+
+  // Check Tool Scoping for Auto-Shape Conversion
+  const isShapeEnabledForTool = useCallback(() => {
+    if (!settings.autoShapeRecognition) return false;
+    if (activeTool === 'pen' && settings.enableShapeForPen) return true;
+    if (activeTool === 'highlighter' && settings.enableShapeForHighlighter) return true;
+    return false;
+  }, [activeTool, settings]);
 
   // Pointer Down (High-frequency pointer capture & Palm Rejection)
   const handlePointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
@@ -200,14 +215,31 @@ export function NativeStylusCanvas({
 
     StylusHaptics.trigger('strokeStart', settings);
 
+    // Lasso Selection & Handle Dragging
     if (activeTool === 'select') {
+      if (selectedStrokeId) {
+        const selected = strokes.find((s) => s.id === selectedStrokeId);
+        if (selected && selected.controlPoints) {
+          const clickedHandle = selected.controlPoints.find(
+            (cp) => Math.hypot(cp.x - x, cp.y - y) <= 12
+          );
+          if (clickedHandle) {
+            setActiveHandleId(clickedHandle.id);
+            setDragOffset({ x, y });
+            return;
+          }
+        }
+      }
+
       const clicked = strokes.find((s) => isPointNearStroke(s, x, y));
       if (clicked) {
         setSelectedStrokeId(clicked.id);
+        setActiveHandleId(null);
         setDragOffset({ x, y });
         StylusHaptics.trigger('elementSelected', settings);
       } else {
         setSelectedStrokeId(null);
+        setActiveHandleId(null);
         setDragOffset(null);
       }
       return;
@@ -227,6 +259,9 @@ export function NativeStylusCanvas({
     // Active stroke initialization
     isDrawingRef.current = true;
     activePointsRef.current = [point];
+    hasConvertedShapeRef.current = false;
+    lastMoveTimeRef.current = Date.now();
+    lastMovePointRef.current = { x, y };
 
     // Start fast 120fps render loop
     const loop = () => {
@@ -238,31 +273,126 @@ export function NativeStylusCanvas({
     animFrameIdRef.current = requestAnimationFrame(loop);
   };
 
-  // Pointer Move (Reads hardware coalesced events for 240Hz sub-pixel accuracy)
+  // Pointer Move (Reads hardware coalesced events + Live Stationary Hold Conversion Timer)
   const handlePointerMove = (e: React.PointerEvent<HTMLCanvasElement>) => {
     if (!isActive) return;
 
     const canvas = canvasRef.current;
     if (!canvas) return;
     const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
 
-    if (activeTool === 'select' && selectedStrokeId && dragOffset && (e.buttons === 1 || e.buttons === 2)) {
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      const dx = x - dragOffset.x;
-      const dy = y - dragOffset.y;
+    // Handle Dragging for Selected Vector Shape Controls
+    if (activeTool === 'select' && selectedStrokeId && (e.buttons === 1 || e.buttons === 2)) {
+      if (activeHandleId && dragOffset) {
+        const dx = x - dragOffset.x;
+        const dy = y - dragOffset.y;
 
-      const updated = strokes.map((s) => (s.id === selectedStrokeId ? translateStroke(s, dx, dy) : s));
-      onStrokesChange(updated);
-      updateOffscreenBuffer(updated);
-      renderFrame();
-      setDragOffset({ x, y });
-      return;
+        const updated = strokes.map((s) => {
+          if (s.id !== selectedStrokeId) return s;
+
+          // Drag Circle Radius Handle
+          if (s.recognizedShape === 'circle' && activeHandleId.endsWith('-radius')) {
+            const bbox = getStrokeBoundingBox(s);
+            const centerX = s.shapeBounds?.center?.x ?? bbox.centerX;
+            const centerY = s.shapeBounds?.center?.y ?? bbox.centerY;
+            const newRadius = Math.max(10, Math.hypot(x - centerX, y - centerY));
+            
+            // Re-generate circle points for new radius
+            const points: PointerPoint[] = [];
+            const steps = 40;
+            for (let i = 0; i <= steps; i++) {
+              const angle = (i / steps) * Math.PI * 2;
+              points.push({
+                x: centerX + Math.cos(angle) * newRadius,
+                y: centerY + Math.sin(angle) * newRadius,
+                pressure: 0.5,
+                tiltX: 0,
+                tiltY: 0,
+                timeStamp: Date.now(),
+              });
+            }
+            const updatedStroke: VectorStroke = {
+              ...s,
+              points,
+              shapeBounds: {
+                x: centerX - newRadius,
+                y: centerY - newRadius,
+                width: newRadius * 2,
+                height: newRadius * 2,
+                radius: newRadius,
+                center: { x: centerX, y: centerY },
+              },
+            };
+            return { ...updatedStroke, controlPoints: extractControlPoints(updatedStroke) };
+          }
+
+          // Drag Triangle Corner Vertices
+          if (s.recognizedShape === 'triangle' && activeHandleId.includes('-v')) {
+            const bbox = getStrokeBoundingBox(s);
+            const vIdx = parseInt(activeHandleId.split('-v')[1], 10);
+            const vertices = [...(s.shapeBounds?.vertices || [
+              { x: s.points[0].x, y: s.points[0].y },
+              { x: s.points[Math.floor(s.points.length / 3)].x, y: s.points[Math.floor(s.points.length / 3)].y },
+              { x: s.points[Math.floor((s.points.length * 2) / 3)].x, y: s.points[Math.floor((s.points.length * 2) / 3)].y },
+            ])];
+
+            vertices[vIdx] = { x, y };
+
+            // Re-generate triangle points between 3 vertices
+            const points: PointerPoint[] = [];
+            for (let i = 0; i < 3; i++) {
+              const p0 = vertices[i];
+              const p1 = vertices[(i + 1) % 3];
+              for (let t = 0; t <= 1; t += 0.1) {
+                points.push({
+                  x: p0.x + (p1.x - p0.x) * t,
+                  y: p0.y + (p1.y - p0.y) * t,
+                  pressure: 0.5,
+                  tiltX: 0,
+                  tiltY: 0,
+                  timeStamp: Date.now(),
+                });
+              }
+            }
+            const updatedStroke: VectorStroke = {
+              ...s,
+              points,
+              shapeBounds: {
+                x: bbox.minX,
+                y: bbox.minY,
+                width: bbox.width,
+                height: bbox.height,
+                vertices,
+              },
+            };
+            return { ...updatedStroke, controlPoints: extractControlPoints(updatedStroke) };
+          }
+
+          return translateStroke(s, dx, dy);
+        });
+
+        onStrokesChange(updated);
+        updateOffscreenBuffer(updated);
+        renderFrame();
+        setDragOffset({ x, y });
+        return;
+      }
+
+      if (dragOffset) {
+        const dx = x - dragOffset.x;
+        const dy = y - dragOffset.y;
+        const updated = strokes.map((s) => (s.id === selectedStrokeId ? translateStroke(s, dx, dy) : s));
+        onStrokesChange(updated);
+        updateOffscreenBuffer(updated);
+        renderFrame();
+        setDragOffset({ x, y });
+        return;
+      }
     }
 
     if (activeTool === 'eraser' && e.buttons === 1) {
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
       const remaining = strokes.filter((s) => !isPointNearStroke(s, x, y, strokeWidth * 2.5));
       if (remaining.length !== strokes.length) {
         StylusHaptics.trigger('eraserScrub', settings);
@@ -275,25 +405,56 @@ export function NativeStylusCanvas({
 
     if (!isDrawingRef.current) return;
 
-    // Read high-frequency hardware coalesced events if available
+    // Read high-frequency hardware coalesced events
     const nativeEvent = e.nativeEvent as PointerEvent;
     const coalesced = typeof nativeEvent.getCoalescedEvents === 'function' ? nativeEvent.getCoalescedEvents() : [nativeEvent];
 
     for (const pe of coalesced) {
-      const x = pe.clientX - rect.left;
-      const y = pe.clientY - rect.top;
+      const px = pe.clientX - rect.left;
+      const py = pe.clientY - rect.top;
       activePointsRef.current.push({
-        x,
-        y,
+        x: px,
+        y: py,
         pressure: pe.pressure && pe.pressure > 0 ? pe.pressure : 0.5,
         tiltX: pe.tiltX || 0,
         tiltY: pe.tiltY || 0,
         timeStamp: pe.timeStamp,
       });
     }
+
+    // LIVE STATIONARY HOLD CONVERSION TIMER CHECK
+    if (isShapeEnabledForTool() && !hasConvertedShapeRef.current && activePointsRef.current.length >= 10) {
+      if (lastMovePointRef.current) {
+        const distMoved = Math.hypot(x - lastMovePointRef.current.x, y - lastMovePointRef.current.y);
+        if (distMoved > 6) {
+          lastMoveTimeRef.current = Date.now();
+          lastMovePointRef.current = { x, y };
+        } else if (Date.now() - lastMoveTimeRef.current >= settings.shapeHoldTimerMs) {
+          // Stationary hold timer elapsed! Convert shape INSTANTLY while stylus is down!
+          const tempStroke: VectorStroke = {
+            id: 'temp',
+            tool: activeTool,
+            penSubtype: activePenSubtype,
+            color: activeColor,
+            width: strokeWidth,
+            lineType,
+            smoothing: settings.smoothingLevel,
+            points: activePointsRef.current,
+            createdAt: Date.now(),
+          };
+
+          const recognized = recognizeShape(tempStroke);
+          if (recognized && recognized.type !== 'none') {
+            activePointsRef.current = recognized.points;
+            hasConvertedShapeRef.current = true;
+            StylusHaptics.trigger('shapeSnap', settings);
+          }
+        }
+      }
+    }
   };
 
-  // Pointer Up (Immediate 0ms Synchronous Buffer Commit)
+  // Pointer Up (Stroke Completion & Immediate Canvas Refresh)
   const handlePointerUp = (e: React.PointerEvent<HTMLCanvasElement>) => {
     if (!isActive) return;
 
@@ -331,8 +492,8 @@ export function NativeStylusCanvas({
       createdAt: Date.now(),
     };
 
-    // Auto-Shape Recognition
-    if (settings.autoShapeRecognition && activeTool === 'pen') {
+    // Auto-Shape Recognition (If not already converted during live hold)
+    if (isShapeEnabledForTool() && !hasConvertedShapeRef.current) {
       const recognized = recognizeShape(newStroke);
       if (recognized && recognized.type !== 'none') {
         newStroke = {
@@ -370,28 +531,54 @@ export function NativeStylusCanvas({
 }
 
 /**
- * Render selection bounding box & control point handles
+ * Render interactive geometric control handles for Circles, Triangles, Rectangles, Lines
  */
 function drawSelectionHandles(ctx: CanvasRenderingContext2D, stroke: VectorStroke) {
   const bbox = getStrokeBoundingBox(stroke);
   ctx.save();
 
+  // Outer Bounding Box
   ctx.strokeStyle = '#FF3D00';
   ctx.lineWidth = 1.5;
   ctx.setLineDash([4, 4]);
   ctx.strokeRect(bbox.minX - 6, bbox.minY - 6, bbox.width + 12, bbox.height + 12);
 
+  // Render Interactive Control Point Handles
   if (stroke.controlPoints) {
     ctx.setLineDash([]);
-    ctx.fillStyle = '#FAFAFA';
-    ctx.strokeStyle = '#FF3D00';
-    ctx.lineWidth = 2;
 
     for (const cp of stroke.controlPoints) {
       ctx.beginPath();
-      ctx.arc(cp.x, cp.y, 5, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.stroke();
+
+      if (cp.type === 'radius') {
+        // Circle Radius Handle (Vermillion Accent Circle with R indicator)
+        ctx.fillStyle = '#FF3D00';
+        ctx.strokeStyle = '#FAFAFA';
+        ctx.lineWidth = 2;
+        ctx.arc(cp.x, cp.y, 7, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = '#0A0A0A';
+        ctx.font = 'bold 8px sans-serif';
+        ctx.fillText('R', cp.x - 3, cp.y + 3);
+      } else if (cp.type === 'vertex') {
+        // Triangle Corner Angle Vertex Handles
+        ctx.fillStyle = '#FAFAFA';
+        ctx.strokeStyle = '#FF3D00';
+        ctx.lineWidth = 2.5;
+        ctx.arc(cp.x, cp.y, 6, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+      } else {
+        // Standard Handles
+        ctx.fillStyle = '#FAFAFA';
+        ctx.strokeStyle = '#FF3D00';
+        ctx.lineWidth = 2;
+        ctx.arc(cp.x, cp.y, 5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+      }
     }
   }
 

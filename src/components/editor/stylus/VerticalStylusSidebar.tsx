@@ -19,6 +19,7 @@ interface VerticalStylusSidebarProps {
   onSelectTool: (tool: StylusTool) => void;
   onTogglePenPopover: () => void;
   onClosePenPopover: () => void;
+  onToggleShapePopover: () => void;
   settings: StylusSettings;
   onToggleStylusMode: () => void;
   onUndo: () => void;
@@ -31,6 +32,7 @@ export function VerticalStylusSidebar({
   onSelectTool,
   onTogglePenPopover,
   onClosePenPopover,
+  onToggleShapePopover,
   settings,
   onToggleStylusMode,
   onUndo,
@@ -149,16 +151,19 @@ export function VerticalStylusSidebar({
           <MousePointer className="w-4 h-4 stroke-[2]" />
         </button>
 
-        {/* Auto-Shape Recognition */}
+        {/* Auto-Shape Recognition Settings */}
         <button
           onClick={() => {
-            onSelectTool('pen');
-            onClosePenPopover();
+            onToggleShapePopover();
           }}
-          className="p-2 text-[#737373] hover:text-[#FAFAFA] transition-colors"
-          title="Auto-Shape Recognizer"
+          className={`p-2 border transition-colors ${
+            settings.autoShapeRecognition
+              ? 'border-[#FF3D00] text-[#FF3D00]'
+              : 'border-transparent text-[#737373] hover:text-[#FAFAFA]'
+          }`}
+          title="Auto-Shape Settings (Hold Timer & Tool Scope)"
         >
-          <Sparkles className="w-4 h-4 stroke-[1.5]" />
+          <Sparkles className="w-4 h-4 stroke-[2]" />
         </button>
       </div>
 

@@ -3,7 +3,17 @@ export type StylusTool = 'select' | 'pen' | 'highlighter' | 'eraser' | 'laser';
 export type LineType = 'solid' | 'dashed' | 'dotted';
 export type PressureCurve = 'linear' | 'soft' | 'hard';
 export type SmoothingLevel = 'none' | 'mild' | 'high';
-export type RecognizedShapeType = 'rectangle' | 'circle' | 'ellipse' | 'triangle' | 'diamond' | 'line' | 'arrow' | 'none';
+export type RecognizedShapeType =
+  | 'rectangle'
+  | 'square'
+  | 'circle'
+  | 'ellipse'
+  | 'triangle'
+  | 'diamond'
+  | 'line'
+  | 'arrow'
+  | 'arc'
+  | 'none';
 
 export type StylusButtonAction =
   | 'toggle_eraser'
@@ -30,7 +40,7 @@ export interface ControlPoint {
   id: string;
   x: number;
   y: number;
-  type: 'endpoint' | 'vertex' | 'center' | 'handle';
+  type: 'endpoint' | 'vertex' | 'center' | 'radius' | 'handle';
 }
 
 export interface PerPenSettings {
@@ -54,6 +64,9 @@ export interface VectorStroke {
     y: number;
     width: number;
     height: number;
+    radius?: number;
+    center?: { x: number; y: number };
+    vertices?: { x: number; y: number }[];
     rotation?: number;
   };
   anchorElementId?: string;
@@ -65,6 +78,9 @@ export interface StylusSettings {
   isStylusModeActive: boolean;
   enablePalmRejection: boolean;
   autoShapeRecognition: boolean;
+  shapeHoldTimerMs: number; // 300ms to 1500ms
+  enableShapeForPen: boolean;
+  enableShapeForHighlighter: boolean;
   hapticsEnabled: boolean;
   hapticIntensity: 'light' | 'medium' | 'strong';
   pressureCurve: PressureCurve;
@@ -83,6 +99,9 @@ export const DEFAULT_STYLUS_SETTINGS: StylusSettings = {
   isStylusModeActive: true,
   enablePalmRejection: true,
   autoShapeRecognition: true,
+  shapeHoldTimerMs: 500, // 0.5s default hold timer
+  enableShapeForPen: true,
+  enableShapeForHighlighter: false,
   hapticsEnabled: true,
   hapticIntensity: 'medium',
   pressureCurve: 'linear',

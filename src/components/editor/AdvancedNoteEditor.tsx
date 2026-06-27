@@ -74,6 +74,7 @@ import {
 import { NativeStylusCanvas } from './stylus/NativeStylusCanvas';
 import { VerticalStylusSidebar } from './stylus/VerticalStylusSidebar';
 import { PenSettingsPopover, PenPreset } from './stylus/PenSettingsPopover';
+import { ShapeSettingsPopover } from './stylus/ShapeSettingsPopover';
 import { StylusSettingsModal } from './stylus/StylusSettingsModal';
 import { useStylusHardware } from '@/hooks/useStylusHardware';
 import { recognizeInkToText } from '@/lib/stylus/ink-to-text';
@@ -117,6 +118,7 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
 
   // Pen Box Presets & Popover State
   const [isPenPopoverOpen, setIsPenPopoverOpen] = useState(false);
+  const [isShapePopoverOpen, setIsShapePopoverOpen] = useState(false);
   const [penBoxPresets, setPenBoxPresets] = useState<PenPreset[]>(DEFAULT_PEN_BOX_PRESETS);
 
   // Editor View Mode & Status
@@ -399,8 +401,15 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
         <VerticalStylusSidebar
           activeTool={activeTool}
           onSelectTool={setActiveTool}
-          onTogglePenPopover={() => setIsPenPopoverOpen(!isPenPopoverOpen)}
+          onTogglePenPopover={() => {
+            setIsPenPopoverOpen(!isPenPopoverOpen);
+            setIsShapePopoverOpen(false);
+          }}
           onClosePenPopover={() => setIsPenPopoverOpen(false)}
+          onToggleShapePopover={() => {
+            setIsShapePopoverOpen(!isShapePopoverOpen);
+            setIsPenPopoverOpen(false);
+          }}
           settings={stylusSettings}
           onToggleStylusMode={() =>
             setStylusSettings((prev) => ({
@@ -414,7 +423,7 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
         />
       )}
 
-      {/* Popover Settings (ONLY visible when Stylus Mode is ACTIVE & Pen Popover open) */}
+      {/* Pen Popover Settings */}
       {stylusSettings.isStylusModeActive && (
         <PenSettingsPopover
           isOpen={isPenPopoverOpen}
@@ -427,6 +436,16 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
           onChangeWidth={setStrokeWidth}
           lineType={lineType}
           onChangeLineType={setLineType}
+          settings={stylusSettings}
+          onUpdateSettings={(newSettings) => setStylusSettings((prev) => ({ ...prev, ...newSettings }))}
+        />
+      )}
+
+      {/* Auto-Shape Popover Settings */}
+      {stylusSettings.isStylusModeActive && (
+        <ShapeSettingsPopover
+          isOpen={isShapePopoverOpen}
+          onClose={() => setIsShapePopoverOpen(false)}
           settings={stylusSettings}
           onUpdateSettings={(newSettings) => setStylusSettings((prev) => ({ ...prev, ...newSettings }))}
         />

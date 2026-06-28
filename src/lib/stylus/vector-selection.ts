@@ -156,7 +156,76 @@ export function isStrokeInLassoPolygon(stroke: VectorStroke, polygon: { x: numbe
 }
 
 /**
- * Cuts a stroke into sub-strokes by removing points within eraser radius
+ * Calculates exact parametric circle-segment intersection values t in [0, 1]
+ */
+export function getCircleSegmentIntersections(
+  p1: { x: number; y: number },
+  p2: { x: number; y: number },
+  cx: number,
+  cy: number,
+  r: number
+): number[] {
+  const dx = p2.x - p1.x;
+  const dy = p2.y - p1.y;
+  const fx = p1.x - cx;
+  const fy = p1.y - cy;
+
+  const a = dx * dx + dy * dy;
+  if (a === 0) return [];
+
+  const b = 2 * (fx * dx + fy * dy);
+  const c = fx * fx + fy * fy - r * r;
+
+  const discriminant = b * b - 4 * a * c;
+  if (discriminant < 0) return [];
+
+  const sqrtD = Math.sqrt(discriminant);
+  const t1 = (-b - sqrtD) / (2 * a);
+  const t2 = (-b + sqrtD) / (2 * a);
+
+  const intersections: number[] = [];
+  if (t1 >= 0 && t1 <= 1) intersections.push(t1);
+  if (t2 >= 0 && t2 <= 1) intersections.push(t2);
+
+  return intersections.sort((x, y) => x - y);
+}
+
+/**
+ * Dense point interpolation to ensure fine precision
+ */
+function denseResamplePoints(points: PointerPoint[], maxDist = 4): PointerPoint[] {
+  if (points.length < 2) return points;
+  const dense: PointerPoint[] = [];
+
+  for (let i = 0; i < points.length - 1; i++) {
+    const p1 = points[i];
+    const p2 = points[i + 1];
+    const dist = Math.hypot(p2.x - p1.x, p2.y - p1.y);
+
+    dense.push(p1);
+
+    if (dist > maxDist) {
+      const steps = Math.ceil(dist / maxDist);
+      for (let s = 1; s < steps; s++) {
+        const t = s / steps;
+        dense.push({
+          x: p1.x + (p2.x - p1.x) * t,
+          y: p1.y + (p2.y - p1.y) * t,
+          pressure: p1.pressure + (p2.pressure - p1.pressure) * t,
+          tiltX: p1.tiltX + (p2.tiltX - p1.tiltX) * t,
+          tiltY: p1.tiltY + (p2.tiltY - p1.tiltY) * t,
+          timeStamp: p1.timeStamp + (p2.timeStamp - p1.timeStamp) * t,
+        });
+      }
+    }
+  }
+
+  dense.push(points[points.length - 1]);
+  return dense;
+}
+
+/**
+ * Cuts a stroke into sub-strokes with exact circle-segment intersection math
  */
 export function erasePixelsFromStroke(
   stroke: VectorStroke,
@@ -164,19 +233,21 @@ export function erasePixelsFromStroke(
   eraserY: number,
   eraserRadius: number
 ): VectorStroke[] {
-  const pts = stroke.points;
-  if (!pts || pts.length === 0) return [];
+  const rawPts = stroke.points;
+  if (!rawPts || rawPts.length === 0) return [];
 
+  const densePts = denseResamplePoints(rawPts, 4);
   const resultStrokes: VectorStroke[] = [];
   let currentSegment: PointerPoint[] = [];
 
-  for (let i = 0; i < pts.length; i++) {
-    const p = pts[i];
+  for (let i = 0; i < densePts.length; i++) {
+    const p = densePts[i];
     const dist = Math.hypot(p.x - eraserX, p.y - eraserY);
 
     if (dist > eraserRadius) {
       currentSegment.push(p);
     } else {
+      // Point is inside eraser circle -> cut active sub-stroke
       if (currentSegment.length >= 2) {
         resultStrokes.push({
           ...stroke,

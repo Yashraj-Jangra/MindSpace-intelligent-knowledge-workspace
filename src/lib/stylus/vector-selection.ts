@@ -71,6 +71,102 @@ export function getGroupBoundingBox(strokes: VectorStroke[]): BoundingBox | null
 }
 
 /**
+ * Calculates perpendicular distance from point (px, py) to line segment (x1, y1) -> (x2, y2)
+ */
+export function distanceToSegment(
+  px: number,
+  py: number,
+  x1: number,
+  y1: number,
+  x2: number,
+  y2: number
+): number {
+  const dx = x2 - x1;
+  const dy = y2 - y1;
+  if (dx === 0 && dy === 0) return Math.hypot(px - x1, py - y1);
+  const t = Math.max(0, Math.min(1, ((px - x1) * dx + (py - y1) * dy) / (dx * dx + dy * dy)));
+  return Math.hypot(px - (x1 + t * dx), py - (y1 + t * dy));
+}
+
+/**
+ * Checks if point (x, y) is near any line segment of vector stroke
+ */
+export function isPointNearStroke(stroke: VectorStroke, x: number, y: number, tolerance = 12): boolean {
+  const pts = stroke.points;
+  if (!pts || pts.length === 0) return false;
+
+  const effectiveTolerance = Math.max(tolerance, stroke.width * 0.8);
+  const box = getStrokeBoundingBox(stroke);
+
+  if (
+    x < box.minX - effectiveTolerance ||
+    x > box.maxX + effectiveTolerance ||
+    y < box.minY - effectiveTolerance ||
+    y > box.maxY + effectiveTolerance
+  ) {
+    return false;
+  }
+
+  if (pts.length === 1) {
+    return Math.hypot(pts[0].x - x, pts[0].y - y) <= effectiveTolerance;
+  }
+
+  for (let i = 0; i < pts.length - 1; i++) {
+    const p1 = pts[i];
+    const p2 = pts[i + 1];
+    if (distanceToSegment(x, y, p1.x, p1.y, p2.x, p2.y) <= effectiveTolerance) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+/**
+ * Cuts a stroke into sub-strokes by removing points within eraser radius
+ */
+export function erasePixelsFromStroke(
+  stroke: VectorStroke,
+  eraserX: number,
+  eraserY: number,
+  eraserRadius: number
+): VectorStroke[] {
+  const pts = stroke.points;
+  if (!pts || pts.length === 0) return [];
+
+  const resultStrokes: VectorStroke[] = [];
+  let currentSegment: PointerPoint[] = [];
+
+  for (let i = 0; i < pts.length; i++) {
+    const p = pts[i];
+    const dist = Math.hypot(p.x - eraserX, p.y - eraserY);
+
+    if (dist > eraserRadius) {
+      currentSegment.push(p);
+    } else {
+      if (currentSegment.length > 1) {
+        resultStrokes.push({
+          ...stroke,
+          id: `stroke-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+          points: currentSegment,
+        });
+      }
+      currentSegment = [];
+    }
+  }
+
+  if (currentSegment.length > 1) {
+    resultStrokes.push({
+      ...stroke,
+      id: `stroke-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+      points: currentSegment,
+    });
+  }
+
+  return resultStrokes;
+}
+
+/**
  * Extracts editable geometric control handles for Circles, Triangles, Rectangles, Lines, Arrows, and Arcs
  */
 export function extractControlPoints(stroke: VectorStroke): ControlPoint[] {
@@ -84,7 +180,6 @@ export function extractControlPoints(stroke: VectorStroke): ControlPoint[] {
     const radius = stroke.shapeBounds?.radius || Math.max(bbox.width, bbox.height) / 2;
     const center = stroke.shapeBounds?.center || { x: bbox.centerX, y: bbox.centerY };
 
-    // Center handle + Radius handle on circumference
     controlPoints.push({
       id: `${stroke.id}-center`,
       x: center.x,
@@ -98,7 +193,6 @@ export function extractControlPoints(stroke: VectorStroke): ControlPoint[] {
       type: 'radius',
     });
   } else if (stroke.recognizedShape === 'triangle') {
-    // 3 Corner Angle Vertices
     const v = stroke.shapeBounds?.vertices || [
       { x: bbox.centerX, y: bbox.minY },
       { x: bbox.minX, y: bbox.maxY },
@@ -110,7 +204,6 @@ export function extractControlPoints(stroke: VectorStroke): ControlPoint[] {
       { id: `${stroke.id}-v2`, x: v[2].x, y: v[2].y, type: 'vertex' }
     );
   } else if (stroke.recognizedShape === 'rectangle' || stroke.recognizedShape === 'square') {
-    // 4 Corner handles for rectangle
     controlPoints.push(
       { id: `${stroke.id}-tl`, x: bbox.minX, y: bbox.minY, type: 'vertex' },
       { id: `${stroke.id}-tr`, x: bbox.maxX, y: bbox.minY, type: 'vertex' },
@@ -118,7 +211,6 @@ export function extractControlPoints(stroke: VectorStroke): ControlPoint[] {
       { id: `${stroke.id}-bl`, x: bbox.minX, y: bbox.maxY, type: 'vertex' }
     );
   } else if (stroke.recognizedShape === 'line' || stroke.recognizedShape === 'arrow' || pts.length <= 4) {
-    // Endpoints for line or arrow
     controlPoints.push({
       id: `${stroke.id}-start`,
       x: pts[0].x,
@@ -132,7 +224,6 @@ export function extractControlPoints(stroke: VectorStroke): ControlPoint[] {
       type: 'endpoint',
     });
   } else {
-    // Freehand stroke endpoints + midpoint handle
     controlPoints.push({ id: `${stroke.id}-p0`, x: pts[0].x, y: pts[0].y, type: 'endpoint' });
     const midIdx = Math.floor(pts.length / 2);
     controlPoints.push({ id: `${stroke.id}-mid`, x: pts[midIdx].x, y: pts[midIdx].y, type: 'handle' });
@@ -140,24 +231,6 @@ export function extractControlPoints(stroke: VectorStroke): ControlPoint[] {
   }
 
   return controlPoints;
-}
-
-/**
- * Point in stroke distance check for selection click / hover
- */
-export function isPointNearStroke(stroke: VectorStroke, x: number, y: number, tolerance = 12): boolean {
-  const box = getStrokeBoundingBox(stroke);
-  if (x < box.minX - tolerance || x > box.maxX + tolerance || y < box.minY - tolerance || y > box.maxY + tolerance) {
-    return false;
-  }
-
-  for (const p of stroke.points) {
-    if (Math.hypot(p.x - x, p.y - y) <= Math.max(tolerance, stroke.width * 0.8)) {
-      return true;
-    }
-  }
-
-  return false;
 }
 
 /**

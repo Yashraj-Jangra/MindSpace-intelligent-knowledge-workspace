@@ -8,7 +8,6 @@ import {
   PenSubtype,
   LineType,
   StylusSettings,
-  ControlPoint,
 } from '@/lib/stylus/stylus-types';
 import { StylusHaptics } from '@/lib/stylus/stylus-haptics';
 import { recognizeShape } from '@/lib/stylus/shape-recognition';
@@ -16,6 +15,7 @@ import {
   getStrokeBoundingBox,
   extractControlPoints,
   isPointNearStroke,
+  erasePixelsFromStroke,
   translateStroke,
 } from '@/lib/stylus/vector-selection';
 import { renderStrokeOnCanvas } from '@/lib/stylus/stroke-renderer';
@@ -46,7 +46,7 @@ export function NativeStylusCanvas({
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const offscreenCanvasRef = useRef<HTMLCanvasElement | null>(null);
 
-  // Mutable refs for zero-lag drawing (NO React state updates on pointermove!)
+  // Mutable refs for zero-lag drawing
   const isDrawingRef = useRef(false);
   const activePointsRef = useRef<PointerPoint[]>([]);
   const animFrameIdRef = useRef<number | null>(null);
@@ -60,6 +60,10 @@ export function NativeStylusCanvas({
   const [activeHandleId, setActiveHandleId] = useState<string | null>(null);
   const [dragOffset, setDragOffset] = useState<{ x: number; y: number } | null>(null);
   const [eraserCursorPos, setEraserCursorPos] = useState<{ x: number; y: number } | null>(null);
+
+  // Circular Selection Erase Mode Drag State
+  const [circularStart, setCircularStart] = useState<{ x: number; y: number } | null>(null);
+  const [circularCurrent, setCircularCurrent] = useState<{ x: number; y: number } | null>(null);
 
   // Synchronous offscreen canvas buffer update
   const updateOffscreenBuffer = useCallback((targetStrokes?: VectorStroke[]) => {
@@ -144,8 +148,24 @@ export function NativeStylusCanvas({
       }
     }
 
-    // 5. Draw visible translucent eraser ring cursor overlay
-    if (activeTool === 'eraser' && eraserCursorPos) {
+    // 5. Draw Circular Selection Erase Overlay Area
+    if (activeTool === 'eraser' && settings.eraserMode === 'circular' && circularStart && circularCurrent) {
+      const radius = Math.hypot(circularCurrent.x - circularStart.x, circularCurrent.y - circularStart.y);
+      ctx.save();
+      ctx.scale(dpr, dpr);
+      ctx.beginPath();
+      ctx.strokeStyle = '#FF3D00';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([6, 4]);
+      ctx.fillStyle = '#FF3D0033';
+      ctx.arc(circularStart.x, circularStart.y, Math.max(10, radius), 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // 6. Draw visible translucent eraser ring cursor overlay for stroke & pixel modes
+    if (activeTool === 'eraser' && settings.eraserMode !== 'circular' && eraserCursorPos) {
       ctx.save();
       ctx.scale(dpr, dpr);
       ctx.beginPath();
@@ -157,7 +177,7 @@ export function NativeStylusCanvas({
       ctx.stroke();
       ctx.restore();
     }
-  }, [activeTool, activePenSubtype, activeColor, strokeWidth, lineType, settings, selectedStrokeId, strokes, eraserCursorPos]);
+  }, [activeTool, activePenSubtype, activeColor, strokeWidth, lineType, settings, selectedStrokeId, strokes, eraserCursorPos, circularStart, circularCurrent]);
 
   // Update canvas dimensions on resize
   const handleResize = useCallback(() => {
@@ -198,11 +218,17 @@ export function NativeStylusCanvas({
     return false;
   }, [activeTool, settings]);
 
-  // Pointer Down (High-frequency pointer capture & Palm Rejection)
+  // Helper: Filter whether stroke should be target of eraser
+  const isStrokeErasable = useCallback((s: VectorStroke) => {
+    if (s.tool === 'pen' && !settings.erasePenStrokes) return false;
+    if (s.tool === 'highlighter' && !settings.eraseHighlighterStrokes) return false;
+    return true;
+  }, [settings]);
+
+  // Pointer Down
   const handlePointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
     if (!isActive) return;
 
-    // Strict Palm Rejection: Filter touch pointer events when Stylus Mode active
     if (settings.isStylusModeActive && settings.enablePalmRejection && e.pointerType === 'touch') {
       return;
     }
@@ -232,7 +258,6 @@ export function NativeStylusCanvas({
 
     StylusHaptics.trigger('strokeStart', settings);
 
-    // Lasso Selection & Handle Dragging
     if (activeTool === 'select') {
       if (selectedStrokeId) {
         const selected = strokes.find((s) => s.id === selectedStrokeId);
@@ -264,37 +289,47 @@ export function NativeStylusCanvas({
 
     if (activeTool === 'eraser') {
       setEraserCursorPos({ x, y });
+
+      if (settings.eraserMode === 'circular') {
+        setCircularStart({ x, y });
+        setCircularCurrent({ x, y });
+        return;
+      }
+
       const pressure = e.pressure && e.pressure > 0 ? e.pressure : 0.5;
 
       if (pressure >= settings.eraserPressureThreshold) {
-        let remaining = strokes;
-
         if (settings.eraserMode === 'stroke') {
-          remaining = strokes.filter((s) => {
-            if (s.tool === 'pen' && !settings.erasePenStrokes) return true;
-            if (s.tool === 'highlighter' && !settings.eraseHighlighterStrokes) return true;
+          const remaining = strokes.filter((s) => {
+            if (!isStrokeErasable(s)) return true;
             return !isPointNearStroke(s, x, y, settings.eraserSize);
           });
+          if (remaining.length !== strokes.length) {
+            StylusHaptics.trigger('eraserScrub', settings);
+            onStrokesChange(remaining);
+            updateOffscreenBuffer(remaining);
+            renderFrame();
+          }
         } else if (settings.eraserMode === 'pixel') {
-          remaining = strokes.map((s) => {
-            if (s.tool === 'pen' && !settings.erasePenStrokes) return s;
-            if (s.tool === 'highlighter' && !settings.eraseHighlighterStrokes) return s;
-            const filtered = s.points.filter((p) => Math.hypot(p.x - x, p.y - y) > settings.eraserSize);
-            return { ...s, points: filtered };
-          }).filter((s) => s.points.length > 0);
-        } else if (settings.eraserMode === 'circular') {
-          remaining = strokes.filter((s) => {
-            if (s.tool === 'pen' && !settings.erasePenStrokes) return true;
-            if (s.tool === 'highlighter' && !settings.eraseHighlighterStrokes) return true;
-            return !isPointNearStroke(s, x, y, settings.eraserSize * 1.5);
-          });
-        }
+          let updatedStrokes: VectorStroke[] = [];
+          let hasErased = false;
 
-        if (remaining.length !== strokes.length) {
-          StylusHaptics.trigger('eraserScrub', settings);
-          onStrokesChange(remaining);
-          updateOffscreenBuffer(remaining);
-          renderFrame();
+          for (const s of strokes) {
+            if (!isStrokeErasable(s) || !isPointNearStroke(s, x, y, settings.eraserSize)) {
+              updatedStrokes.push(s);
+            } else {
+              hasErased = true;
+              const split = erasePixelsFromStroke(s, x, y, settings.eraserSize);
+              updatedStrokes.push(...split);
+            }
+          }
+
+          if (hasErased) {
+            StylusHaptics.trigger('eraserScrub', settings);
+            onStrokesChange(updatedStrokes);
+            updateOffscreenBuffer(updatedStrokes);
+            renderFrame();
+          }
         }
       }
       return;
@@ -307,7 +342,6 @@ export function NativeStylusCanvas({
     lastMoveTimeRef.current = Date.now();
     lastMovePointRef.current = { x, y };
 
-    // Start fast 120fps render loop
     const loop = () => {
       renderFrame();
       if (isDrawingRef.current) {
@@ -317,7 +351,7 @@ export function NativeStylusCanvas({
     animFrameIdRef.current = requestAnimationFrame(loop);
   };
 
-  // Pointer Move (Reads hardware coalesced events + Eraser Ring Cursor & Pressure Filter)
+  // Pointer Move
   const handlePointerMove = (e: React.PointerEvent<HTMLCanvasElement>) => {
     if (!isActive) return;
 
@@ -327,7 +361,6 @@ export function NativeStylusCanvas({
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
 
-    // Handle Dragging for Selected Vector Shape Controls
     if (activeTool === 'select' && selectedStrokeId && (e.buttons === 1 || e.buttons === 2)) {
       if (activeHandleId && dragOffset) {
         const dx = x - dragOffset.x;
@@ -336,13 +369,12 @@ export function NativeStylusCanvas({
         const updated = strokes.map((s) => {
           if (s.id !== selectedStrokeId) return s;
 
-          // Drag Circle Radius Handle
           if (s.recognizedShape === 'circle' && activeHandleId.endsWith('-radius')) {
             const bbox = getStrokeBoundingBox(s);
             const centerX = s.shapeBounds?.center?.x ?? bbox.centerX;
             const centerY = s.shapeBounds?.center?.y ?? bbox.centerY;
             const newRadius = Math.max(10, Math.hypot(x - centerX, y - centerY));
-            
+
             const points: PointerPoint[] = [];
             const steps = 40;
             for (let i = 0; i <= steps; i++) {
@@ -371,7 +403,6 @@ export function NativeStylusCanvas({
             return { ...updatedStroke, controlPoints: extractControlPoints(updatedStroke) };
           }
 
-          // Drag Triangle Corner Vertices
           if (s.recognizedShape === 'triangle' && activeHandleId.includes('-v')) {
             const bbox = getStrokeBoundingBox(s);
             const vIdx = parseInt(activeHandleId.split('-v')[1], 10);
@@ -436,39 +467,49 @@ export function NativeStylusCanvas({
 
     if (activeTool === 'eraser') {
       setEraserCursorPos({ x, y });
+
+      if (settings.eraserMode === 'circular' && e.buttons === 1 && circularStart) {
+        setCircularCurrent({ x, y });
+        renderFrame();
+        return;
+      }
+
       renderFrame();
 
       const pressure = e.pressure && e.pressure > 0 ? e.pressure : 0.5;
 
       if (e.buttons === 1 && pressure >= settings.eraserPressureThreshold) {
-        let remaining = strokes;
-
         if (settings.eraserMode === 'stroke') {
-          remaining = strokes.filter((s) => {
-            if (s.tool === 'pen' && !settings.erasePenStrokes) return true;
-            if (s.tool === 'highlighter' && !settings.eraseHighlighterStrokes) return true;
+          const remaining = strokes.filter((s) => {
+            if (!isStrokeErasable(s)) return true;
             return !isPointNearStroke(s, x, y, settings.eraserSize);
           });
+          if (remaining.length !== strokes.length) {
+            StylusHaptics.trigger('eraserScrub', settings);
+            onStrokesChange(remaining);
+            updateOffscreenBuffer(remaining);
+            renderFrame();
+          }
         } else if (settings.eraserMode === 'pixel') {
-          remaining = strokes.map((s) => {
-            if (s.tool === 'pen' && !settings.erasePenStrokes) return s;
-            if (s.tool === 'highlighter' && !settings.eraseHighlighterStrokes) return s;
-            const filtered = s.points.filter((p) => Math.hypot(p.x - x, p.y - y) > settings.eraserSize);
-            return { ...s, points: filtered };
-          }).filter((s) => s.points.length > 0);
-        } else if (settings.eraserMode === 'circular') {
-          remaining = strokes.filter((s) => {
-            if (s.tool === 'pen' && !settings.erasePenStrokes) return true;
-            if (s.tool === 'highlighter' && !settings.eraseHighlighterStrokes) return true;
-            return !isPointNearStroke(s, x, y, settings.eraserSize * 1.5);
-          });
-        }
+          let updatedStrokes: VectorStroke[] = [];
+          let hasErased = false;
 
-        if (remaining.length !== strokes.length) {
-          StylusHaptics.trigger('eraserScrub', settings);
-          onStrokesChange(remaining);
-          updateOffscreenBuffer(remaining);
-          renderFrame();
+          for (const s of strokes) {
+            if (!isStrokeErasable(s) || !isPointNearStroke(s, x, y, settings.eraserSize)) {
+              updatedStrokes.push(s);
+            } else {
+              hasErased = true;
+              const split = erasePixelsFromStroke(s, x, y, settings.eraserSize);
+              updatedStrokes.push(...split);
+            }
+          }
+
+          if (hasErased) {
+            StylusHaptics.trigger('eraserScrub', settings);
+            onStrokesChange(updatedStrokes);
+            updateOffscreenBuffer(updatedStrokes);
+            renderFrame();
+          }
         }
       }
       return;
@@ -476,7 +517,6 @@ export function NativeStylusCanvas({
 
     if (!isDrawingRef.current) return;
 
-    // Read high-frequency hardware coalesced events
     const nativeEvent = e.nativeEvent as PointerEvent;
     const coalesced = typeof nativeEvent.getCoalescedEvents === 'function' ? nativeEvent.getCoalescedEvents() : [nativeEvent];
 
@@ -524,7 +564,7 @@ export function NativeStylusCanvas({
     }
   };
 
-  // Pointer Up (Stroke Completion & Immediate Canvas Refresh)
+  // Pointer Up
   const handlePointerUp = (e: React.PointerEvent<HTMLCanvasElement>) => {
     if (!isActive) return;
 
@@ -535,6 +575,30 @@ export function NativeStylusCanvas({
       } catch {
         // Ignore pointer capture release error
       }
+    }
+
+    // Process Circular Selection Area Erase Completion
+    if (activeTool === 'eraser' && settings.eraserMode === 'circular' && circularStart && circularCurrent) {
+      const radius = Math.hypot(circularCurrent.x - circularStart.x, circularCurrent.y - circularStart.y);
+      const center = circularStart;
+
+      if (radius > 5) {
+        const remaining = strokes.filter((s) => {
+          if (!isStrokeErasable(s)) return true;
+          return !isPointNearStroke(s, center.x, center.y, radius);
+        });
+
+        if (remaining.length !== strokes.length) {
+          StylusHaptics.trigger('eraserScrub', settings);
+          onStrokesChange(remaining);
+          updateOffscreenBuffer(remaining);
+        }
+      }
+
+      setCircularStart(null);
+      setCircularCurrent(null);
+      renderFrame();
+      return;
     }
 
     if (!isDrawingRef.current) return;
@@ -583,7 +647,6 @@ export function NativeStylusCanvas({
     const nextStrokes = [...strokes, newStroke];
     onStrokesChange(nextStrokes);
 
-    // Synchronously render new stroke into offscreen buffer & repaint canvas immediately!
     updateOffscreenBuffer(nextStrokes);
     renderFrame();
   };
@@ -594,7 +657,11 @@ export function NativeStylusCanvas({
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
-      onPointerLeave={() => setEraserCursorPos(null)}
+      onPointerLeave={() => {
+        setEraserCursorPos(null);
+        setCircularStart(null);
+        setCircularCurrent(null);
+      }}
       className={`absolute inset-0 z-30 w-full h-full ${
         isActive ? (activeTool === 'select' ? 'cursor-grab' : activeTool === 'eraser' ? 'cursor-none' : 'cursor-crosshair') : 'pointer-events-none'
       }`}
@@ -624,7 +691,6 @@ function drawSelectionHandles(ctx: CanvasRenderingContext2D, stroke: VectorStrok
       ctx.beginPath();
 
       if (cp.type === 'radius') {
-        // Circle Radius Handle (Vermillion Accent Circle with R indicator)
         ctx.fillStyle = '#FF3D00';
         ctx.strokeStyle = '#FAFAFA';
         ctx.lineWidth = 2;
@@ -636,7 +702,6 @@ function drawSelectionHandles(ctx: CanvasRenderingContext2D, stroke: VectorStrok
         ctx.font = 'bold 8px sans-serif';
         ctx.fillText('R', cp.x - 3, cp.y + 3);
       } else if (cp.type === 'vertex') {
-        // Triangle Corner Angle Vertex Handles
         ctx.fillStyle = '#FAFAFA';
         ctx.strokeStyle = '#FF3D00';
         ctx.lineWidth = 2.5;
@@ -644,7 +709,6 @@ function drawSelectionHandles(ctx: CanvasRenderingContext2D, stroke: VectorStrok
         ctx.fill();
         ctx.stroke();
       } else {
-        // Standard Handles
         ctx.fillStyle = '#FAFAFA';
         ctx.strokeStyle = '#FF3D00';
         ctx.lineWidth = 2;

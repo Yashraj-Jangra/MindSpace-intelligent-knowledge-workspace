@@ -168,17 +168,47 @@ export function NativeStylusCanvas({
       ctx.restore();
     }
 
-    // 6. Draw visible translucent eraser ring cursor overlay for stroke & pixel modes
-    if (activeTool === 'eraser' && settings.eraserMode !== 'lasso' && eraserCursorPos) {
+    // 6. Draw visible translucent eraser ring or precision lasso pointer cursor overlay
+    if (activeTool === 'eraser' && eraserCursorPos) {
       ctx.save();
       ctx.scale(dpr, dpr);
-      ctx.beginPath();
-      ctx.strokeStyle = '#FF3D00';
-      ctx.lineWidth = 1.5;
-      ctx.fillStyle = '#FF3D0022';
-      ctx.arc(eraserCursorPos.x, eraserCursorPos.y, settings.eraserSize, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.stroke();
+
+      if (settings.eraserMode === 'lasso') {
+        const { x, y } = eraserCursorPos;
+        ctx.strokeStyle = '#FF3D00';
+        ctx.lineWidth = 1.5;
+        ctx.fillStyle = '#FF3D0033';
+
+        // Precision Outer Ring
+        ctx.beginPath();
+        ctx.arc(x, y, 8, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+
+        // Center Dot
+        ctx.beginPath();
+        ctx.fillStyle = '#FF3D00';
+        ctx.arc(x, y, 2, 0, Math.PI * 2);
+        ctx.fill();
+
+        // 4 Precision Crosshair Ticks
+        ctx.beginPath();
+        ctx.setLineDash([]);
+        ctx.moveTo(x - 12, y); ctx.lineTo(x - 6, y);
+        ctx.moveTo(x + 6, y); ctx.lineTo(x + 12, y);
+        ctx.moveTo(x, y - 12); ctx.lineTo(x, y - 6);
+        ctx.moveTo(x, y + 6); ctx.lineTo(x, y + 12);
+        ctx.stroke();
+      } else {
+        ctx.beginPath();
+        ctx.strokeStyle = '#FF3D00';
+        ctx.lineWidth = 1.5;
+        ctx.fillStyle = '#FF3D0022';
+        ctx.arc(eraserCursorPos.x, eraserCursorPos.y, settings.eraserSize, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+      }
+
       ctx.restore();
     }
   }, [activeTool, activePenSubtype, activeColor, strokeWidth, lineType, settings, selectedStrokeId, strokes, eraserCursorPos]);

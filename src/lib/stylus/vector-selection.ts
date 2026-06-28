@@ -123,6 +123,39 @@ export function isPointNearStroke(stroke: VectorStroke, x: number, y: number, to
 }
 
 /**
+ * Ray-casting algorithm to test if point (x, y) is inside a closed polygon loop
+ */
+export function isPointInPolygon(x: number, y: number, polygon: { x: number; y: number }[]): boolean {
+  if (!polygon || polygon.length < 3) return false;
+  let inside = false;
+
+  for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+    const xi = polygon[i].x, yi = polygon[i].y;
+    const xj = polygon[j].x, yj = polygon[j].y;
+
+    const intersect = yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi;
+    if (intersect) inside = !inside;
+  }
+
+  return inside;
+}
+
+/**
+ * Checks if vector stroke intersects or lies inside a closed lasso polygon
+ */
+export function isStrokeInLassoPolygon(stroke: VectorStroke, polygon: { x: number; y: number }[]): boolean {
+  if (!polygon || polygon.length < 3) return false;
+
+  for (const p of stroke.points) {
+    if (isPointInPolygon(p.x, p.y, polygon)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+/**
  * Cuts a stroke into sub-strokes by removing points within eraser radius
  */
 export function erasePixelsFromStroke(
@@ -144,7 +177,7 @@ export function erasePixelsFromStroke(
     if (dist > eraserRadius) {
       currentSegment.push(p);
     } else {
-      if (currentSegment.length > 1) {
+      if (currentSegment.length >= 2) {
         resultStrokes.push({
           ...stroke,
           id: `stroke-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
@@ -155,7 +188,7 @@ export function erasePixelsFromStroke(
     }
   }
 
-  if (currentSegment.length > 1) {
+  if (currentSegment.length >= 2) {
     resultStrokes.push({
       ...stroke,
       id: `stroke-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,

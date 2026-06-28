@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useEffect, useRef } from 'react';
-import { Eraser, X, Scissors, CircleDot, ShieldAlert } from 'lucide-react';
-import { EraserMode, StylusSettings } from '@/lib/stylus/stylus-types';
+import { Eraser, X, Scissors, Lasso, ShieldAlert } from 'lucide-react';
+import { StylusSettings } from '@/lib/stylus/stylus-types';
 
 interface EraserSettingsPopoverProps {
   isOpen: boolean;
@@ -63,7 +63,7 @@ export function EraserSettingsPopover({
         </button>
       </div>
 
-      {/* 3 Eraser Mode Selector Bar (Pixel, Stroke, Circular) */}
+      {/* 3 Eraser Mode Selector Bar (Stroke, Pixel, Lasso Area) */}
       <div className="grid grid-cols-3 gap-1.5 bg-[#0F0F0F] border border-[#262626] p-2 mb-4">
         {/* 1. Stroke Erase */}
         <button
@@ -93,37 +93,39 @@ export function EraserSettingsPopover({
           <span className="text-[9px] font-mono uppercase tracking-wider text-[#FAFAFA]">Pixel</span>
         </button>
 
-        {/* 3. Circular Selection Erase */}
+        {/* 3. Lasso Freehand Area Erase */}
         <button
-          onClick={() => onUpdateSettings({ eraserMode: 'circular' })}
+          onClick={() => onUpdateSettings({ eraserMode: 'lasso' })}
           className={`flex flex-col items-center justify-center p-2 transition-all ${
-            settings.eraserMode === 'circular'
+            settings.eraserMode === 'lasso'
               ? 'bg-[#1A1A1A] border border-[#FF3D00]'
               : 'border border-transparent hover:border-[#262626]'
           }`}
-          title="Circular Selection (Erases all ink inside a circular area)"
+          title="Lasso Area Erase (Draw freehand loop to clear enclosed region)"
         >
-          <CircleDot className="w-4 h-4 mb-1 text-[#FF3D00]" />
-          <span className="text-[9px] font-mono uppercase tracking-wider text-[#FAFAFA]">Circular</span>
+          <Lasso className="w-4 h-4 mb-1 text-[#FF3D00]" />
+          <span className="text-[9px] font-mono uppercase tracking-wider text-[#FAFAFA]">Lasso Area</span>
         </button>
       </div>
 
-      {/* Eraser Radius Size Slider */}
-      <div className="space-y-1 mb-3.5">
-        <div className="flex items-center justify-between text-[11px] font-mono">
-          <span className="text-[#737373] uppercase">Eraser Ring Radius</span>
-          <span className="text-[#FAFAFA] font-bold">{settings.eraserSize}px</span>
+      {/* Eraser Radius Size Slider (Only relevant for Pixel & Stroke modes) */}
+      {settings.eraserMode !== 'lasso' && (
+        <div className="space-y-1 mb-3.5">
+          <div className="flex items-center justify-between text-[11px] font-mono">
+            <span className="text-[#737373] uppercase">Eraser Ring Radius</span>
+            <span className="text-[#FAFAFA] font-bold">{settings.eraserSize}px</span>
+          </div>
+          <input
+            type="range"
+            min="5"
+            max="50"
+            step="1"
+            value={settings.eraserSize}
+            onChange={(e) => onUpdateSettings({ eraserSize: Number(e.target.value) })}
+            className="w-full accent-[#FF3D00] cursor-pointer h-1 bg-[#262626]"
+          />
         </div>
-        <input
-          type="range"
-          min="5"
-          max="50"
-          step="1"
-          value={settings.eraserSize}
-          onChange={(e) => onUpdateSettings({ eraserSize: Number(e.target.value) })}
-          className="w-full accent-[#FF3D00] cursor-pointer h-1 bg-[#262626]"
-        />
-      </div>
+      )}
 
       {/* Pressure Sensitive Threshold Slider */}
       <div className="space-y-1 mb-4 bg-[#0F0F0F] border border-[#262626] p-2.5">

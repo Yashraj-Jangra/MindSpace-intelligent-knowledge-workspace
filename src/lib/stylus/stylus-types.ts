@@ -1,6 +1,6 @@
 export type PenSubtype = 'fountain' | 'ballpoint' | 'pencil';
 export type HighlighterSubtype = 'flat' | 'round';
-export type EraserMode = 'pixel' | 'stroke' | 'circular';
+export type EraserMode = 'pixel' | 'stroke' | 'lasso';
 export type StylusTool = 'select' | 'pen' | 'highlighter' | 'eraser' | 'laser';
 export type LineType = 'solid' | 'dashed' | 'dotted';
 export type PressureCurve = 'linear' | 'soft' | 'hard';

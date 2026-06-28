@@ -47,12 +47,14 @@
   - **Eraser Tool Suite & Visible Ring Cursor (`EraserSettingsPopover.tsx`, `NativeStylusCanvas.tsx`)**: Built dedicated 340px Eraser popover with 3 deletion modes (Pixel Erase, Stroke Erase, Circular Selection Erase), visible translucent red ring cursor overlay tracking stylus tip, pressure-sensitivity activation threshold slider (20% to 90%), and target content scope checkboxes (Pen & Highlighter).
   - **Eraser Collision & Circular Area Selection Bug Fixes (`vector-selection.ts` & `NativeStylusCanvas.tsx`)**: Replaced raw point testing with line segment distance math (`distanceToSegment`), enabling 100% accurate Stroke, Pixel, and Circular erasing across continuous line trajectories regardless of drawing speed. Fixed Pixel Erase sub-stroke splitting (`erasePixelsFromStroke`) and built live circular selection drag area halo overlay (`circularStart`/`circularCurrent`).
   - **Hardware Destination-Out Pixel Eraser Upgrade (`NativeStylusCanvas.tsx`)**: Replaced slow React state array slicing with GPU-accelerated HTML5 Canvas masking (`globalCompositeOperation = 'destination-out'`). Delivers 120fps silky smooth pixel erasing with zero React re-render lag, zero choppiness, and zero distortion of underlying vector drawings.
+  - **Freehand Lasso Area Selection Erase (`vector-selection.ts`, `EraserSettingsPopover.tsx`, `NativeStylusCanvas.tsx`)**: Replaced circular selection with a freehand **Lasso Area Selection Erase** tool. Users can draw a freehand loop around any region on screen with live dashed vermillion highlight fill. Ray-casting polygon math (`isPointInPolygon`) automatically erases all enclosed ink when the loop is closed!
   - Integrated **StylusAnnotationCanvas** overlay: HTML5 Canvas with pressure sensitivity (`PointerEvent.pressure`), pen, marker, highlighter, eraser, and color swatches.
   - Built File Upload API (`/api/upload`) for note media attachments.
   - Integrated Document Telemetry bar (Word count, character count, estimated reading time) & Zen Focus writing mode.
 
 ## Next Steps
 - [ ] Test live note creation, rich text editing, freehand stylus writing, and mind map canvas drawing in browser.
+
 
 
 

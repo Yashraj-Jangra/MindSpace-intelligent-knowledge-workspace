@@ -27,7 +27,6 @@ interface VerticalStylusSidebarProps {
   onToggleStylusMode: () => void;
   onUndo: () => void;
   onRedo: () => void;
-  onBackToDashboard: () => void;
 }
 
 export function VerticalStylusSidebar({
@@ -43,21 +42,11 @@ export function VerticalStylusSidebar({
   onToggleStylusMode,
   onUndo,
   onRedo,
-  onBackToDashboard,
 }: VerticalStylusSidebarProps) {
   return (
-    <aside className="fixed top-0 left-0 bottom-0 z-40 w-12 bg-[#0F0F0F] border-r border-[#262626] flex flex-col justify-between items-center py-3 font-sans select-none shadow-2xl vertical-stylus-sidebar">
-      {/* Top Section: Dashboard, Undo, Redo */}
+    <aside className="fixed top-14 left-0 bottom-0 z-30 w-12 bg-[#0F0F0F] border-r border-[#262626] flex flex-col justify-between items-center py-3 font-sans select-none shadow-2xl vertical-stylus-sidebar">
+      {/* Top Section: Undo, Redo */}
       <div className="flex flex-col items-center gap-3">
-        <button
-          onClick={onBackToDashboard}
-          className="p-1.5 text-[#737373] hover:text-[#FAFAFA] transition-colors"
-          title="Back to Dashboard"
-        >
-          <ChevronLeft className="w-4 h-4 stroke-[1.5]" />
-        </button>
-
-        <div className="w-6 h-px bg-[#262626]" />
 
         <button
           onClick={onUndo}

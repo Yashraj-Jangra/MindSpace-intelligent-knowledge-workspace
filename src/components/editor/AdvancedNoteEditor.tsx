@@ -473,7 +473,6 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
           }
           onUndo={handleUndo}
           onRedo={handleRedo}
-          onBackToDashboard={() => router.push('/dashboard')}
         />
       )}
 
@@ -539,7 +538,7 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
 
       {/* Top Header Control Bar */}
       {!isZenMode && (
-        <header className="h-14 border-b border-[#262626] bg-[#0A0A0A]/95 px-6 flex items-center justify-between sticky top-0 z-30 font-sans">
+        <header className="h-14 border-b border-[#262626] bg-[#0A0A0A]/95 px-6 flex items-center justify-between sticky top-0 z-40 font-sans">
           {/* Left Section: Back, Title, Save Status */}
           <div className="flex items-center gap-3">
             <button

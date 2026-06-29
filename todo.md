@@ -50,12 +50,14 @@
   - **Freehand Lasso Area Selection Erase (`vector-selection.ts`, `EraserSettingsPopover.tsx`, `NativeStylusCanvas.tsx`)**: Replaced circular selection with a freehand **Lasso Area Selection Erase** tool. Users can draw a freehand loop around any region on screen with live dashed vermillion highlight fill. Ray-casting polygon math (`isPointInPolygon`) automatically erases all enclosed ink when the loop is closed!
   - **Dense Point Resampling & Circle-Segment Intersection Pixel Eraser Fix (`vector-selection.ts`)**: Fixed the root cause of imprecise pixel erasing by introducing dense point resampling (`denseResamplePoints` at 4px steps) and parametric circle-segment intersection math (`getCircleSegmentIntersections`). Slices freehand drawings, writing, shapes, and highlighters at the exact eraser ring boundary with 100% mathematical precision!
   - **Precision Lasso Crosshair Ring Cursor (`NativeStylusCanvas.tsx`)**: Built a vermillion precision crosshair cursor pointer (outer ring + center dot + 4 cardinal crosshair ticks) that tracks your pointer location on hover and move when Lasso Area Erase mode is selected!
+  - **Top Bar Redesign & Note Settings Popover (`EditorSettingsPopover.tsx`, `AdvancedNoteEditor.tsx`, `VerticalStylusSidebar.tsx`)**: Rebuilt the top bar header with a sleek icon-first layout, central glowing **Stylus Mode Pill Toggle** (`Stylus Mode ON/OFF`), compact action icons (`Pin`, `Reminder`, `Convert Mind Map`, `Full Screen`, `Settings`), and a dedicated 280px **Note Settings Overflow Popover** containing Theme Toggle (Dark/Light), Priority Selector, Export Markdown, and Delete Note action. Removed redundant Palm Rejection button from left stylus sidebar dock. Added floating **Exit Full Screen** button in immersive focus mode.
   - Integrated **StylusAnnotationCanvas** overlay: HTML5 Canvas with pressure sensitivity (`PointerEvent.pressure`), pen, marker, highlighter, eraser, and color swatches.
   - Built File Upload API (`/api/upload`) for note media attachments.
   - Integrated Document Telemetry bar (Word count, character count, estimated reading time) & Zen Focus writing mode.
 
 ## Next Steps
 - [ ] Test live note creation, rich text editing, freehand stylus writing, and mind map canvas drawing in browser.
+
 
 
 

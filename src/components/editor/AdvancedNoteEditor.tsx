@@ -55,10 +55,12 @@ import {
   Network,
   PenTool,
   ShieldCheck,
+  Settings,
 } from 'lucide-react';
 
 import { StoredNote } from '@/lib/notes-storage';
 import { ReminderModal } from '../ui/ReminderModal';
+import { EditorSettingsPopover } from './EditorSettingsPopover';
 import { ThemeToggle } from '../ui/ThemeToggle';
 
 // Stylus & Digital Ink System Imports
@@ -130,9 +132,10 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
   const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'unsaved'>('saved');
   const [isConverting, setIsConverting] = useState(false);
 
-  // Modals state
+  // Modals & Popovers state
   const [isReminderOpen, setIsReminderOpen] = useState(false);
   const [isStylusSettingsOpen, setIsStylusSettingsOpen] = useState(false);
+  const [isEditorSettingsOpen, setIsEditorSettingsOpen] = useState(false);
 
   // Configure Extensions from reactjs-tiptap-editor
   const extensions = useMemo(() => {
@@ -386,6 +389,19 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
     }
   };
 
+  // Export Note as Markdown file
+  const handleExportMarkdown = () => {
+    if (!editor) return;
+    const textContent = editor.getText();
+    const blob = new Blob([`# ${title}\n\n${textContent}`], { type: 'text/markdown' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${title.toLowerCase().replace(/\s+/g, '-') || 'note'}.md`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   // Delete Note
   const handleDeleteNote = async () => {
     if (confirm('Are you sure you want to delete this note?')) {
@@ -499,26 +515,27 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
 
       {/* Top Header Control Bar */}
       {!isZenMode && (
-        <header className="h-16 border-b border-[#262626] bg-[#0A0A0A]/95 px-6 flex items-center justify-between sticky top-0 z-30">
-          <div className="flex items-center gap-4">
+        <header className="h-14 border-b border-[#262626] bg-[#0A0A0A]/95 px-6 flex items-center justify-between sticky top-0 z-30 font-sans">
+          {/* Left Section: Back, Title, Save Status */}
+          <div className="flex items-center gap-3">
             <button
               onClick={() => router.push('/dashboard')}
-              className="flex items-center gap-1.5 text-xs font-mono uppercase tracking-wider text-[#737373] hover:text-[#FAFAFA] transition-colors"
+              className="p-1.5 border border-[#262626] hover:border-[#FAFAFA] text-[#737373] hover:text-[#FAFAFA] transition-colors"
+              title="Back to Dashboard"
             >
               <ArrowLeft className="w-4 h-4 stroke-[1.5]" />
-              <span>Dashboard</span>
             </button>
 
             <div className="h-4 w-px bg-[#262626]" />
 
-            <span className="font-mono text-xs uppercase tracking-wider text-[#FAFAFA] font-bold">
+            <span className="font-mono text-xs uppercase tracking-wider text-[#FAFAFA] font-bold truncate max-w-[200px]">
               {title || 'Untitled Note'}
             </span>
 
             <div className="h-4 w-px bg-[#262626]" />
 
-            {/* Auto-save Status */}
-            <div className="flex items-center gap-2 font-mono text-xs">
+            {/* Auto-save Status Badge */}
+            <div className="flex items-center gap-1.5 font-mono text-[11px]">
               {saveStatus === 'saving' ? (
                 <span className="flex items-center gap-1 text-[#FF3D00]">
                   <Loader2 className="w-3 h-3 animate-spin" />
@@ -535,50 +552,8 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
             </div>
           </div>
 
-          {/* Action Toolbar */}
-          <div className="flex items-center gap-3">
-            {/* Priority Selector */}
-            <select
-              value={priority}
-              onChange={(e) => {
-                const p = e.target.value as 'LOW' | 'MEDIUM' | 'HIGH';
-                setPriority(p);
-                saveNote({ priority: p });
-              }}
-              className="bg-[#1A1A1A] border border-[#262626] text-xs font-mono uppercase px-2.5 py-1.5 text-[#FAFAFA] focus:outline-none"
-            >
-              <option value="LOW">Priority: Low</option>
-              <option value="MEDIUM">Priority: Medium</option>
-              <option value="HIGH">Priority: High</option>
-            </select>
-
-            {/* Pin Toggle */}
-            <button
-              onClick={() => {
-                const nextPinned = !isPinned;
-                setIsPinned(nextPinned);
-                saveNote({ isPinned: nextPinned });
-              }}
-              className={`p-1.5 border transition-colors ${
-                isPinned ? 'border-[#FF3D00] text-[#FF3D00]' : 'border-[#262626] text-[#737373] hover:text-[#FAFAFA]'
-              }`}
-              title={isPinned ? 'Unpin Note' : 'Pin Note'}
-            >
-              <Pin className="w-4 h-4 stroke-[1.5]" />
-            </button>
-
-            {/* Set Reminder */}
-            <button
-              onClick={() => setIsReminderOpen(true)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 border text-xs font-mono uppercase tracking-wider transition-colors ${
-                reminderAt ? 'border-[#FF3D00] text-[#FF3D00]' : 'border-[#262626] text-[#737373] hover:text-[#FAFAFA]'
-              }`}
-            >
-              <Bell className="w-3.5 h-3.5 stroke-[1.5]" />
-              <span>{reminderAt ? new Date(reminderAt).toLocaleDateString() : 'Remind'}</span>
-            </button>
-
-            {/* Stylus Mode Toggle (Turns Stylus Mode ON / OFF) */}
+          {/* Center Section: Prominent Sleek Stylus Mode Pill Toggle */}
+          <div className="flex items-center justify-center">
             <button
               onClick={() => {
                 const nextActive = !stylusSettings.isStylusModeActive;
@@ -588,56 +563,121 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
                 }));
                 if (!nextActive) {
                   setIsPenPopoverOpen(false);
+                  setIsHighlighterPopoverOpen(false);
+                  setIsEraserPopoverOpen(false);
+                  setIsShapePopoverOpen(false);
                 }
               }}
-              className={`flex items-center gap-1.5 px-3.5 py-1.5 border text-xs font-mono uppercase tracking-wider font-bold transition-all ${
+              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full border text-xs font-mono uppercase tracking-wider font-bold transition-all duration-200 ${
                 stylusSettings.isStylusModeActive
-                  ? 'border-[#FF3D00] bg-[#FF3D00] text-[#0A0A0A] shadow-lg shadow-[#FF3D00]/20'
-                  : 'border-[#262626] text-[#737373] hover:text-[#FAFAFA] hover:border-[#FAFAFA]'
+                  ? 'border-[#FF3D00] bg-[#FF3D00]/15 text-[#FF3D00] shadow-md shadow-[#FF3D00]/20'
+                  : 'border-[#262626] bg-[#0F0F0F] text-[#737373] hover:text-[#FAFAFA] hover:border-[#737373]'
               }`}
+              title="Toggle Stylus Mode (Drawing Overlay)"
             >
+              <span
+                className={`w-2 h-2 rounded-full transition-all ${
+                  stylusSettings.isStylusModeActive ? 'bg-[#FF3D00] animate-pulse shadow-sm shadow-[#FF3D00]' : 'bg-[#737373]'
+                }`}
+              />
               <PenTool className="w-3.5 h-3.5" />
               <span>{stylusSettings.isStylusModeActive ? 'Stylus Mode ON' : 'Stylus Mode'}</span>
             </button>
+          </div>
 
+          {/* Right Section: Compact Icon Toolbar */}
+          <div className="flex items-center gap-2">
             {/* Convert to Mind Map CTA */}
             <button
               onClick={handleConvertToCanvas}
               disabled={isConverting}
-              className="flex items-center gap-2 px-4 py-1.5 bg-[#FF3D00] hover:bg-[#FAFAFA] text-[#0A0A0A] text-xs font-mono uppercase tracking-wider font-bold transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-[#FF3D00] hover:bg-[#FAFAFA] text-[#0A0A0A] text-xs font-mono uppercase tracking-wider font-bold transition-colors"
+              title="Convert Note to Visual Mind Map Canvas"
             >
               {isConverting ? (
                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
               ) : (
                 <Network className="w-3.5 h-3.5 stroke-[2]" />
               )}
-              <span>Convert to Mind Map</span>
+              <span className="hidden sm:inline">Convert Mind Map</span>
             </button>
 
-            {/* Zen Mode Toggle */}
+            {/* Pin Toggle Button */}
+            <button
+              onClick={() => {
+                const nextPinned = !isPinned;
+                setIsPinned(nextPinned);
+                saveNote({ isPinned: nextPinned });
+              }}
+              className={`p-2 border transition-colors ${
+                isPinned ? 'border-[#FF3D00] bg-[#FF3D00]/10 text-[#FF3D00]' : 'border-[#262626] text-[#737373] hover:text-[#FAFAFA]'
+              }`}
+              title={isPinned ? 'Unpin Note' : 'Pin Note'}
+            >
+              <Pin className="w-3.5 h-3.5 stroke-[1.5]" />
+            </button>
+
+            {/* Set Reminder Button */}
+            <button
+              onClick={() => setIsReminderOpen(true)}
+              className={`p-2 border transition-colors ${
+                reminderAt ? 'border-[#FF3D00] bg-[#FF3D00]/10 text-[#FF3D00]' : 'border-[#262626] text-[#737373] hover:text-[#FAFAFA]'
+              }`}
+              title={reminderAt ? `Reminder: ${new Date(reminderAt).toLocaleDateString()}` : 'Set Note Reminder'}
+            >
+              <Bell className="w-3.5 h-3.5 stroke-[1.5]" />
+            </button>
+
+            {/* Full Screen Immersion Toggle */}
             <button
               onClick={() => setIsZenMode(!isZenMode)}
-              className={`p-1.5 border transition-colors ${
+              className={`p-2 border transition-colors ${
                 isZenMode ? 'border-[#FF3D00] text-[#FF3D00]' : 'border-[#262626] text-[#737373] hover:text-[#FAFAFA]'
               }`}
-              title={isZenMode ? 'Exit Zen Mode' : 'Zen Focus Mode'}
+              title={isZenMode ? 'Exit Full Screen' : 'Full Screen Immersive Focus'}
             >
-              {isZenMode ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+              {isZenMode ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
             </button>
 
-            {/* Theme Switcher Toggle */}
-            <ThemeToggle />
-
-            {/* Delete Note */}
+            {/* Settings & Overflow Dropdown Trigger Button */}
             <button
-              onClick={handleDeleteNote}
-              className="p-1.5 border border-[#262626] hover:border-[#FF3D00] text-[#737373] hover:text-[#FF3D00] transition-colors"
-              title="Delete Note"
+              onClick={() => setIsEditorSettingsOpen(!isEditorSettingsOpen)}
+              className={`p-2 border transition-colors editor-settings-trigger ${
+                isEditorSettingsOpen
+                  ? 'border-[#FF3D00] bg-[#1A1A1A] text-[#FF3D00]'
+                  : 'border-[#262626] text-[#737373] hover:text-[#FAFAFA]'
+              }`}
+              title="More Note Settings"
             >
-              <Trash2 className="w-4 h-4 stroke-[1.5]" />
+              <Settings className="w-3.5 h-3.5 stroke-[1.5]" />
             </button>
           </div>
         </header>
+      )}
+
+      {/* Editor Settings Overflow Popover */}
+      <EditorSettingsPopover
+        isOpen={isEditorSettingsOpen}
+        onClose={() => setIsEditorSettingsOpen(false)}
+        priority={priority}
+        onChangePriority={(p) => {
+          setPriority(p);
+          saveNote({ priority: p });
+        }}
+        onExportMarkdown={handleExportMarkdown}
+        onDeleteNote={handleDeleteNote}
+      />
+
+      {/* Floating Exit Full Screen Button (ONLY visible when Full Screen Immersive Mode is Active) */}
+      {isZenMode && (
+        <button
+          onClick={() => setIsZenMode(false)}
+          className="fixed top-4 right-6 z-50 flex items-center gap-2 px-3 py-1.5 bg-[#0A0A0A]/90 border border-[#FF3D00] text-[#FF3D00] hover:bg-[#FF3D00] hover:text-[#0A0A0A] text-xs font-mono uppercase tracking-wider font-bold transition-all shadow-xl"
+          title="Exit Full Screen Mode (or press Esc)"
+        >
+          <Minimize2 className="w-3.5 h-3.5" />
+          <span>Exit Full Screen</span>
+        </button>
       )}
 
       {/* Main Workspace */}

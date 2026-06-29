@@ -73,20 +73,6 @@ export function VerticalStylusSidebar({
           <Redo className="w-3.5 h-3.5 stroke-[1.5]" />
         </button>
 
-        <div className="w-6 h-px bg-[#262626]" />
-
-        {/* Stylus Mode Quick Toggle */}
-        <button
-          onClick={onToggleStylusMode}
-          className={`p-1.5 border transition-colors ${
-            settings.isStylusModeActive
-              ? 'border-[#FF3D00] text-[#FF3D00]'
-              : 'border-[#262626] text-[#737373] hover:text-[#FAFAFA]'
-          }`}
-          title="Stylus Mode (Palm Rejection)"
-        >
-          <ShieldCheck className="w-4 h-4 stroke-[1.5]" />
-        </button>
       </div>
 
       {/* Center Section: Tools Suite */}

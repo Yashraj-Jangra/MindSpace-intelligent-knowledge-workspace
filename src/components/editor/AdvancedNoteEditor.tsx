@@ -79,6 +79,7 @@ import { PenSettingsPopover, PenPreset } from './stylus/PenSettingsPopover';
 import { ShapeSettingsPopover } from './stylus/ShapeSettingsPopover';
 import { HighlighterSettingsPopover } from './stylus/HighlighterSettingsPopover';
 import { EraserSettingsPopover } from './stylus/EraserSettingsPopover';
+import { LassoSettingsPopover } from './stylus/LassoSettingsPopover';
 import { StylusSettingsModal } from './stylus/StylusSettingsModal';
 import { useStylusHardware } from '@/hooks/useStylusHardware';
 import { recognizeInkToText } from '@/lib/stylus/ink-to-text';
@@ -125,6 +126,7 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
   const [isShapePopoverOpen, setIsShapePopoverOpen] = useState(false);
   const [isHighlighterPopoverOpen, setIsHighlighterPopoverOpen] = useState(false);
   const [isEraserPopoverOpen, setIsEraserPopoverOpen] = useState(false);
+  const [isLassoPopoverOpen, setIsLassoPopoverOpen] = useState(false);
   const [penBoxPresets, setPenBoxPresets] = useState<PenPreset[]>(DEFAULT_PEN_BOX_PRESETS);
 
   // Editor View Mode & Status
@@ -426,22 +428,33 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
             setIsShapePopoverOpen(false);
             setIsHighlighterPopoverOpen(false);
             setIsEraserPopoverOpen(false);
+            setIsLassoPopoverOpen(false);
           }}
           onClosePenPopover={() => {
             setIsPenPopoverOpen(false);
             setIsHighlighterPopoverOpen(false);
             setIsEraserPopoverOpen(false);
+            setIsLassoPopoverOpen(false);
           }}
           onToggleHighlighterPopover={() => {
             setIsHighlighterPopoverOpen(!isHighlighterPopoverOpen);
             setIsPenPopoverOpen(false);
             setIsShapePopoverOpen(false);
             setIsEraserPopoverOpen(false);
+            setIsLassoPopoverOpen(false);
           }}
           onToggleEraserPopover={() => {
             setIsEraserPopoverOpen(!isEraserPopoverOpen);
             setIsPenPopoverOpen(false);
             setIsHighlighterPopoverOpen(false);
+            setIsShapePopoverOpen(false);
+            setIsLassoPopoverOpen(false);
+          }}
+          onToggleLassoPopover={() => {
+            setIsLassoPopoverOpen(!isLassoPopoverOpen);
+            setIsPenPopoverOpen(false);
+            setIsHighlighterPopoverOpen(false);
+            setIsEraserPopoverOpen(false);
             setIsShapePopoverOpen(false);
           }}
           onToggleShapePopover={() => {
@@ -449,6 +462,7 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
             setIsPenPopoverOpen(false);
             setIsHighlighterPopoverOpen(false);
             setIsEraserPopoverOpen(false);
+            setIsLassoPopoverOpen(false);
           }}
           settings={stylusSettings}
           onToggleStylusMode={() =>
@@ -498,6 +512,16 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
         <EraserSettingsPopover
           isOpen={isEraserPopoverOpen}
           onClose={() => setIsEraserPopoverOpen(false)}
+          settings={stylusSettings}
+          onUpdateSettings={(newSettings) => setStylusSettings((prev) => ({ ...prev, ...newSettings }))}
+        />
+      )}
+
+      {/* Lasso Popover Settings */}
+      {stylusSettings.isStylusModeActive && (
+        <LassoSettingsPopover
+          isOpen={isLassoPopoverOpen}
+          onClose={() => setIsLassoPopoverOpen(false)}
           settings={stylusSettings}
           onUpdateSettings={(newSettings) => setStylusSettings((prev) => ({ ...prev, ...newSettings }))}
         />

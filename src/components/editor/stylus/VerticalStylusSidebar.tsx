@@ -21,6 +21,7 @@ interface VerticalStylusSidebarProps {
   onClosePenPopover: () => void;
   onToggleHighlighterPopover: () => void;
   onToggleEraserPopover: () => void;
+  onToggleLassoPopover: () => void;
   onToggleShapePopover: () => void;
   settings: StylusSettings;
   onToggleStylusMode: () => void;
@@ -36,6 +37,7 @@ export function VerticalStylusSidebar({
   onClosePenPopover,
   onToggleHighlighterPopover,
   onToggleEraserPopover,
+  onToggleLassoPopover,
   onToggleShapePopover,
   settings,
   onToggleStylusMode,
@@ -125,11 +127,11 @@ export function VerticalStylusSidebar({
           <Eraser className="w-4 h-4 stroke-[2]" />
         </button>
 
-        {/* Lasso Select Tool */}
+        {/* Lasso Select Tool (Click for Lasso Settings) */}
         <button
           onClick={() => {
             onSelectTool('select');
-            onClosePenPopover();
+            onToggleLassoPopover();
           }}
           className={`p-2 border transition-colors ${
             activeTool === 'select'

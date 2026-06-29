@@ -40,7 +40,7 @@ export function getStrokeBoundingBox(stroke: VectorStroke): BoundingBox {
 }
 
 export function getGroupBoundingBox(strokes: VectorStroke[]): BoundingBox | null {
-  if (!strokes.length) return null;
+  if (!strokes || !strokes.length) return null;
 
   let minX = Infinity,
     maxX = -Infinity,
@@ -156,6 +156,14 @@ export function isStrokeInLassoPolygon(stroke: VectorStroke, polygon: { x: numbe
 }
 
 /**
+ * Checks if vector stroke lies inside a rectangular selection box frame
+ */
+export function isStrokeInBoxFrame(stroke: VectorStroke, minX: number, minY: number, maxX: number, maxY: number): boolean {
+  const box = getStrokeBoundingBox(stroke);
+  return box.minX >= minX && box.maxX <= maxX && box.minY >= minY && box.maxY <= maxY;
+}
+
+/**
  * Calculates exact parametric circle-segment intersection values t in [0, 1]
  */
 export function getCircleSegmentIntersections(
@@ -247,7 +255,6 @@ export function erasePixelsFromStroke(
     if (dist > eraserRadius) {
       currentSegment.push(p);
     } else {
-      // Point is inside eraser circle -> cut active sub-stroke
       if (currentSegment.length >= 2) {
         resultStrokes.push({
           ...stroke,
@@ -387,4 +394,57 @@ export function scaleStroke(
     points: updatedPoints,
     controlPoints: updatedControlPoints,
   };
+}
+
+/**
+ * Rotates vector stroke relative to an anchor point (cx, cy)
+ */
+export function rotateStroke(
+  stroke: VectorStroke,
+  angleRad: number,
+  cx: number,
+  cy: number
+): VectorStroke {
+  const cos = Math.cos(angleRad);
+  const sin = Math.sin(angleRad);
+
+  const updatedPoints = stroke.points.map((p) => {
+    const rx = p.x - cx;
+    const ry = p.y - cy;
+    return {
+      ...p,
+      x: cx + (rx * cos - ry * sin),
+      y: cy + (rx * sin + ry * cos),
+    };
+  });
+
+  const updatedControlPoints = stroke.controlPoints?.map((cp) => {
+    const rx = cp.x - cx;
+    const ry = cp.y - cy;
+    return {
+      ...cp,
+      x: cx + (rx * cos - ry * sin),
+      y: cy + (rx * sin + ry * cos),
+    };
+  });
+
+  return {
+    ...stroke,
+    points: updatedPoints,
+    controlPoints: updatedControlPoints,
+  };
+}
+
+/**
+ * Clones a list of vector strokes with new IDs offset by 20px
+ */
+export function duplicateStrokeGroup(strokes: VectorStroke[]): VectorStroke[] {
+  return strokes.map((s) => {
+    const newId = `stroke-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
+    const translated = translateStroke(s, 20, 20);
+    return {
+      ...translated,
+      id: newId,
+    };
+  });
 }

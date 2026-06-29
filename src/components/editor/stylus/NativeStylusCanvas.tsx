@@ -13,13 +13,19 @@ import { StylusHaptics } from '@/lib/stylus/stylus-haptics';
 import { recognizeShape } from '@/lib/stylus/shape-recognition';
 import {
   getStrokeBoundingBox,
+  getGroupBoundingBox,
   extractControlPoints,
   isPointNearStroke,
   erasePixelsFromStroke,
   isStrokeInLassoPolygon,
+  isStrokeInBoxFrame,
   translateStroke,
+  scaleStroke,
+  rotateStroke,
+  duplicateStrokeGroup,
 } from '@/lib/stylus/vector-selection';
 import { renderStrokeOnCanvas } from '@/lib/stylus/stroke-renderer';
+import { Copy, Trash2, FileText, RotateCw } from 'lucide-react';
 
 interface NativeStylusCanvasProps {
   isActive: boolean;
@@ -57,13 +63,16 @@ export function NativeStylusCanvas({
   const lastMovePointRef = useRef<{ x: number; y: number } | null>(null);
   const hasConvertedShapeRef = useRef(false);
 
-  const [selectedStrokeId, setSelectedStrokeId] = useState<string | null>(null);
+  // Multi-element Selection & Transform Handle State
+  const [selectedStrokeIds, setSelectedStrokeIds] = useState<string[]>([]);
   const [activeHandleId, setActiveHandleId] = useState<string | null>(null);
   const [dragOffset, setDragOffset] = useState<{ x: number; y: number } | null>(null);
   const [eraserCursorPos, setEraserCursorPos] = useState<{ x: number; y: number } | null>(null);
 
-  // Lasso Freehand Area Selection Erase Drag State
+  // Lasso Freehand Area Selection & Box Selection Drag State
   const lassoPointsRef = useRef<{ x: number; y: number }[]>([]);
+  const [boxStart, setBoxStart] = useState<{ x: number; y: number } | null>(null);
+  const [boxCurrent, setBoxCurrent] = useState<{ x: number; y: number } | null>(null);
 
   // Synchronous offscreen canvas buffer update
   const updateOffscreenBuffer = useCallback((targetStrokes?: VectorStroke[]) => {
@@ -137,35 +146,52 @@ export function NativeStylusCanvas({
       ctx.restore();
     }
 
-    // 4. Draw interactive geometric handles if selected
-    if (selectedStrokeId) {
-      const selected = strokes.find((s) => s.id === selectedStrokeId);
-      if (selected) {
+    // 4. Draw interactive multi-element transform bounding box & handles if selected
+    if (selectedStrokeIds.length > 0) {
+      const selectedStrokes = strokes.filter((s) => selectedStrokeIds.includes(s.id));
+      if (selectedStrokes.length > 0) {
         ctx.save();
         ctx.scale(dpr, dpr);
-        drawSelectionHandles(ctx, selected);
+        drawGroupSelectionHandles(ctx, selectedStrokes);
         ctx.restore();
       }
     }
 
-    // 5. Draw Lasso Freehand Selection Erase Area Overlay
-    if (activeTool === 'eraser' && settings.eraserMode === 'lasso' && lassoPointsRef.current.length > 1) {
-      const pts = lassoPointsRef.current;
-      ctx.save();
-      ctx.scale(dpr, dpr);
-      ctx.beginPath();
-      ctx.strokeStyle = '#FF3D00';
-      ctx.lineWidth = 1.8;
-      ctx.setLineDash([6, 4]);
-      ctx.fillStyle = '#FF3D0022';
-      ctx.moveTo(pts[0].x, pts[0].y);
-      for (let i = 1; i < pts.length; i++) {
-        ctx.lineTo(pts[i].x, pts[i].y);
+    // 5. Draw Lasso Selection Overlay (Freehand Loop or Rectangular Box Frame)
+    if (activeTool === 'select') {
+      if (settings.lassoSelectionMode === 'freehand' && lassoPointsRef.current.length > 1) {
+        const pts = lassoPointsRef.current;
+        ctx.save();
+        ctx.scale(dpr, dpr);
+        ctx.beginPath();
+        ctx.strokeStyle = '#FF3D00';
+        ctx.lineWidth = 1.8;
+        ctx.setLineDash([6, 4]);
+        ctx.fillStyle = '#FF3D0022';
+        ctx.moveTo(pts[0].x, pts[0].y);
+        for (let i = 1; i < pts.length; i++) {
+          ctx.lineTo(pts[i].x, pts[i].y);
+        }
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+        ctx.restore();
+      } else if (settings.lassoSelectionMode === 'box' && boxStart && boxCurrent) {
+        const minX = Math.min(boxStart.x, boxCurrent.x);
+        const minY = Math.min(boxStart.y, boxCurrent.y);
+        const width = Math.abs(boxCurrent.x - boxStart.x);
+        const height = Math.abs(boxCurrent.y - boxStart.y);
+
+        ctx.save();
+        ctx.scale(dpr, dpr);
+        ctx.strokeStyle = '#FF3D00';
+        ctx.lineWidth = 1.5;
+        ctx.setLineDash([6, 4]);
+        ctx.fillStyle = '#FF3D0022';
+        ctx.fillRect(minX, minY, width, height);
+        ctx.strokeRect(minX, minY, width, height);
+        ctx.restore();
       }
-      ctx.closePath();
-      ctx.fill();
-      ctx.stroke();
-      ctx.restore();
     }
 
     // 6. Draw visible translucent eraser ring or precision lasso pointer cursor overlay
@@ -179,19 +205,16 @@ export function NativeStylusCanvas({
         ctx.lineWidth = 1.5;
         ctx.fillStyle = '#FF3D0033';
 
-        // Precision Outer Ring
         ctx.beginPath();
         ctx.arc(x, y, 8, 0, Math.PI * 2);
         ctx.fill();
         ctx.stroke();
 
-        // Center Dot
         ctx.beginPath();
         ctx.fillStyle = '#FF3D00';
         ctx.arc(x, y, 2, 0, Math.PI * 2);
         ctx.fill();
 
-        // 4 Precision Crosshair Ticks
         ctx.beginPath();
         ctx.setLineDash([]);
         ctx.moveTo(x - 12, y); ctx.lineTo(x - 6, y);
@@ -211,7 +234,7 @@ export function NativeStylusCanvas({
 
       ctx.restore();
     }
-  }, [activeTool, activePenSubtype, activeColor, strokeWidth, lineType, settings, selectedStrokeId, strokes, eraserCursorPos]);
+  }, [activeTool, activePenSubtype, activeColor, strokeWidth, lineType, settings, selectedStrokeIds, strokes, eraserCursorPos, boxStart, boxCurrent]);
 
   // Update canvas dimensions on resize
   const handleResize = useCallback(() => {
@@ -252,12 +275,41 @@ export function NativeStylusCanvas({
     return false;
   }, [activeTool, settings]);
 
-  // Helper: Filter whether stroke should be target of eraser
+  // Helper: Filter whether stroke should be target of eraser or selection
+  const isStrokeSelectable = useCallback((s: VectorStroke) => {
+    if (!settings.selectDrawings && s.tool === 'pen') return false;
+    if (!settings.selectDrawings && s.tool === 'highlighter') return false;
+    if (!settings.selectShapes && s.recognizedShape && s.recognizedShape !== 'none') return false;
+    return true;
+  }, [settings]);
+
   const isStrokeErasable = useCallback((s: VectorStroke) => {
     if (s.tool === 'pen' && !settings.erasePenStrokes) return false;
     if (s.tool === 'highlighter' && !settings.eraseHighlighterStrokes) return false;
     return true;
   }, [settings]);
+
+  // Quick Action: Duplicate Selected Group
+  const handleDuplicateSelection = () => {
+    if (!selectedStrokeIds.length) return;
+    const selected = strokes.filter((s) => selectedStrokeIds.includes(s.id));
+    const duplicated = duplicateStrokeGroup(selected);
+    const updated = [...strokes, ...duplicated];
+    onStrokesChange(updated);
+    setSelectedStrokeIds(duplicated.map((d) => d.id));
+    updateOffscreenBuffer(updated);
+    StylusHaptics.trigger('strokeStart', settings);
+  };
+
+  // Quick Action: Delete Selected Group
+  const handleDeleteSelection = () => {
+    if (!selectedStrokeIds.length) return;
+    const remaining = strokes.filter((s) => !selectedStrokeIds.includes(s.id));
+    onStrokesChange(remaining);
+    setSelectedStrokeIds([]);
+    updateOffscreenBuffer(remaining);
+    StylusHaptics.trigger('eraserScrub', settings);
+  };
 
   // Pointer Down
   const handlePointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
@@ -293,31 +345,46 @@ export function NativeStylusCanvas({
     StylusHaptics.trigger('strokeStart', settings);
 
     if (activeTool === 'select') {
-      if (selectedStrokeId) {
-        const selected = strokes.find((s) => s.id === selectedStrokeId);
-        if (selected && selected.controlPoints) {
-          const clickedHandle = selected.controlPoints.find(
-            (cp) => Math.hypot(cp.x - x, cp.y - y) <= 12
-          );
+      if (selectedStrokeIds.length > 0) {
+        const selectedStrokes = strokes.filter((s) => selectedStrokeIds.includes(s.id));
+        const groupBbox = getGroupBoundingBox(selectedStrokes);
+
+        if (groupBbox) {
+          // Check corner resize handles (tl, tr, br, bl)
+          const handles = [
+            { id: 'handle-tl', x: groupBbox.minX - 6, y: groupBbox.minY - 6 },
+            { id: 'handle-tr', x: groupBbox.maxX + 6, y: groupBbox.minY - 6 },
+            { id: 'handle-[#FF3D00]', x: groupBbox.maxX + 6, y: groupBbox.maxY + 6 },
+            { id: 'handle-bl', x: groupBbox.minX - 6, y: groupBbox.maxY + 6 },
+            { id: 'handle-rotate', x: groupBbox.centerX, y: groupBbox.minY - 24 },
+          ];
+
+          const clickedHandle = handles.find((h) => Math.hypot(h.x - x, h.y - y) <= 12);
           if (clickedHandle) {
             setActiveHandleId(clickedHandle.id);
+            setDragOffset({ x, y });
+            return;
+          }
+
+          // Check if clicking inside bounding box for drag move translation
+          if (x >= groupBbox.minX && x <= groupBbox.maxX && y >= groupBbox.minY && y <= groupBbox.maxY) {
+            setActiveHandleId('handle-move');
             setDragOffset({ x, y });
             return;
           }
         }
       }
 
-      const clicked = strokes.find((s) => isPointNearStroke(s, x, y));
-      if (clicked) {
-        setSelectedStrokeId(clicked.id);
-        setActiveHandleId(null);
-        setDragOffset({ x, y });
-        StylusHaptics.trigger('elementSelected', settings);
+      // Start new Lasso Selection
+      if (settings.lassoSelectionMode === 'freehand') {
+        lassoPointsRef.current = [{ x, y }];
       } else {
-        setSelectedStrokeId(null);
-        setActiveHandleId(null);
-        setDragOffset(null);
+        setBoxStart({ x, y });
+        setBoxCurrent({ x, y });
       }
+      setSelectedStrokeIds([]);
+      setActiveHandleId(null);
+      renderFrame();
       return;
     }
 
@@ -395,106 +462,53 @@ export function NativeStylusCanvas({
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
 
-    if (activeTool === 'select' && selectedStrokeId && (e.buttons === 1 || e.buttons === 2)) {
-      if (activeHandleId && dragOffset) {
+    if (activeTool === 'select' && e.buttons === 1) {
+      if (selectedStrokeIds.length > 0 && activeHandleId && dragOffset) {
         const dx = x - dragOffset.x;
         const dy = y - dragOffset.y;
+        const selectedStrokes = strokes.filter((s) => selectedStrokeIds.includes(s.id));
+        const groupBbox = getGroupBoundingBox(selectedStrokes);
 
-        const updated = strokes.map((s) => {
-          if (s.id !== selectedStrokeId) return s;
-
-          if (s.recognizedShape === 'circle' && activeHandleId.endsWith('-radius')) {
-            const bbox = getStrokeBoundingBox(s);
-            const centerX = s.shapeBounds?.center?.x ?? bbox.centerX;
-            const centerY = s.shapeBounds?.center?.y ?? bbox.centerY;
-            const newRadius = Math.max(10, Math.hypot(x - centerX, y - centerY));
-
-            const points: PointerPoint[] = [];
-            const steps = 40;
-            for (let i = 0; i <= steps; i++) {
-              const angle = (i / steps) * Math.PI * 2;
-              points.push({
-                x: centerX + Math.cos(angle) * newRadius,
-                y: centerY + Math.sin(angle) * newRadius,
-                pressure: 0.5,
-                tiltX: 0,
-                tiltY: 0,
-                timeStamp: Date.now(),
-              });
-            }
-            const updatedStroke: VectorStroke = {
-              ...s,
-              points,
-              shapeBounds: {
-                x: centerX - newRadius,
-                y: centerY - newRadius,
-                width: newRadius * 2,
-                height: newRadius * 2,
-                radius: newRadius,
-                center: { x: centerX, y: centerY },
-              },
-            };
-            return { ...updatedStroke, controlPoints: extractControlPoints(updatedStroke) };
+        if (groupBbox) {
+          if (activeHandleId === 'handle-move') {
+            const updated = strokes.map((s) => (selectedStrokeIds.includes(s.id) ? translateStroke(s, dx, dy) : s));
+            onStrokesChange(updated);
+            updateOffscreenBuffer(updated);
+            renderFrame();
+            setDragOffset({ x, y });
+            return;
           }
 
-          if (s.recognizedShape === 'triangle' && activeHandleId.includes('-v')) {
-            const bbox = getStrokeBoundingBox(s);
-            const vIdx = parseInt(activeHandleId.split('-v')[1], 10);
-            const vertices = [...(s.shapeBounds?.vertices || [
-              { x: s.points[0].x, y: s.points[0].y },
-              { x: s.points[Math.floor(s.points.length / 3)].x, y: s.points[Math.floor(s.points.length / 3)].y },
-              { x: s.points[Math.floor((s.points.length * 2) / 3)].x, y: s.points[Math.floor((s.points.length * 2) / 3)].y },
-            ])];
-
-            vertices[vIdx] = { x, y };
-
-            const points: PointerPoint[] = [];
-            for (let i = 0; i < 3; i++) {
-              const p0 = vertices[i];
-              const p1 = vertices[(i + 1) % 3];
-              for (let t = 0; t <= 1; t += 0.1) {
-                points.push({
-                  x: p0.x + (p1.x - p0.x) * t,
-                  y: p0.y + (p1.y - p0.y) * t,
-                  pressure: 0.5,
-                  tiltX: 0,
-                  tiltY: 0,
-                  timeStamp: Date.now(),
-                });
-              }
-            }
-            const updatedStroke: VectorStroke = {
-              ...s,
-              points,
-              shapeBounds: {
-                x: bbox.minX,
-                y: bbox.minY,
-                width: bbox.width,
-                height: bbox.height,
-                vertices,
-              },
-            };
-            return { ...updatedStroke, controlPoints: extractControlPoints(updatedStroke) };
+          if (activeHandleId === 'handle-rotate') {
+            const angleRad = Math.atan2(y - groupBbox.centerY, x - groupBbox.centerX) - Math.atan2(dragOffset.y - groupBbox.centerY, dragOffset.x - groupBbox.centerX);
+            const updated = strokes.map((s) => (selectedStrokeIds.includes(s.id) ? rotateStroke(s, angleRad, groupBbox.centerX, groupBbox.centerY) : s));
+            onStrokesChange(updated);
+            updateOffscreenBuffer(updated);
+            renderFrame();
+            setDragOffset({ x, y });
+            return;
           }
 
-          return translateStroke(s, dx, dy);
-        });
-
-        onStrokesChange(updated);
-        updateOffscreenBuffer(updated);
-        renderFrame();
-        setDragOffset({ x, y });
-        return;
+          if (activeHandleId.startsWith('handle-t') || activeHandleId.startsWith('handle-b')) {
+            const scaleX = 1 + dx / (groupBbox.width || 1);
+            const scaleY = 1 + dy / (groupBbox.height || 1);
+            const updated = strokes.map((s) => (selectedStrokeIds.includes(s.id) ? scaleStroke(s, scaleX, scaleY, groupBbox.centerX, groupBbox.centerY) : s));
+            onStrokesChange(updated);
+            updateOffscreenBuffer(updated);
+            renderFrame();
+            setDragOffset({ x, y });
+            return;
+          }
+        }
       }
 
-      if (dragOffset) {
-        const dx = x - dragOffset.x;
-        const dy = y - dragOffset.y;
-        const updated = strokes.map((s) => (s.id === selectedStrokeId ? translateStroke(s, dx, dy) : s));
-        onStrokesChange(updated);
-        updateOffscreenBuffer(updated);
+      if (settings.lassoSelectionMode === 'freehand') {
+        lassoPointsRef.current.push({ x, y });
         renderFrame();
-        setDragOffset({ x, y });
+        return;
+      } else if (settings.lassoSelectionMode === 'box' && boxStart) {
+        setBoxCurrent({ x, y });
+        renderFrame();
         return;
       }
     }
@@ -611,6 +625,38 @@ export function NativeStylusCanvas({
       }
     }
 
+    // Process Lasso Freehand or Box Selection Completion
+    if (activeTool === 'select') {
+      if (settings.lassoSelectionMode === 'freehand' && lassoPointsRef.current.length > 2) {
+        const polygon = [...lassoPointsRef.current];
+        lassoPointsRef.current = [];
+
+        const selected = strokes.filter((s) => isStrokeSelectable(s) && isStrokeInLassoPolygon(s, polygon));
+        setSelectedStrokeIds(selected.map((s) => s.id));
+        if (selected.length > 0) {
+          StylusHaptics.trigger('elementSelected', settings);
+        }
+        renderFrame();
+        return;
+      } else if (settings.lassoSelectionMode === 'box' && boxStart && boxCurrent) {
+        const minX = Math.min(boxStart.x, boxCurrent.x);
+        const minY = Math.min(boxStart.y, boxCurrent.y);
+        const maxX = Math.max(boxStart.x, boxCurrent.x);
+        const maxY = Math.max(boxStart.y, boxCurrent.y);
+
+        setBoxStart(null);
+        setBoxCurrent(null);
+
+        const selected = strokes.filter((s) => isStrokeSelectable(s) && isStrokeInBoxFrame(s, minX, minY, maxX, maxY));
+        setSelectedStrokeIds(selected.map((s) => s.id));
+        if (selected.length > 0) {
+          StylusHaptics.trigger('elementSelected', settings);
+        }
+        renderFrame();
+        return;
+      }
+    }
+
     // Process Lasso Freehand Area Selection Erase Completion
     if (activeTool === 'eraser' && settings.eraserMode === 'lasso' && lassoPointsRef.current.length > 2) {
       const lassoPolygon = [...lassoPointsRef.current];
@@ -681,29 +727,72 @@ export function NativeStylusCanvas({
     renderFrame();
   };
 
+  // Get selected bounding box for floating action bar positioning
+  const selectedStrokes = strokes.filter((s) => selectedStrokeIds.includes(s.id));
+  const selectionBbox = getGroupBoundingBox(selectedStrokes);
+
   return (
-    <canvas
-      ref={canvasRef}
-      onPointerDown={handlePointerDown}
-      onPointerMove={handlePointerMove}
-      onPointerUp={handlePointerUp}
-      onPointerLeave={() => {
-        setEraserCursorPos(null);
-        lassoPointsRef.current = [];
-      }}
-      className={`absolute inset-0 z-30 w-full h-full ${
-        isActive ? (activeTool === 'select' ? 'cursor-grab' : activeTool === 'eraser' ? 'cursor-none' : 'cursor-crosshair') : 'pointer-events-none'
-      }`}
-      style={{ touchAction: settings.isStylusModeActive ? 'none' : 'auto' }}
-    />
+    <div className="relative w-full h-full">
+      <canvas
+        ref={canvasRef}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerLeave={() => {
+          setEraserCursorPos(null);
+          lassoPointsRef.current = [];
+          setBoxStart(null);
+          setBoxCurrent(null);
+        }}
+        className={`absolute inset-0 z-30 w-full h-full ${
+          isActive ? (activeTool === 'select' ? 'cursor-grab' : activeTool === 'eraser' ? 'cursor-none' : 'cursor-crosshair') : 'pointer-events-none'
+        }`}
+        style={{ touchAction: settings.isStylusModeActive ? 'none' : 'auto' }}
+      />
+
+      {/* Floating Selection Quick Action Bar (Duplicate, Delete, OCR) */}
+      {activeTool === 'select' && selectionBbox && selectedStrokeIds.length > 0 && (
+        <div
+          style={{
+            position: 'absolute',
+            left: `${selectionBbox.centerX}px`,
+            top: `${Math.max(10, selectionBbox.minY - 45)}px`,
+            transform: 'translateX(-50%)',
+          }}
+          className="z-40 flex items-center gap-1 bg-[#0A0A0A]/95 border border-[#FF3D00] p-1 shadow-2xl backdrop-blur-md font-mono text-xs text-[#FAFAFA] select-none animate-in fade-in duration-150"
+        >
+          <button
+            onClick={handleDuplicateSelection}
+            className="flex items-center gap-1 px-2 py-1 hover:bg-[#1A1A1A] text-[#FAFAFA] transition-colors"
+            title="Duplicate Selection"
+          >
+            <Copy className="w-3.5 h-3.5 text-[#FF3D00]" />
+            <span>Duplicate</span>
+          </button>
+
+          <div className="h-3 w-px bg-[#262626]" />
+
+          <button
+            onClick={handleDeleteSelection}
+            className="flex items-center gap-1 px-2 py-1 hover:bg-[#D32F2F] text-[#D32F2F] hover:text-[#FAFAFA] transition-colors"
+            title="Delete Selection"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+            <span>Delete</span>
+          </button>
+        </div>
+      )}
+    </div>
   );
 }
 
 /**
- * Render interactive geometric control handles for Circles, Triangles, Rectangles, Lines
+ * Render interactive multi-element geometric control handles and rotation knob
  */
-function drawSelectionHandles(ctx: CanvasRenderingContext2D, stroke: VectorStroke) {
-  const bbox = getStrokeBoundingBox(stroke);
+function drawGroupSelectionHandles(ctx: CanvasRenderingContext2D, strokes: VectorStroke[]) {
+  const bbox = getGroupBoundingBox(strokes);
+  if (!bbox) return;
+
   ctx.save();
 
   // Outer Bounding Box
@@ -712,41 +801,42 @@ function drawSelectionHandles(ctx: CanvasRenderingContext2D, stroke: VectorStrok
   ctx.setLineDash([4, 4]);
   ctx.strokeRect(bbox.minX - 6, bbox.minY - 6, bbox.width + 12, bbox.height + 12);
 
-  // Render Interactive Control Point Handles
-  if (stroke.controlPoints) {
-    ctx.setLineDash([]);
+  ctx.setLineDash([]);
 
-    for (const cp of stroke.controlPoints) {
-      ctx.beginPath();
+  // 4 Corner Resize Handles
+  const corners = [
+    { x: bbox.minX - 6, y: bbox.minY - 6 },
+    { x: bbox.maxX + 6, y: bbox.minY - 6 },
+    { x: bbox.maxX + 6, y: bbox.maxY + 6 },
+    { x: bbox.minX - 6, y: bbox.maxY + 6 },
+  ];
 
-      if (cp.type === 'radius') {
-        ctx.fillStyle = '#FF3D00';
-        ctx.strokeStyle = '#FAFAFA';
-        ctx.lineWidth = 2;
-        ctx.arc(cp.x, cp.y, 7, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.stroke();
-
-        ctx.fillStyle = '#0A0A0A';
-        ctx.font = 'bold 8px sans-serif';
-        ctx.fillText('R', cp.x - 3, cp.y + 3);
-      } else if (cp.type === 'vertex') {
-        ctx.fillStyle = '#FAFAFA';
-        ctx.strokeStyle = '#FF3D00';
-        ctx.lineWidth = 2.5;
-        ctx.arc(cp.x, cp.y, 6, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.stroke();
-      } else {
-        ctx.fillStyle = '#FAFAFA';
-        ctx.strokeStyle = '#FF3D00';
-        ctx.lineWidth = 2;
-        ctx.arc(cp.x, cp.y, 5, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.stroke();
-      }
-    }
+  for (const c of corners) {
+    ctx.beginPath();
+    ctx.fillStyle = '#FAFAFA';
+    ctx.strokeStyle = '#FF3D00';
+    ctx.lineWidth = 2;
+    ctx.arc(c.x, c.y, 5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
   }
+
+  // Top Rotation Handle Stem
+  ctx.beginPath();
+  ctx.strokeStyle = '#FF3D00';
+  ctx.lineWidth = 1.5;
+  ctx.moveTo(bbox.centerX, bbox.minY - 6);
+  ctx.lineTo(bbox.centerX, bbox.minY - 24);
+  ctx.stroke();
+
+  // Rotation Knob
+  ctx.beginPath();
+  ctx.fillStyle = '#FF3D00';
+  ctx.strokeStyle = '#FAFAFA';
+  ctx.lineWidth = 2;
+  ctx.arc(bbox.centerX, bbox.minY - 24, 6, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
 
   ctx.restore();
 }

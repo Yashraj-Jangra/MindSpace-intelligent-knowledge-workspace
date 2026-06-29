@@ -1,6 +1,7 @@
 export type PenSubtype = 'fountain' | 'ballpoint' | 'pencil';
 export type HighlighterSubtype = 'flat' | 'round';
 export type EraserMode = 'pixel' | 'stroke' | 'lasso';
+export type LassoSelectionMode = 'freehand' | 'box';
 export type StylusTool = 'select' | 'pen' | 'highlighter' | 'eraser' | 'laser';
 export type LineType = 'solid' | 'dashed' | 'dotted';
 export type PressureCurve = 'linear' | 'soft' | 'hard';
@@ -93,6 +94,14 @@ export interface StylusSettings {
   eraserPressureThreshold: number; // 0.2 to 0.9
   erasePenStrokes: boolean;
   eraseHighlighterStrokes: boolean;
+  // Advanced Lasso & Selection Suite Settings
+  lassoSelectionMode: LassoSelectionMode;
+  selectDrawings: boolean;
+  selectShapes: boolean;
+  selectText: boolean;
+  selectTables: boolean;
+  selectImages: boolean;
+  // Hardware & Haptics
   hapticsEnabled: boolean;
   hapticIntensity: 'light' | 'medium' | 'strong';
   pressureCurve: PressureCurve;
@@ -122,6 +131,13 @@ export const DEFAULT_STYLUS_SETTINGS: StylusSettings = {
   eraserPressureThreshold: 0.35, // 35% pressure threshold
   erasePenStrokes: true,
   eraseHighlighterStrokes: true,
+  // Advanced Lasso Selection Defaults
+  lassoSelectionMode: 'freehand',
+  selectDrawings: true,
+  selectShapes: true,
+  selectText: true,
+  selectTables: true,
+  selectImages: true,
   hapticsEnabled: true,
   hapticIntensity: 'medium',
   pressureCurve: 'linear',

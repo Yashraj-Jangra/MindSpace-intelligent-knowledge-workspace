@@ -53,12 +53,14 @@
   - **Top Bar Redesign & Note Settings Popover (`EditorSettingsPopover.tsx`, `AdvancedNoteEditor.tsx`, `VerticalStylusSidebar.tsx`)**: Rebuilt the top bar header with a sleek icon-first layout, central glowing **Stylus Mode Pill Toggle** (`Stylus Mode ON/OFF`), compact action icons (`Pin`, `Reminder`, `Convert Mind Map`, `Full Screen`, `Settings`), and a dedicated 280px **Note Settings Overflow Popover** containing Theme Toggle (Dark/Light), Priority Selector, Export Markdown, and Delete Note action. Removed redundant Palm Rejection button from left stylus sidebar dock. Added floating **Exit Full Screen** button in immersive focus mode.
   - **Advanced Multi-Element Lasso & Selection Suite (`LassoSettingsPopover.tsx`, `vector-selection.ts`, `NativeStylusCanvas.tsx`)**: Built an enterprise Lasso & Multi-Element Selection Suite featuring 5 target element scope toggles (Freehand Ink, Shapes, Text Blocks, Tables, Images), mode switcher (Freehand Loop vs Box Frame), 4 corner resize handles (`tl`, `tr`, `bl`, `br`), top rotation stem knob (`rotate`), body drag translation, and floating quick action bar (Duplicate, Delete).
   - **Top Bar Overlap & Single Back Button Layout (`AdvancedNoteEditor.tsx`, `VerticalStylusSidebar.tsx`)**: Configured the Top Header Control Bar to overlap the top of the Vertical Stylus Sidebar dock (`z-40` top bar, `top-14 z-30` sidebar). Removed the redundant secondary Back button from the left stylus dock so the single unified Back button in the Top Header Bar handles navigation cleanly.
+  - **Fixed Top Bar Shift Bug (`AdvancedNoteEditor.tsx`)**: Removed padding shift (`pl-12`) from the top-level outer page wrapper and applied it exclusively to the `<main>` workspace content area. The Top Header Control Bar now stays 100% fixed, centered, and motionless regardless of whether Stylus Mode is toggled ON or OFF.
   - Integrated **StylusAnnotationCanvas** overlay: HTML5 Canvas with pressure sensitivity (`PointerEvent.pressure`), pen, marker, highlighter, eraser, and color swatches.
   - Built File Upload API (`/api/upload`) for note media attachments.
   - Integrated Document Telemetry bar (Word count, character count, estimated reading time) & Zen Focus writing mode.
 
 ## Next Steps
 - [ ] Test live note creation, rich text editing, freehand stylus writing, and mind map canvas drawing in browser.
+
 
 
 

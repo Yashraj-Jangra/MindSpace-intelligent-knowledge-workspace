@@ -59,7 +59,9 @@ export function getSvgPathFromPoints(
 ): string {
   if (!points || points.length === 0) return '';
 
-  const inputPoints = points.map((p, idx, arr) => {
+  const pts = points.length === 1 ? [points[0], { ...points[0], x: points[0].x + 0.1, y: points[0].y + 0.1 }] : points;
+
+  const inputPoints = pts.map((p, idx, arr) => {
     let speedFactor = 1.0;
     if (subtype === 'fountain' && idx > 0) {
       const prev = arr[idx - 1];

@@ -267,6 +267,22 @@ export function NativeStylusCanvas({
     renderFrame();
   }, [strokes, updateOffscreenBuffer, renderFrame]);
 
+  // Clean up selection states & overlays when activeTool changes
+  useEffect(() => {
+    setSelectedStrokeIds([]);
+    setActiveHandleId(null);
+    setDragOffset(null);
+    lassoPointsRef.current = [];
+    setBoxStart(null);
+    setBoxCurrent(null);
+    isDrawingRef.current = false;
+    activePointsRef.current = [];
+    if (canvasRef.current) {
+      updateOffscreenBuffer();
+      renderFrame();
+    }
+  }, [activeTool, updateOffscreenBuffer, renderFrame]);
+
   // Check Tool Scoping for Auto-Shape Conversion
   const isShapeEnabledForTool = useCallback(() => {
     if (!settings.autoShapeRecognition) return false;
@@ -462,55 +478,56 @@ export function NativeStylusCanvas({
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
 
-    if (activeTool === 'select' && e.buttons === 1) {
-      if (selectedStrokeIds.length > 0 && activeHandleId && dragOffset) {
-        const dx = x - dragOffset.x;
-        const dy = y - dragOffset.y;
-        const selectedStrokes = strokes.filter((s) => selectedStrokeIds.includes(s.id));
-        const groupBbox = getGroupBoundingBox(selectedStrokes);
+    if (activeTool === 'select') {
+      if (e.buttons === 1) {
+        if (selectedStrokeIds.length > 0 && activeHandleId && dragOffset) {
+          const dx = x - dragOffset.x;
+          const dy = y - dragOffset.y;
+          const selectedStrokes = strokes.filter((s) => selectedStrokeIds.includes(s.id));
+          const groupBbox = getGroupBoundingBox(selectedStrokes);
 
-        if (groupBbox) {
-          if (activeHandleId === 'handle-move') {
-            const updated = strokes.map((s) => (selectedStrokeIds.includes(s.id) ? translateStroke(s, dx, dy) : s));
-            onStrokesChange(updated);
-            updateOffscreenBuffer(updated);
-            renderFrame();
-            setDragOffset({ x, y });
-            return;
-          }
+          if (groupBbox) {
+            if (activeHandleId === 'handle-move') {
+              const updated = strokes.map((s) => (selectedStrokeIds.includes(s.id) ? translateStroke(s, dx, dy) : s));
+              onStrokesChange(updated);
+              updateOffscreenBuffer(updated);
+              renderFrame();
+              setDragOffset({ x, y });
+              return;
+            }
 
-          if (activeHandleId === 'handle-rotate') {
-            const angleRad = Math.atan2(y - groupBbox.centerY, x - groupBbox.centerX) - Math.atan2(dragOffset.y - groupBbox.centerY, dragOffset.x - groupBbox.centerX);
-            const updated = strokes.map((s) => (selectedStrokeIds.includes(s.id) ? rotateStroke(s, angleRad, groupBbox.centerX, groupBbox.centerY) : s));
-            onStrokesChange(updated);
-            updateOffscreenBuffer(updated);
-            renderFrame();
-            setDragOffset({ x, y });
-            return;
-          }
+            if (activeHandleId === 'handle-rotate') {
+              const angleRad = Math.atan2(y - groupBbox.centerY, x - groupBbox.centerX) - Math.atan2(dragOffset.y - groupBbox.centerY, dragOffset.x - groupBbox.centerX);
+              const updated = strokes.map((s) => (selectedStrokeIds.includes(s.id) ? rotateStroke(s, angleRad, groupBbox.centerX, groupBbox.centerY) : s));
+              onStrokesChange(updated);
+              updateOffscreenBuffer(updated);
+              renderFrame();
+              setDragOffset({ x, y });
+              return;
+            }
 
-          if (activeHandleId.startsWith('handle-t') || activeHandleId.startsWith('handle-b')) {
-            const scaleX = 1 + dx / (groupBbox.width || 1);
-            const scaleY = 1 + dy / (groupBbox.height || 1);
-            const updated = strokes.map((s) => (selectedStrokeIds.includes(s.id) ? scaleStroke(s, scaleX, scaleY, groupBbox.centerX, groupBbox.centerY) : s));
-            onStrokesChange(updated);
-            updateOffscreenBuffer(updated);
-            renderFrame();
-            setDragOffset({ x, y });
-            return;
+            if (activeHandleId.startsWith('handle-t') || activeHandleId.startsWith('handle-b')) {
+              const scaleX = 1 + dx / (groupBbox.width || 1);
+              const scaleY = 1 + dy / (groupBbox.height || 1);
+              const updated = strokes.map((s) => (selectedStrokeIds.includes(s.id) ? scaleStroke(s, scaleX, scaleY, groupBbox.centerX, groupBbox.centerY) : s));
+              onStrokesChange(updated);
+              updateOffscreenBuffer(updated);
+              renderFrame();
+              setDragOffset({ x, y });
+              return;
+            }
           }
         }
-      }
 
-      if (settings.lassoSelectionMode === 'freehand') {
-        lassoPointsRef.current.push({ x, y });
-        renderFrame();
-        return;
-      } else if (settings.lassoSelectionMode === 'box' && boxStart) {
-        setBoxCurrent({ x, y });
-        renderFrame();
-        return;
+        if (settings.lassoSelectionMode === 'freehand') {
+          lassoPointsRef.current.push({ x, y });
+          renderFrame();
+        } else if (settings.lassoSelectionMode === 'box' && boxStart) {
+          setBoxCurrent({ x, y });
+          renderFrame();
+        }
       }
+      return;
     }
 
     if (activeTool === 'eraser') {

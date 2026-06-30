@@ -277,11 +277,7 @@ export function NativeStylusCanvas({
     setBoxCurrent(null);
     isDrawingRef.current = false;
     activePointsRef.current = [];
-    if (canvasRef.current) {
-      updateOffscreenBuffer();
-      renderFrame();
-    }
-  }, [activeTool, updateOffscreenBuffer, renderFrame]);
+  }, [activeTool]);
 
   // Check Tool Scoping for Auto-Shape Conversion
   const isShapeEnabledForTool = useCallback(() => {

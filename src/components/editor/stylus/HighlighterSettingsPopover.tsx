@@ -32,6 +32,11 @@ export function HighlighterSettingsPopover({
 }: HighlighterSettingsPopoverProps) {
   const popoverRef = useRef<HTMLDivElement | null>(null);
 
+  const onCloseRef = useRef(onClose);
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
+
   // Click Outside Listener to close popover when clicking elsewhere
   useEffect(() => {
     if (!isOpen) return;
@@ -40,7 +45,7 @@ export function HighlighterSettingsPopover({
       if (popoverRef.current && !popoverRef.current.contains(e.target as Node)) {
         const target = e.target as HTMLElement;
         if (target.closest('.vertical-stylus-sidebar')) return;
-        onClose();
+        onCloseRef.current();
       }
     };
 
@@ -51,7 +56,7 @@ export function HighlighterSettingsPopover({
       document.removeEventListener('mousedown', handlePointerDownOutside);
       document.removeEventListener('touchstart', handlePointerDownOutside);
     };
-  }, [isOpen, onClose]);
+  }, [isOpen]);
 
   if (!isOpen) return null;
 

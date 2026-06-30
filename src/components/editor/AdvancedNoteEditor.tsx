@@ -414,9 +414,9 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
 
   return (
     <div
-      className={`min-h-screen w-full bg-[#0A0A0A] text-[#FAFAFA] flex flex-col font-sans select-text transition-all duration-200 ${
-        stylusSettings.isStylusModeActive ? 'pl-12' : 'pl-0'
-      } ${isZenMode ? 'fixed inset-0 z-50 overflow-y-auto bg-[#0A0A0A]' : ''}`}
+      className={`min-h-screen w-full bg-[#0A0A0A] text-[#FAFAFA] flex flex-col font-sans select-text ${
+        isZenMode ? 'fixed inset-0 z-50 overflow-y-auto bg-[#0A0A0A]' : ''
+      }`}
     >
       {/* Vertical Stylus Sidebar Dock (ONLY visible when Stylus Mode is ACTIVE) */}
       {stylusSettings.isStylusModeActive && (
@@ -704,7 +704,11 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
       )}
 
       {/* Main Workspace */}
-      <main className="flex-1 max-w-5xl w-full mx-auto p-8 flex flex-col space-y-6">
+      <main
+        className={`flex-1 max-w-5xl w-full mx-auto p-8 flex flex-col space-y-6 transition-all duration-200 ${
+          stylusSettings.isStylusModeActive ? 'pl-16' : 'pl-8'
+        }`}
+      >
         {/* Title Input */}
         <input
           type="text"

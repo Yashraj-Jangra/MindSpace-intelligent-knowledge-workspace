@@ -1,5 +1,33 @@
 [
   {
+    "id": "note_wnu66kne",
+    "userId": "default_user",
+    "canvasId": null,
+    "title": "Untitled Note",
+    "content": "",
+    "tags": [],
+    "priority": "MEDIUM",
+    "isPinned": false,
+    "isArchived": false,
+    "reminderAt": null,
+    "createdAt": "2026-07-23T14:33:46.227Z",
+    "updatedAt": "2026-07-23T14:33:46.227Z"
+  },
+  {
+    "id": "note_d01kd0sh",
+    "userId": "default_user",
+    "canvasId": null,
+    "title": "Untitled Note",
+    "content": "",
+    "tags": [],
+    "priority": "MEDIUM",
+    "isPinned": false,
+    "isArchived": false,
+    "reminderAt": null,
+    "createdAt": "2026-07-23T14:31:15.412Z",
+    "updatedAt": "2026-07-23T14:31:15.412Z"
+  },
+  {
     "id": "note_862iec8q",
     "userId": "usr_8hr84fx2",
     "canvasId": null,

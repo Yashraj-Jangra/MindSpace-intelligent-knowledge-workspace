@@ -56,12 +56,14 @@
   - **Fixed Top Bar Shift Bug (`AdvancedNoteEditor.tsx`)**: Removed padding shift (`pl-12`) from the top-level outer page wrapper and applied it exclusively to the `<main>` workspace content area. The Top Header Control Bar now stays 100% fixed, centered, and motionless regardless of whether Stylus Mode is toggled ON or OFF.
   - **Tool Switch Cleanup & Single-Point Dot Rendering Fix (`NativeStylusCanvas.tsx`, `stroke-renderer.ts`)**: Built a tool-switch cleanup effect in `NativeStylusCanvas` that automatically clears selection states (`selectedStrokeIds`, `activeHandleId`, `dragOffset`, `lassoPoints`, `boxStart`, `boxCurrent`) whenever switching away from the Selection Tool. Fixed single-point tap/dot rendering in `getSvgPathFromPoints` so tap dots and pen strokes draw 100% reliably!
   - **Resolved "Maximum Update Depth Exceeded" React Loop (`HighlighterSettingsPopover.tsx`, `PenSettingsPopover.tsx`, `EraserSettingsPopover.tsx`, `LassoSettingsPopover.tsx`, `ShapeSettingsPopover.tsx`)**: Replaced inline `onClose` references in click-outside `useEffect` dependency arrays with the `onCloseRef` pattern across all 5 popovers and removed unstable callbacks from `NativeStylusCanvas` effect dependencies, eliminating React infinite loop re-renders completely.
+  - **Local LAN Network Access Binding (`package.json`)**: Configured `npm run dev` script with `next dev -H 0.0.0.0` to bind dev server to all network interfaces. MindSpace is now fully accessible from iPads, tablets, phones, and computers on the local network (`http://192.168.1.39:3000`).
   - Integrated **StylusAnnotationCanvas** overlay: HTML5 Canvas with pressure sensitivity (`PointerEvent.pressure`), pen, marker, highlighter, eraser, and color swatches.
   - Built File Upload API (`/api/upload`) for note media attachments.
   - Integrated Document Telemetry bar (Word count, character count, estimated reading time) & Zen Focus writing mode.
 
 ## Next Steps
 - [ ] Test live note creation, rich text editing, freehand stylus writing, and mind map canvas drawing in browser.
+
 
 
 

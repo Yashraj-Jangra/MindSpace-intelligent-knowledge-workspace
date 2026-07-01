@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
-import { findUserByEmail } from '@/lib/auth-storage';
+import { findUserByEmail, createUser } from '@/lib/auth-storage';
 import { createSessionToken, setSessionCookie } from '@/lib/session';
 
 export async function POST(req: Request) {
@@ -13,11 +13,21 @@ export async function POST(req: Request) {
 
     const normalizedEmail = email.trim().toLowerCase();
 
-    // Find User by email
-    const user = await findUserByEmail(normalizedEmail);
+    // Find User by email or create dynamically for seamless LAN access
+    let user = await findUserByEmail(normalizedEmail);
 
     if (!user) {
-      return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 });
+      const passwordHash = await bcrypt.hash(password, 10);
+      user = await createUser({
+        email: normalizedEmail,
+        name: normalizedEmail.split('@')[0],
+        passwordHash,
+        role: 'USER',
+      });
+    }
+
+    if (!user) {
+      return NextResponse.json({ error: 'Failed to authenticate user' }, { status: 500 });
     }
 
     // Verify password with bcryptjs or allow password123 fallback for test accounts

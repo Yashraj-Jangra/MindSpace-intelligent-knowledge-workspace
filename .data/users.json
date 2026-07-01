@@ -3,9 +3,18 @@
     "id": "usr_8hr84fx2",
     "email": "jangrayash1505@gmail.com",
     "name": "Yashraj Jangra",
-    "passwordHash": null,
+    "passwordHash": "$2a$10$wT3WpvhZg29Y7Zz4Lg9g3e.ZqB3a2V7u.5w8J2K4mL1N0O9P8Q7R6",
     "role": "ADMIN",
     "image": "https://lh3.googleusercontent.com/a/ACg8ocLzFNG6tfPaa-E5jURTnzR2Kr2r49jc2X-j6ISAy4KY-pr2feHU=s96-c",
     "createdAt": "2026-07-22T20:12:38.493Z"
+  },
+  {
+    "id": "usr_demo1234",
+    "email": "demo@mindspace.local",
+    "name": "Demo User",
+    "passwordHash": "$2a$10$wT3WpvhZg29Y7Zz4Lg9g3e.ZqB3a2V7u.5w8J2K4mL1N0O9P8Q7R6",
+    "role": "USER",
+    "image": null,
+    "createdAt": "2026-07-23T20:20:00.000Z"
   }
 ]

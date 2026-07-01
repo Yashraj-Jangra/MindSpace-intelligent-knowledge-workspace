@@ -61,6 +61,18 @@ export default function LoginPage() {
           </div>
         )}
 
+        {/* Quick Fill Demo Credentials Button */}
+        <button
+          type="button"
+          onClick={() => {
+            setEmail('demo@mindspace.local');
+            setPassword('password123');
+          }}
+          className="w-full bg-[#1A1A1A] border border-[#FF3D00] text-[#FF3D00] font-mono text-[11px] uppercase tracking-wider py-2 transition-colors mb-4 flex items-center justify-center gap-2 font-bold hover:bg-[#FF3D00] hover:text-[#0A0A0A]"
+        >
+          <span>⚡ 1-Tap Fill Demo Credentials (demo@mindspace.local)</span>
+        </button>
+
         {/* Official Google OAuth Button */}
         <button
           onClick={loginWithGoogle}

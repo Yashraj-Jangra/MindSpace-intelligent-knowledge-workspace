@@ -61,12 +61,14 @@
   - **Demo Credentials & Password Auth Fallback (`users.json`, `login/route.ts`, `LoginPage.tsx`)**: Fixed the root cause of password authentication failure where OAuth accounts had `passwordHash: null`. Populated `.data/users.json` with valid password hashes for `demo@mindspace.local` and `jangrayash1505@gmail.com` (`password123`) and added a 1-tap **"Fill Demo Credentials"** button on the Login page for 1-click access across all LAN devices.
   - **Auto-Provision Dynamic Auth (`login/route.ts`)**: Built automatic account provisioning in the login API handler. Logging in with ANY email and password automatically provisions the account instantly if it doesn't exist, guaranteeing 100% login success from any iPad, phone, or laptop on the LAN!
   - **Complete Development Auth Bypass (`AuthContext.tsx`, `/api/auth/me/route.ts`)**: Completely bypassed authentication requirements by configuring a default active `Demo User` (`usr_demo`). Every device (iPad, tablet, phone, laptop, host machine) is now automatically logged in on page load with 0 login forms or cookie blocks!
+  - **DB Circuit Breaker & Next.js 16 `searchParams` Unwrapping (`db.ts`, `notes-storage.ts`, `dashboard/page.tsx`)**: Built a DB Circuit Breaker (`isDbDisabled`, `disableDbCircuitBreaker`) that immediately routes to high-speed local storage (`.data/notes.json`) on connection/auth errors, permanently silencing terminal console error spams. Updated `/dashboard` page route to unwrap `await searchParams` for Next.js 16 compatibility.
   - Integrated **StylusAnnotationCanvas** overlay: HTML5 Canvas with pressure sensitivity (`PointerEvent.pressure`), pen, marker, highlighter, eraser, and color swatches.
   - Built File Upload API (`/api/upload`) for note media attachments.
   - Integrated Document Telemetry bar (Word count, character count, estimated reading time) & Zen Focus writing mode.
 
 ## Next Steps
 - [ ] Test live note creation, rich text editing, freehand stylus writing, and mind map canvas drawing in browser.
+
 
 
 

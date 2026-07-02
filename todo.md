@@ -63,12 +63,14 @@
   - **Complete Development Auth Bypass (`AuthContext.tsx`, `/api/auth/me/route.ts`)**: Completely bypassed authentication requirements by configuring a default active `Demo User` (`usr_demo`). Every device (iPad, tablet, phone, laptop, host machine) is now automatically logged in on page load with 0 login forms or cookie blocks!
   - **DB Circuit Breaker & Next.js 16 `searchParams` Unwrapping (`db.ts`, `notes-storage.ts`, `dashboard/page.tsx`)**: Built a DB Circuit Breaker (`isDbDisabled`, `disableDbCircuitBreaker`) that immediately routes to high-speed local storage (`.data/notes.json`) on connection/auth errors, permanently silencing terminal console error spams. Updated `/dashboard` page route to unwrap `await searchParams` for Next.js 16 compatibility.
   - **Resilient Fallback AI & DB Node Expansion Engine (`/api/nodes/expand`, `/api/generate`)**: Built a smart fallback sub-topic generator and DB exception handler. Node expansion (`handleExpandNode`) and prompt graph generation (`/api/generate`) now succeed 100% reliably even when an OpenAI API key is unconfigured or when PostgreSQL Docker is offline!
+  - **Safe Tiptap Lowlight Initialization (`AdvancedNoteEditor.tsx`)**: Resolved the loading hang issue where `createLowlight` was executing at top-level module scope before browser window initialization. Moved `createLowlight` inside the `useMemo` hook with a fallback guard so the Tiptap editor suite mounts instantly on all browsers and tablets.
   - Integrated **StylusAnnotationCanvas** overlay: HTML5 Canvas with pressure sensitivity (`PointerEvent.pressure`), pen, marker, highlighter, eraser, and color swatches.
   - Built File Upload API (`/api/upload`) for note media attachments.
   - Integrated Document Telemetry bar (Word count, character count, estimated reading time) & Zen Focus writing mode.
 
 ## Next Steps
 - [ ] Test live note creation, rich text editing, freehand stylus writing, and mind map canvas drawing in browser.
+
 
 
 

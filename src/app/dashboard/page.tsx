@@ -10,13 +10,14 @@ export const dynamic = 'force-dynamic';
 export default async function NotesDashboard({
   searchParams,
 }: {
-  searchParams: { search?: string; tag?: string };
+  searchParams: Promise<{ search?: string; tag?: string }>;
 }) {
   const session = await getSessionFromCookie();
   const userId = session?.id || 'default_user';
 
-  const search = searchParams?.search || '';
-  const tag = searchParams?.tag || '';
+  const resolvedSearchParams = await searchParams;
+  const search = resolvedSearchParams?.search || '';
+  const tag = resolvedSearchParams?.tag || '';
 
   const notes = await getUserNotes(userId, search, tag);
   const pinnedNotes = notes.filter((n) => n.isPinned);

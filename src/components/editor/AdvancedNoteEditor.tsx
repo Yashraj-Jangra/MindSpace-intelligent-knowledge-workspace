@@ -1,5 +1,4 @@
 import { common, createLowlight } from 'lowlight';
-const lowlight = createLowlight(common);
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
@@ -141,6 +140,13 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
 
   // Configure Extensions from reactjs-tiptap-editor
   const extensions = useMemo(() => {
+    let lowlightInstance;
+    try {
+      lowlightInstance = createLowlight(common);
+    } catch (e) {
+      console.warn('[Tiptap Lowlight Warning]: Using default code block styling.', e);
+    }
+
     return [
       StarterKit.configure({
         bold: false,
@@ -158,7 +164,7 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
       Italic,
       TextUnderline,
       Strike,
-      CodeBlock.configure({ lowlight }),
+      lowlightInstance ? CodeBlock.configure({ lowlight: lowlightInstance }) : CodeBlock,
       Blockquote,
       BulletList,
       OrderedList,

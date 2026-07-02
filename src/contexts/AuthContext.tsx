@@ -14,9 +14,16 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const DEFAULT_DEV_USER: SessionUser = {
+  id: 'usr_demo',
+  email: 'demo@mindspace.local',
+  name: 'Demo User',
+  role: 'USER',
+};
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<SessionUser | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [user, setUser] = useState<SessionUser | null>(DEFAULT_DEV_USER);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Fetch current logged in user session on mount
   const checkSession = async () => {
@@ -26,14 +33,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const data = await res.json();
         if (data.authenticated && data.user) {
           setUser(data.user);
-        } else {
-          setUser(null);
+          return;
         }
-      } else {
-        setUser(null);
       }
+      setUser(DEFAULT_DEV_USER);
     } catch (err) {
-      setUser(null);
+      setUser(DEFAULT_DEV_USER);
     } finally {
       setIsLoading(false);
     }

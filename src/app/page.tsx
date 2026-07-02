@@ -254,27 +254,27 @@ export default function Home() {
 
   return (
     <main className="w-screen h-screen relative flex flex-col bg-[#0A0A0A] overflow-hidden">
-      {/* Header Bar */}
-      <header className="h-16 border-b border-[#262626] bg-[#0A0A0A]/90 backdrop-blur-md px-6 flex items-center justify-between z-30">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-[#FF3D00] flex items-center justify-center font-mono font-bold text-[#0A0A0A]">
+      {/* Responsive Header Bar */}
+      <header className="min-h-[4rem] border-b border-[#262626] bg-[#0A0A0A]/90 backdrop-blur-md px-3 sm:px-6 py-2 sm:py-0 flex items-center justify-between gap-2 z-30 overflow-x-auto no-scrollbar">
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+          <div className="w-8 h-8 bg-[#FF3D00] flex items-center justify-center font-mono font-bold text-[#0A0A0A] shrink-0">
             <Network className="w-5 h-5 stroke-[2.5]" />
           </div>
           <div>
-            <h1 className="font-sans font-extrabold text-xl tracking-tighter uppercase text-[#FAFAFA]">
+            <h1 className="font-sans font-extrabold text-lg sm:text-xl tracking-tighter uppercase text-[#FAFAFA]">
               MIND<span className="text-[#FF3D00]">SPACE</span>
             </h1>
-            <span className="font-mono text-[10px] uppercase tracking-widest text-[#737373] block -mt-1">
-              VISUAL CANVAS WORKSPACE
+            <span className="font-mono text-[8px] sm:text-[10px] uppercase tracking-widest text-[#737373] block -mt-1">
+              CANVAS WORKSPACE
             </span>
           </div>
         </div>
 
         {/* Workspace Quick Links & Search Bar */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
           <Link
             href="/dashboard"
-            className="flex items-center gap-1.5 px-3 py-1.5 border border-[#262626] hover:border-[#FF3D00] text-xs font-mono uppercase tracking-wider text-[#FAFAFA] transition-colors"
+            className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 border border-[#262626] hover:border-[#FF3D00] text-xs font-mono uppercase tracking-wider text-[#FAFAFA] transition-colors"
           >
             <LayoutDashboard className="w-3.5 h-3.5 text-[#FF3D00]" />
             <span className="hidden sm:inline">Dashboard</span>
@@ -282,7 +282,7 @@ export default function Home() {
 
           <Link
             href="/reminders"
-            className="flex items-center gap-1.5 px-3 py-1.5 border border-[#262626] hover:border-[#FF3D00] text-xs font-mono uppercase tracking-wider text-[#FAFAFA] transition-colors"
+            className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 border border-[#262626] hover:border-[#FF3D00] text-xs font-mono uppercase tracking-wider text-[#FAFAFA] transition-colors"
           >
             <Bell className="w-3.5 h-3.5 text-[#10b981]" />
             <span className="hidden sm:inline">Reminders</span>
@@ -292,38 +292,29 @@ export default function Home() {
 
           <button
             onClick={() => setIsDocUploadOpen(true)}
-            className="flex items-center gap-2 px-3 py-1.5 border border-[#262626] hover:border-[#FF3D00] text-xs font-mono uppercase tracking-wider text-[#FAFAFA] transition-colors"
+            className="flex items-center gap-2 px-2.5 sm:px-3 py-1.5 border border-[#262626] hover:border-[#FF3D00] text-xs font-mono uppercase tracking-wider text-[#FAFAFA] transition-colors"
           >
             <FileUp className="w-3.5 h-3.5 text-[#FF3D00]" />
-            <span className="hidden sm:inline">Upload Doc</span>
+            <span className="hidden md:inline">Upload</span>
           </button>
 
           <ExportMenu title={title} nodes={nodes} edges={edges} />
 
           <button
             onClick={() => setIsOutlineOpen(true)}
-            className="flex items-center gap-2 px-3 py-1.5 border border-[#262626] hover:border-[#FF3D00] text-xs font-mono uppercase tracking-wider text-[#FAFAFA] transition-colors"
+            className="flex items-center gap-2 px-2.5 sm:px-3 py-1.5 border border-[#262626] hover:border-[#FF3D00] text-xs font-mono uppercase tracking-wider text-[#FAFAFA] transition-colors"
           >
             <FileText className="w-3.5 h-3.5 text-[#FF3D00]" />
-            <span className="hidden sm:inline">Outline</span>
+            <span className="hidden md:inline">Outline</span>
           </button>
 
           {/* Auth Navigation & User Profile */}
-          <div className="border-l border-[#262626] pl-3 flex items-center gap-2">
+          <div className="border-l border-[#262626] pl-2 sm:pl-3 flex items-center gap-2">
             {user ? (
               <div className="flex items-center gap-2">
-                <Link
-                  href="/admin"
-                  className="flex items-center gap-1 px-2.5 py-1.5 border border-[#262626] hover:border-[#FF3D00] text-xs font-mono text-[#FAFAFA] transition-colors"
-                  title="Admin Dashboard"
-                >
-                  <Shield className="w-3.5 h-3.5 text-[#FF3D00]" />
-                  <span className="hidden md:inline">Admin</span>
-                </Link>
-
-                <div className="flex items-center gap-2 bg-[#0F0F0F] border border-[#262626] px-3 py-1 text-xs font-mono text-[#FAFAFA]">
+                <div className="flex items-center gap-1.5 bg-[#0F0F0F] border border-[#262626] px-2.5 py-1 text-xs font-mono text-[#FAFAFA]">
                   <User className="w-3.5 h-3.5 text-[#FF3D00]" />
-                  <span className="max-w-[100px] truncate">{user.name || user.email}</span>
+                  <span className="max-w-[80px] sm:max-w-[100px] truncate">{user.name || user.email}</span>
                 </div>
 
                 <button

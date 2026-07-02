@@ -15,7 +15,7 @@ if (process.env.NODE_ENV !== 'production') {
   globalForPrisma.prisma = prisma;
 }
 
-let dbDisabled = globalForPrisma.isDbAvailable === false;
+let dbDisabled = globalForPrisma.isDbAvailable === false || process.env.ENABLE_POSTGRES === 'false' || true;
 
 export function isDbDisabled(): boolean {
   return dbDisabled;

@@ -544,9 +544,9 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
 
       {/* Top Header Control Bar */}
       {!isZenMode && (
-        <header className="h-14 border-b border-[#262626] bg-[#0A0A0A]/95 px-6 flex items-center justify-between sticky top-0 z-40 font-sans">
+        <header className="min-h-[3.5rem] border-b border-[#262626] bg-[#0A0A0A]/95 px-3 sm:px-6 py-2 sm:py-0 flex items-center justify-between sticky top-0 z-40 font-sans gap-2 overflow-x-auto no-scrollbar">
           {/* Left Section: Back, Title, Save Status */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             <button
               onClick={() => router.push('/dashboard')}
               className="p-1.5 border border-[#262626] hover:border-[#FAFAFA] text-[#737373] hover:text-[#FAFAFA] transition-colors"
@@ -557,14 +557,14 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
 
             <div className="h-4 w-px bg-[#262626]" />
 
-            <span className="font-mono text-xs uppercase tracking-wider text-[#FAFAFA] font-bold truncate max-w-[200px]">
+            <span className="font-mono text-xs uppercase tracking-wider text-[#FAFAFA] font-bold truncate max-w-[100px] sm:max-w-[200px]">
               {title || 'Untitled Note'}
             </span>
 
-            <div className="h-4 w-px bg-[#262626]" />
+            <div className="h-4 w-px bg-[#262626] hidden sm:block" />
 
             {/* Auto-save Status Badge */}
-            <div className="flex items-center gap-1.5 font-mono text-[11px]">
+            <div className="hidden sm:flex items-center gap-1.5 font-mono text-[11px]">
               {saveStatus === 'saving' ? (
                 <span className="flex items-center gap-1 text-[#FF3D00]">
                   <Loader2 className="w-3 h-3 animate-spin" />
@@ -582,7 +582,7 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
           </div>
 
           {/* Center Section: Prominent Sleek Stylus Mode Pill Toggle */}
-          <div className="flex items-center justify-center">
+          <div className="flex items-center justify-center shrink-0">
             <button
               onClick={() => {
                 const nextActive = !stylusSettings.isStylusModeActive;
@@ -597,7 +597,7 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
                   setIsShapePopoverOpen(false);
                 }
               }}
-              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full border text-xs font-mono uppercase tracking-wider font-bold transition-all duration-200 ${
+              className={`flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-full border text-[11px] sm:text-xs font-mono uppercase tracking-wider font-bold transition-all duration-200 ${
                 stylusSettings.isStylusModeActive
                   ? 'border-[#FF3D00] bg-[#FF3D00]/15 text-[#FF3D00] shadow-md shadow-[#FF3D00]/20'
                   : 'border-[#262626] bg-[#0F0F0F] text-[#737373] hover:text-[#FAFAFA] hover:border-[#737373]'
@@ -610,12 +610,12 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
                 }`}
               />
               <PenTool className="w-3.5 h-3.5" />
-              <span>{stylusSettings.isStylusModeActive ? 'Stylus Mode ON' : 'Stylus Mode'}</span>
+              <span>{stylusSettings.isStylusModeActive ? 'Stylus ON' : 'Stylus'}</span>
             </button>
           </div>
 
           {/* Right Section: Compact Icon Toolbar */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             {/* Convert to Mind Map CTA */}
             <button
               onClick={handleConvertToCanvas}

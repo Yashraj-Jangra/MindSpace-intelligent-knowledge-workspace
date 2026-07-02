@@ -28,51 +28,65 @@ export default async function NotesDashboard({
 
   return (
     <div className="min-h-screen w-full bg-[#0A0A0A] text-[#FAFAFA] flex flex-col font-sans">
-      {/* Top Header Bar */}
-      <header className="h-16 border-b border-[#262626] bg-[#0A0A0A]/95 px-8 flex items-center justify-between z-30">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-[#FF3D00] flex items-center justify-center font-mono font-bold text-[#0A0A0A]">
-            <FileText className="w-5 h-5 stroke-[2.5]" />
+      {/* Top Responsive Header Bar */}
+      <header className="min-h-[4rem] border-b border-[#262626] bg-[#0A0A0A]/95 px-4 sm:px-8 py-3 sm:py-0 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4 z-30">
+        <div className="flex items-center justify-between sm:justify-start gap-3 shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-[#FF3D00] flex items-center justify-center font-mono font-bold text-[#0A0A0A] shrink-0">
+              <FileText className="w-5 h-5 stroke-[2.5]" />
+            </div>
+            <div>
+              <h1 className="font-sans font-black text-lg sm:text-xl tracking-tighter uppercase text-[#FAFAFA]">
+                MIND<span className="text-[#FF3D00]">SPACE</span>
+              </h1>
+              <span className="font-mono text-[8px] sm:text-[9px] uppercase tracking-widest text-[#737373] block -mt-1">
+                CLASSIC NOTES DASHBOARD
+              </span>
+            </div>
           </div>
-          <div>
-            <h1 className="font-sans font-black text-xl tracking-tighter uppercase text-[#FAFAFA]">
-              MIND<span className="text-[#FF3D00]">SPACE</span>
-            </h1>
-            <span className="font-mono text-[9px] uppercase tracking-widest text-[#737373] block -mt-1">
-              CLASSIC NOTES DASHBOARD
-            </span>
-          </div>
-        </div>
-
-        {/* Header Navigation */}
-        <div className="flex items-center gap-4 font-mono text-xs">
-          <Link href="/dashboard" className="text-[#FF3D00] font-bold uppercase tracking-wider">
-            Notes
-          </Link>
-          <Link href="/" className="text-[#737373] hover:text-[#FAFAFA] uppercase tracking-wider transition-colors">
-            Canvas Map
-          </Link>
-          <Link href="/reminders" className="text-[#737373] hover:text-[#FAFAFA] uppercase tracking-wider transition-colors">
-            Reminders
-          </Link>
-          <Link href="/admin" className="text-[#737373] hover:text-[#FAFAFA] uppercase tracking-wider transition-colors flex items-center gap-1">
-            <Shield className="w-3.5 h-3.5 text-[#FF3D00]" />
-            <span>Admin</span>
-          </Link>
-          <ThemeToggle />
 
           <Link
             href="/notes/new"
-            className="flex items-center gap-1.5 px-4 py-2 bg-[#FF3D00] hover:bg-[#FAFAFA] text-[#0A0A0A] font-mono text-xs uppercase tracking-wider font-bold transition-colors ml-2"
+            className="sm:hidden flex items-center gap-1.5 px-3 py-1.5 bg-[#FF3D00] text-[#0A0A0A] font-mono text-[11px] uppercase font-bold shrink-0"
           >
-            <Plus className="w-4 h-4 stroke-[2]" />
-            <span>New Note</span>
+            <Plus className="w-3.5 h-3.5 stroke-[2]" />
+            <span>New</span>
           </Link>
+        </div>
+
+        {/* Responsive Header Navigation */}
+        <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4 font-mono text-xs overflow-x-auto py-1 sm:py-0 no-scrollbar">
+          <div className="flex items-center gap-3 shrink-0">
+            <Link href="/dashboard" className="text-[#FF3D00] font-bold uppercase tracking-wider">
+              Notes
+            </Link>
+            <Link href="/" className="text-[#737373] hover:text-[#FAFAFA] uppercase tracking-wider transition-colors">
+              Canvas
+            </Link>
+            <Link href="/reminders" className="text-[#737373] hover:text-[#FAFAFA] uppercase tracking-wider transition-colors">
+              Reminders
+            </Link>
+            <Link href="/admin" className="text-[#737373] hover:text-[#FAFAFA] uppercase tracking-wider transition-colors flex items-center gap-1">
+              <Shield className="w-3.5 h-3.5 text-[#FF3D00]" />
+              <span>Admin</span>
+            </Link>
+          </div>
+
+          <div className="flex items-center gap-3 shrink-0">
+            <ThemeToggle />
+            <Link
+              href="/notes/new"
+              className="hidden sm:flex items-center gap-1.5 px-4 py-2 bg-[#FF3D00] hover:bg-[#FAFAFA] text-[#0A0A0A] font-mono text-xs uppercase tracking-wider font-bold transition-colors"
+            >
+              <Plus className="w-4 h-4 stroke-[2]" />
+              <span>New Note</span>
+            </Link>
+          </div>
         </div>
       </header>
 
       {/* Main Workspace */}
-      <main className="flex-1 max-w-6xl w-full mx-auto p-8 space-y-8">
+      <main className="flex-1 max-w-6xl w-full mx-auto p-4 sm:p-8 space-y-6 sm:space-y-8">
         {/* Quick Stats Bar */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
           <div className="bg-[#0F0F0F] border border-[#262626] p-6 relative">

@@ -4,14 +4,15 @@
     "userId": "default_user",
     "canvasId": null,
     "title": "Untitled Note",
-    "content": "",
+    "content": "<p>u h hi trave</p>",
     "tags": [],
     "priority": "MEDIUM",
     "isPinned": false,
     "isArchived": false,
     "reminderAt": null,
     "createdAt": "2026-07-23T14:58:37.825Z",
-    "updatedAt": "2026-07-23T14:58:37.825Z"
+    "updatedAt": "2026-07-23T15:07:25.424Z",
+    "drawingData": "[]"
   },
   {
     "id": "note_wnu66kne",

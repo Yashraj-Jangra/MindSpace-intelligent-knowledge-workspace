@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import { prisma } from './db';
+import { prisma, isDbDisabled, disableDbCircuitBreaker } from './db';
 
 export interface StoredNote {
   id: string;
@@ -67,36 +67,38 @@ function deleteLocalNote(id: string) {
 }
 
 export async function getUserNotes(userId: string, search = '', tag = ''): Promise<StoredNote[]> {
-  try {
-    const dbNotes = await (prisma as any).note.findMany({
-      where: {
-        userId,
-        isArchived: false,
-        title: search ? { contains: search, mode: 'insensitive' } : undefined,
-        tags: tag ? { has: tag } : undefined,
-      },
-      orderBy: [{ isPinned: 'desc' }, { updatedAt: 'desc' }],
-    });
+  if (!isDbDisabled()) {
+    try {
+      const dbNotes = await (prisma as any).note.findMany({
+        where: {
+          userId,
+          isArchived: false,
+          title: search ? { contains: search, mode: 'insensitive' } : undefined,
+          tags: tag ? { has: tag } : undefined,
+        },
+        orderBy: [{ isPinned: 'desc' }, { updatedAt: 'desc' }],
+      });
 
-    if (dbNotes && dbNotes.length > 0) {
-      return dbNotes.map((n: any) => ({
-        id: n.id,
-        userId: n.userId,
-        canvasId: n.canvasId,
-        title: n.title,
-        content: n.content,
-        tags: n.tags || [],
-        priority: n.priority || 'MEDIUM',
-        isPinned: n.isPinned || false,
-        isArchived: n.isArchived || false,
-        reminderAt: n.reminderAt ? n.reminderAt.toISOString() : null,
-        drawingData: n.drawingData || null,
-        createdAt: n.createdAt.toISOString(),
-        updatedAt: n.updatedAt.toISOString(),
-      }));
+      if (dbNotes && dbNotes.length > 0) {
+        return dbNotes.map((n: any) => ({
+          id: n.id,
+          userId: n.userId,
+          canvasId: n.canvasId,
+          title: n.title,
+          content: n.content,
+          tags: n.tags || [],
+          priority: n.priority || 'MEDIUM',
+          isPinned: n.isPinned || false,
+          isArchived: n.isArchived || false,
+          reminderAt: n.reminderAt ? n.reminderAt.toISOString() : null,
+          drawingData: n.drawingData || null,
+          createdAt: n.createdAt.toISOString(),
+          updatedAt: n.updatedAt.toISOString(),
+        }));
+      }
+    } catch (error) {
+      disableDbCircuitBreaker();
     }
-  } catch (error) {
-    // Database fallback
   }
 
   let localNotes = getLocalNotes().filter((n) => n.userId === userId && !n.isArchived);
@@ -119,27 +121,29 @@ export async function getUserNotes(userId: string, search = '', tag = ''): Promi
 }
 
 export async function getNoteById(id: string): Promise<StoredNote | null> {
-  try {
-    const n = await (prisma as any).note.findUnique({ where: { id } });
-    if (n) {
-      return {
-        id: n.id,
-        userId: n.userId,
-        canvasId: n.canvasId,
-        title: n.title,
-        content: n.content,
-        tags: n.tags || [],
-        priority: n.priority || 'MEDIUM',
-        isPinned: n.isPinned || false,
-        isArchived: n.isArchived || false,
-        reminderAt: n.reminderAt ? n.reminderAt.toISOString() : null,
-        drawingData: n.drawingData || null,
-        createdAt: n.createdAt.toISOString(),
-        updatedAt: n.updatedAt.toISOString(),
-      };
+  if (!isDbDisabled()) {
+    try {
+      const n = await (prisma as any).note.findUnique({ where: { id } });
+      if (n) {
+        return {
+          id: n.id,
+          userId: n.userId,
+          canvasId: n.canvasId,
+          title: n.title,
+          content: n.content,
+          tags: n.tags || [],
+          priority: n.priority || 'MEDIUM',
+          isPinned: n.isPinned || false,
+          isArchived: n.isArchived || false,
+          reminderAt: n.reminderAt ? n.reminderAt.toISOString() : null,
+          drawingData: n.drawingData || null,
+          createdAt: n.createdAt.toISOString(),
+          updatedAt: n.updatedAt.toISOString(),
+        };
+      }
+    } catch (error) {
+      disableDbCircuitBreaker();
     }
-  } catch (error) {
-    // Fallback
   }
 
   const localNotes = getLocalNotes();

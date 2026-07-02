@@ -1,5 +1,19 @@
 [
   {
+    "id": "note_1r82oovc",
+    "userId": "default_user",
+    "canvasId": null,
+    "title": "Untitled Note",
+    "content": "",
+    "tags": [],
+    "priority": "MEDIUM",
+    "isPinned": false,
+    "isArchived": false,
+    "reminderAt": null,
+    "createdAt": "2026-07-23T14:58:37.825Z",
+    "updatedAt": "2026-07-23T14:58:37.825Z"
+  },
+  {
     "id": "note_wnu66kne",
     "userId": "default_user",
     "canvasId": null,

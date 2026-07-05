@@ -1,3 +1,14 @@
+export type PaperTemplate = 'blank' | 'ruled' | 'grid' | 'dots';
+
+export interface NotePageData {
+  id: string;
+  pageNumber: number;
+  title?: string;
+  content: string;
+  strokes: VectorStroke[];
+  paperTemplate: PaperTemplate;
+}
+
 export type PenSubtype = 'fountain' | 'ballpoint' | 'pencil';
 export type HighlighterSubtype = 'flat' | 'round';
 export type EraserMode = 'pixel' | 'stroke' | 'lasso';
@@ -81,6 +92,7 @@ export interface VectorStroke {
 
 export interface StylusSettings {
   isStylusModeActive: boolean;
+  stylusOnlyMode: boolean; // Strict Stylus Only mode: Finger touches scroll page, active digitizer pen draws annotations
   enablePalmRejection: boolean;
   autoShapeRecognition: boolean;
   shapeHoldTimerMs: number; // 300ms to 1500ms
@@ -118,6 +130,7 @@ export interface StylusSettings {
 
 export const DEFAULT_STYLUS_SETTINGS: StylusSettings = {
   isStylusModeActive: true,
+  stylusOnlyMode: true, // Default to Stylus-Only mode for seamless finger scrolling + pen drawing!
   enablePalmRejection: false,
   autoShapeRecognition: true,
   shapeHoldTimerMs: 500, // 0.5s default hold timer

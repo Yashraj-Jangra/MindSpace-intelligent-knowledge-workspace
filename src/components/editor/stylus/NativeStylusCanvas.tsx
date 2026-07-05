@@ -8,6 +8,7 @@ import {
   PenSubtype,
   LineType,
   StylusSettings,
+  PaperTemplate,
 } from '@/lib/stylus/stylus-types';
 import { StylusHaptics } from '@/lib/stylus/stylus-haptics';
 import { recognizeShape } from '@/lib/stylus/shape-recognition';
@@ -37,6 +38,7 @@ interface NativeStylusCanvasProps {
   settings: StylusSettings;
   strokes: VectorStroke[];
   onStrokesChange: (strokes: VectorStroke[]) => void;
+  paperTemplate?: PaperTemplate;
 }
 
 export function NativeStylusCanvas({
@@ -49,6 +51,7 @@ export function NativeStylusCanvas({
   settings,
   strokes,
   onStrokesChange,
+  paperTemplate = 'blank',
 }: NativeStylusCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const offscreenCanvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -343,7 +346,12 @@ export function NativeStylusCanvas({
   const handlePointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
     if (!isActive) return;
 
-    // Palm Rejection: Filter secondary non-primary touches resting on screen, accept all primary touches
+    // Strict Stylus-Only Mode: Finger touch bypasses drawing to scroll page smoothly!
+    if (settings.stylusOnlyMode && e.pointerType === 'touch') {
+      return;
+    }
+
+    // Palm Rejection: Filter secondary non-primary touches resting on screen
     if (settings.isStylusModeActive && settings.enablePalmRejection && e.isPrimary === false) {
       return;
     }

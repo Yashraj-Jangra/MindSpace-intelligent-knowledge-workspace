@@ -1,47 +1,27 @@
 [
   {
-    "id": "note_1r82oovc",
+    "id": "note_3jsqn7il",
     "userId": "default_user",
     "canvasId": null,
-    "title": "Untitled Note",
+    "title": "Test 2",
     "content": "<p></p>",
     "tags": [],
     "priority": "MEDIUM",
     "isPinned": false,
     "isArchived": false,
     "reminderAt": null,
-    "createdAt": "2026-07-23T14:58:37.825Z",
-    "updatedAt": "2026-07-23T15:18:24.238Z",
+    "createdAt": "2026-07-23T15:27:39.790Z",
+    "updatedAt": "2026-07-23T15:27:48.939Z",
+    "pages": [
+      {
+        "id": "p-1",
+        "pageNumber": 1,
+        "content": "<p></p>",
+        "strokes": [],
+        "paperTemplate": "blank"
+      }
+    ],
     "drawingData": "[]"
-  },
-  {
-    "id": "note_wnu66kne",
-    "userId": "default_user",
-    "canvasId": null,
-    "title": "Untitled Note",
-    "content": "<p>t3t3t3</p>",
-    "tags": [],
-    "priority": "MEDIUM",
-    "isPinned": false,
-    "isArchived": false,
-    "reminderAt": null,
-    "createdAt": "2026-07-23T14:33:46.227Z",
-    "updatedAt": "2026-07-23T15:17:24.026Z",
-    "drawingData": "[]"
-  },
-  {
-    "id": "note_d01kd0sh",
-    "userId": "default_user",
-    "canvasId": null,
-    "title": "Untitled Note",
-    "content": "",
-    "tags": [],
-    "priority": "MEDIUM",
-    "isPinned": false,
-    "isArchived": false,
-    "reminderAt": null,
-    "createdAt": "2026-07-23T14:31:15.412Z",
-    "updatedAt": "2026-07-23T14:31:15.412Z"
   },
   {
     "id": "note_862iec8q",

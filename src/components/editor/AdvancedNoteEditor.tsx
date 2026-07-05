@@ -71,9 +71,12 @@ import {
   StylusSettings,
   DEFAULT_STYLUS_SETTINGS,
   StylusButtonAction,
+  NotePageData,
+  PaperTemplate,
 } from '@/lib/stylus/stylus-types';
 import { NativeStylusCanvas } from './stylus/NativeStylusCanvas';
 import { VerticalStylusSidebar } from './stylus/VerticalStylusSidebar';
+import { PageNavigationBar } from './PageNavigationBar';
 import { PenSettingsPopover, PenPreset } from './stylus/PenSettingsPopover';
 import { ShapeSettingsPopover } from './stylus/ShapeSettingsPopover';
 import { HighlighterSettingsPopover } from './stylus/HighlighterSettingsPopover';
@@ -106,7 +109,23 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
   const [isPinned, setIsPinned] = useState(initialNote.isPinned || false);
   const [reminderAt, setReminderAt] = useState<string | null>(initialNote.reminderAt || null);
 
-  // Stylus Vector Stroke & Engine State (OFF by default for normal note editing)
+  // Multi-Page Notebook State
+  const initialPages: NotePageData[] = initialNote.pages && initialNote.pages.length > 0
+    ? initialNote.pages
+    : [
+        {
+          id: 'p-1',
+          pageNumber: 1,
+          content: initialNote.content || '<p></p>',
+          strokes: [],
+          paperTemplate: 'blank',
+        },
+      ];
+
+  const [pages, setPages] = useState<NotePageData[]>(initialPages);
+  const [activePageIndex, setActivePageIndex] = useState<number>(0);
+
+  // Stylus Vector Stroke & Engine State
   const [activeTool, setActiveTool] = useState<StylusTool>('pen');
   const [activePenSubtype, setActivePenSubtype] = useState<PenSubtype>('ballpoint');
   const [activeColor, setActiveColor] = useState<string>('#FF3D00');
@@ -114,9 +133,10 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
   const [lineType, setLineType] = useState<LineType>('solid');
   const [stylusSettings, setStylusSettings] = useState<StylusSettings>({
     ...DEFAULT_STYLUS_SETTINGS,
-    isStylusModeActive: true, // Default to interactive stylus drawing mode
+    isStylusModeActive: true,
+    stylusOnlyMode: true,
   });
-  const [strokes, setStrokes] = useState<VectorStroke[]>([]);
+  const [strokes, setStrokes] = useState<VectorStroke[]>(initialPages[0]?.strokes || []);
   const [undoStack, setUndoStack] = useState<VectorStroke[][]>([]);
   const [redoStack, setRedoStack] = useState<VectorStroke[][]>([]);
 
@@ -223,6 +243,99 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
     setUndoStack((prev) => [...prev, strokes]);
     setRedoStack([]);
     setStrokes(nextStrokes);
+
+    // Sync strokes with active page
+    setPages((prev) => {
+      const updated = [...prev];
+      if (updated[activePageIndex]) {
+        updated[activePageIndex] = {
+          ...updated[activePageIndex],
+          strokes: nextStrokes,
+        };
+      }
+      return updated;
+    });
+
+    setSaveStatus('unsaved');
+  };
+
+  // Multi-Page Switching & Mutation Handlers
+  const handleSelectPage = (newIndex: number) => {
+    if (newIndex < 0 || newIndex >= pages.length || newIndex === activePageIndex) return;
+
+    const currentHtml = editor ? editor.getHTML() : content;
+    const updatedPages = [...pages];
+    updatedPages[activePageIndex] = {
+      ...updatedPages[activePageIndex],
+      content: currentHtml,
+      strokes: strokes,
+    };
+
+    setPages(updatedPages);
+    setActivePageIndex(newIndex);
+
+    const targetPage = updatedPages[newIndex];
+    if (editor && !editor.isDestroyed) {
+      editor.commands.setContent(targetPage.content || '<p></p>');
+    }
+    setStrokes(targetPage.strokes || []);
+    setUndoStack([]);
+    setRedoStack([]);
+  };
+
+  const handleAddPage = () => {
+    const newPage: NotePageData = {
+      id: `p-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      pageNumber: pages.length + 1,
+      content: '<p></p>',
+      strokes: [],
+      paperTemplate: pages[activePageIndex]?.paperTemplate || 'blank',
+    };
+    const nextPages = [...pages, newPage];
+    setPages(nextPages);
+    handleSelectPage(nextPages.length - 1);
+  };
+
+  const handleDuplicatePage = (targetIndex: number) => {
+    const pageToDup = pages[targetIndex];
+    if (!pageToDup) return;
+
+    const dupPage: NotePageData = {
+      id: `p-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      pageNumber: targetIndex + 2,
+      content: targetIndex === activePageIndex && editor ? editor.getHTML() : pageToDup.content,
+      strokes: targetIndex === activePageIndex ? [...strokes] : [...(pageToDup.strokes || [])],
+      paperTemplate: pageToDup.paperTemplate,
+    };
+
+    const nextPages = [...pages];
+    nextPages.splice(targetIndex + 1, 0, dupPage);
+    const reindexed = nextPages.map((p, idx) => ({ ...p, pageNumber: idx + 1 }));
+    setPages(reindexed);
+    handleSelectPage(targetIndex + 1);
+  };
+
+  const handleDeletePage = (targetIndex: number) => {
+    if (pages.length <= 1) return;
+    const nextPages = pages.filter((_, idx) => idx !== targetIndex);
+    const reindexed = nextPages.map((p, idx) => ({ ...p, pageNumber: idx + 1 }));
+    setPages(reindexed);
+    const newActive = Math.min(activePageIndex, reindexed.length - 1);
+    setActivePageIndex(newActive);
+    const target = reindexed[newActive];
+    if (editor && !editor.isDestroyed) {
+      editor.commands.setContent(target.content || '<p></p>');
+    }
+    setStrokes(target.strokes || []);
+  };
+
+  const handleChangePaperTemplate = (tmpl: PaperTemplate) => {
+    const nextPages = [...pages];
+    nextPages[activePageIndex] = {
+      ...nextPages[activePageIndex],
+      paperTemplate: tmpl,
+    };
+    setPages(nextPages);
     setSaveStatus('unsaved');
   };
 
@@ -326,12 +439,22 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
       setSaveStatus('saving');
       try {
         const htmlContent = editor.getHTML();
+        const currentPages = [...pages];
+        if (currentPages[activePageIndex]) {
+          currentPages[activePageIndex] = {
+            ...currentPages[activePageIndex],
+            content: htmlContent,
+            strokes: strokes,
+          };
+        }
+
         await fetch(`/api/notes/${initialNote.id}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             title,
             content: htmlContent,
+            pages: currentPages,
             tags,
             priority,
             isPinned,
@@ -346,7 +469,7 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
         setSaveStatus('unsaved');
       }
     },
-    [editor, initialNote.id, title, tags, priority, isPinned, reminderAt, strokes]
+    [editor, initialNote.id, title, pages, activePageIndex, tags, priority, isPinned, reminderAt, strokes]
   );
 
   useEffect(() => {
@@ -761,6 +884,21 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
           />
         </div>
 
+        {/* Multi-Page Notebook Navigation Bar */}
+        <PageNavigationBar
+          pages={pages}
+          activePageIndex={activePageIndex}
+          onSelectPage={handleSelectPage}
+          onAddPage={handleAddPage}
+          onDuplicatePage={handleDuplicatePage}
+          onDeletePage={handleDeletePage}
+          onChangePaperTemplate={handleChangePaperTemplate}
+          stylusOnlyMode={stylusSettings.stylusOnlyMode}
+          onToggleStylusOnlyMode={() =>
+            setStylusSettings((prev) => ({ ...prev, stylusOnlyMode: !prev.stylusOnlyMode }))
+          }
+        />
+
         {/* Editor Workspace Container */}
         {editor && (
           <RichTextProvider editor={editor}>
@@ -817,6 +955,7 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
                 settings={stylusSettings}
                 strokes={strokes}
                 onStrokesChange={handleStrokesChange}
+                paperTemplate={pages[activePageIndex]?.paperTemplate || 'blank'}
               />
             </div>
           </RichTextProvider>

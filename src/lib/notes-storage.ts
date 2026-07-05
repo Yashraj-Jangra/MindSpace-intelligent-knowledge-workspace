@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { prisma, isDbDisabled, disableDbCircuitBreaker } from './db';
+import { NotePageData } from './stylus/stylus-types';
 
 export interface StoredNote {
   id: string;
@@ -8,6 +9,7 @@ export interface StoredNote {
   canvasId?: string | null;
   title: string;
   content: string;
+  pages?: NotePageData[];
   tags: string[];
   priority: 'LOW' | 'MEDIUM' | 'HIGH';
   isPinned: boolean;

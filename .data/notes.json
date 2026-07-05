@@ -4,14 +4,14 @@
     "userId": "default_user",
     "canvasId": null,
     "title": "Untitled Note",
-    "content": "<p>u h hi trave</p>",
+    "content": "<p></p>",
     "tags": [],
     "priority": "MEDIUM",
     "isPinned": false,
     "isArchived": false,
     "reminderAt": null,
     "createdAt": "2026-07-23T14:58:37.825Z",
-    "updatedAt": "2026-07-23T15:07:25.424Z",
+    "updatedAt": "2026-07-23T15:09:19.724Z",
     "drawingData": "[]"
   },
   {
@@ -19,14 +19,15 @@
     "userId": "default_user",
     "canvasId": null,
     "title": "Untitled Note",
-    "content": "",
+    "content": "<table style=\"border: 1px solid rgb(0, 0, 0); border-collapse: collapse; width: 100%; min-width: 100px;\"><colgroup><col style=\"min-width: 25px;\"><col style=\"min-width: 25px;\"><col style=\"min-width: 25px;\"><col style=\"min-width: 25px;\"></colgroup><tbody><tr><td colspan=\"1\" rowspan=\"1\"><pre><code class=\"language-plaintext\">fefefe</code></pre></td><td colspan=\"1\" rowspan=\"1\"><p></p></td><td colspan=\"1\" rowspan=\"1\"><p></p></td><td colspan=\"1\" rowspan=\"1\"><p></p></td></tr><tr><td colspan=\"1\" rowspan=\"1\"><p></p></td><td colspan=\"1\" rowspan=\"1\"><p></p></td><td colspan=\"1\" rowspan=\"1\"><p></p></td><td colspan=\"1\" rowspan=\"1\"><p></p></td></tr><tr><td colspan=\"1\" rowspan=\"1\"><p></p></td><td colspan=\"1\" rowspan=\"1\"><p></p></td><td colspan=\"1\" rowspan=\"1\"><p></p></td><td colspan=\"1\" rowspan=\"1\"><p></p></td></tr><tr><td colspan=\"1\" rowspan=\"1\"><p></p></td><td colspan=\"1\" rowspan=\"1\"><p></p></td><td colspan=\"1\" rowspan=\"1\"><p></p></td><td colspan=\"1\" rowspan=\"1\"><p></p></td></tr></tbody></table><p></p>",
     "tags": [],
     "priority": "MEDIUM",
     "isPinned": false,
     "isArchived": false,
     "reminderAt": null,
     "createdAt": "2026-07-23T14:33:46.227Z",
-    "updatedAt": "2026-07-23T14:33:46.227Z"
+    "updatedAt": "2026-07-23T15:10:16.866Z",
+    "drawingData": "[]"
   },
   {
     "id": "note_d01kd0sh",

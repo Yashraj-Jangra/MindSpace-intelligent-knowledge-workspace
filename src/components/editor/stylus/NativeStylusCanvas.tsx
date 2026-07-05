@@ -327,7 +327,8 @@ export function NativeStylusCanvas({
   const handlePointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
     if (!isActive) return;
 
-    if (settings.isStylusModeActive && settings.enablePalmRejection && e.pointerType === 'touch') {
+    // Palm Rejection: Filter secondary non-primary touches resting on screen, accept all primary touches
+    if (settings.isStylusModeActive && settings.enablePalmRejection && e.isPrimary === false) {
       return;
     }
 

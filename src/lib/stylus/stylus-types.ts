@@ -118,7 +118,7 @@ export interface StylusSettings {
 
 export const DEFAULT_STYLUS_SETTINGS: StylusSettings = {
   isStylusModeActive: true,
-  enablePalmRejection: true,
+  enablePalmRejection: false,
   autoShapeRecognition: true,
   shapeHoldTimerMs: 500, // 0.5s default hold timer
   enableShapeForPen: true,

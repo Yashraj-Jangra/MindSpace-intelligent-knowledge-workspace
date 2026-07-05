@@ -236,7 +236,7 @@ export function NativeStylusCanvas({
     }
   }, [activeTool, activePenSubtype, activeColor, strokeWidth, lineType, settings, selectedStrokeIds, strokes, eraserCursorPos, boxStart, boxCurrent]);
 
-  // Update canvas dimensions on resize
+  // Update canvas dimensions on resize with ResizeObserver
   const handleResize = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -246,19 +246,35 @@ export function NativeStylusCanvas({
     const rect = parent.getBoundingClientRect();
     const dpr = window.devicePixelRatio || 1;
 
-    canvas.width = Math.floor(rect.width * dpr);
-    canvas.height = Math.floor(rect.height * dpr);
-    canvas.style.width = `${rect.width}px`;
-    canvas.style.height = `${rect.height}px`;
+    const width = Math.max(300, Math.floor(rect.width || parent.clientWidth || 800));
+    const height = Math.max(300, Math.floor(rect.height || parent.clientHeight || 650));
 
-    updateOffscreenBuffer();
-    renderFrame();
+    if (canvas.width !== width * dpr || canvas.height !== height * dpr) {
+      canvas.width = Math.floor(width * dpr);
+      canvas.height = Math.floor(height * dpr);
+      canvas.style.width = `${width}px`;
+      canvas.style.height = `${height}px`;
+      updateOffscreenBuffer();
+      renderFrame();
+    }
   }, [updateOffscreenBuffer, renderFrame]);
 
   useEffect(() => {
     handleResize();
+    const canvas = canvasRef.current;
+    const parent = canvas?.parentElement;
+
+    let observer: ResizeObserver | null = null;
+    if (parent && typeof ResizeObserver !== 'undefined') {
+      observer = new ResizeObserver(() => handleResize());
+      observer.observe(parent);
+    }
+
     window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    return () => {
+      if (observer) observer.disconnect();
+      window.removeEventListener('resize', handleResize);
+    };
   }, [handleResize]);
 
   // Re-render when strokes array changes
@@ -580,7 +596,10 @@ export function NativeStylusCanvas({
     if (!isDrawingRef.current) return;
 
     const nativeEvent = e.nativeEvent as PointerEvent;
-    const coalesced = typeof nativeEvent.getCoalescedEvents === 'function' ? nativeEvent.getCoalescedEvents() : [nativeEvent];
+    let coalesced = typeof nativeEvent.getCoalescedEvents === 'function' ? nativeEvent.getCoalescedEvents() : [];
+    if (!coalesced || coalesced.length === 0) {
+      coalesced = [nativeEvent];
+    }
 
     for (const pe of coalesced) {
       const px = pe.clientX - rect.left;

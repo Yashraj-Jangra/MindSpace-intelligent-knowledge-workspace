@@ -114,7 +114,7 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
   const [lineType, setLineType] = useState<LineType>('solid');
   const [stylusSettings, setStylusSettings] = useState<StylusSettings>({
     ...DEFAULT_STYLUS_SETTINGS,
-    isStylusModeActive: false, // Default to normal note editor
+    isStylusModeActive: true, // Default to interactive stylus drawing mode
   });
   const [strokes, setStrokes] = useState<VectorStroke[]>([]);
   const [undoStack, setUndoStack] = useState<VectorStroke[][]>([]);
@@ -424,63 +424,66 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
         isZenMode ? 'fixed inset-0 z-50 overflow-y-auto bg-[#0A0A0A]' : ''
       }`}
     >
-      {/* Vertical Stylus Sidebar Dock (ONLY visible when Stylus Mode is ACTIVE) */}
-      {stylusSettings.isStylusModeActive && (
-        <VerticalStylusSidebar
-          activeTool={activeTool}
-          onSelectTool={setActiveTool}
-          onTogglePenPopover={() => {
-            setIsPenPopoverOpen(!isPenPopoverOpen);
-            setIsShapePopoverOpen(false);
-            setIsHighlighterPopoverOpen(false);
-            setIsEraserPopoverOpen(false);
-            setIsLassoPopoverOpen(false);
-          }}
-          onClosePenPopover={() => {
-            setIsPenPopoverOpen(false);
-            setIsHighlighterPopoverOpen(false);
-            setIsEraserPopoverOpen(false);
-            setIsLassoPopoverOpen(false);
-          }}
-          onToggleHighlighterPopover={() => {
-            setIsHighlighterPopoverOpen(!isHighlighterPopoverOpen);
-            setIsPenPopoverOpen(false);
-            setIsShapePopoverOpen(false);
-            setIsEraserPopoverOpen(false);
-            setIsLassoPopoverOpen(false);
-          }}
-          onToggleEraserPopover={() => {
-            setIsEraserPopoverOpen(!isEraserPopoverOpen);
-            setIsPenPopoverOpen(false);
-            setIsHighlighterPopoverOpen(false);
-            setIsShapePopoverOpen(false);
-            setIsLassoPopoverOpen(false);
-          }}
-          onToggleLassoPopover={() => {
-            setIsLassoPopoverOpen(!isLassoPopoverOpen);
-            setIsPenPopoverOpen(false);
-            setIsHighlighterPopoverOpen(false);
-            setIsEraserPopoverOpen(false);
-            setIsShapePopoverOpen(false);
-          }}
-          onToggleShapePopover={() => {
-            setIsShapePopoverOpen(!isShapePopoverOpen);
-            setIsPenPopoverOpen(false);
-            setIsHighlighterPopoverOpen(false);
-            setIsEraserPopoverOpen(false);
-            setIsLassoPopoverOpen(false);
-          }}
-          settings={stylusSettings}
-          onToggleStylusMode={() =>
-            setStylusSettings((prev) => ({
-              ...prev,
-              isStylusModeActive: !prev.isStylusModeActive,
-            }))
+      {/* Vertical Stylus Sidebar Dock */}
+      <VerticalStylusSidebar
+        activeTool={activeTool}
+        onSelectTool={(tool) => {
+          setActiveTool(tool);
+          if (!stylusSettings.isStylusModeActive) {
+            setStylusSettings((prev) => ({ ...prev, isStylusModeActive: true }));
           }
-          onUndo={handleUndo}
-          onRedo={handleRedo}
-        />
-      )}
+        }}
+        onTogglePenPopover={() => {
+          setIsPenPopoverOpen(!isPenPopoverOpen);
+          setIsShapePopoverOpen(false);
+          setIsHighlighterPopoverOpen(false);
+          setIsEraserPopoverOpen(false);
+          setIsLassoPopoverOpen(false);
+        }}
+        onClosePenPopover={() => {
+          setIsPenPopoverOpen(false);
+          setIsHighlighterPopoverOpen(false);
+          setIsEraserPopoverOpen(false);
+          setIsLassoPopoverOpen(false);
+        }}
+        onToggleHighlighterPopover={() => {
+          setIsHighlighterPopoverOpen(!isHighlighterPopoverOpen);
+          setIsPenPopoverOpen(false);
+          setIsShapePopoverOpen(false);
+          setIsEraserPopoverOpen(false);
+          setIsLassoPopoverOpen(false);
+        }}
+        onToggleEraserPopover={() => {
+          setIsEraserPopoverOpen(!isEraserPopoverOpen);
+          setIsPenPopoverOpen(false);
+          setIsHighlighterPopoverOpen(false);
+          setIsShapePopoverOpen(false);
+          setIsLassoPopoverOpen(false);
+        }}
+        onToggleLassoPopover={() => {
+          setIsLassoPopoverOpen(!isLassoPopoverOpen);
+          setIsPenPopoverOpen(false);
+          setIsHighlighterPopoverOpen(false);
+          setIsEraserPopoverOpen(false);
+          setIsShapePopoverOpen(false);
+        }}
+        onToggleShapePopover={() => {
+          setIsShapePopoverOpen(!isShapePopoverOpen);
+          setIsPenPopoverOpen(false);
+          setIsHighlighterPopoverOpen(false);
+          setIsEraserPopoverOpen(false);
+          setIsLassoPopoverOpen(false);
+        }}
+        settings={stylusSettings}
+        onToggleStylusMode={() =>
+          setStylusSettings((prev) => ({
+            ...prev,
+            isStylusModeActive: !prev.isStylusModeActive,
+          }))
+        }
+        onUndo={handleUndo}
+        onRedo={handleRedo}
+      />
 
       {/* Pen Popover Settings */}
       {stylusSettings.isStylusModeActive && (

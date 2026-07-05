@@ -11,6 +11,7 @@ import {
   MousePointer,
   Sparkles,
   ShieldCheck,
+  Type,
 } from 'lucide-react';
 import { StylusTool, StylusSettings } from '@/lib/stylus/stylus-types';
 
@@ -68,14 +69,34 @@ export function VerticalStylusSidebar({
 
       {/* Center Section: Tools Suite */}
       <div className="flex flex-col items-center gap-2">
+        {/* Text Mode Toggle (Type into Note) */}
+        <button
+          onClick={() => {
+            if (settings.isStylusModeActive) {
+              onToggleStylusMode();
+            }
+          }}
+          className={`p-2 border transition-colors ${
+            !settings.isStylusModeActive
+              ? 'border-[#3b82f6] bg-[#1A1A1A] text-[#3b82f6]'
+              : 'border-transparent text-[#737373] hover:text-[#FAFAFA]'
+          }`}
+          title="Text Edit Mode (Type Text into Note)"
+        >
+          <Type className="w-4 h-4 stroke-[2]" />
+        </button>
+
+        <div className="w-6 h-px bg-[#262626] my-0.5" />
+
         {/* Pen Tool (Triggers PenSettingsPopover) */}
         <button
           onClick={() => {
+            if (!settings.isStylusModeActive) onToggleStylusMode();
             onSelectTool('pen');
             onTogglePenPopover();
           }}
           className={`p-2 border transition-colors ${
-            activeTool === 'pen'
+            settings.isStylusModeActive && activeTool === 'pen'
               ? 'border-[#FF3D00] bg-[#1A1A1A] text-[#FF3D00]'
               : 'border-transparent text-[#737373] hover:text-[#FAFAFA]'
           }`}
@@ -87,11 +108,12 @@ export function VerticalStylusSidebar({
         {/* Highlighter Tool (Click for Highlighter Settings) */}
         <button
           onClick={() => {
+            if (!settings.isStylusModeActive) onToggleStylusMode();
             onSelectTool('highlighter');
             onToggleHighlighterPopover();
           }}
           className={`p-2 border transition-colors ${
-            activeTool === 'highlighter'
+            settings.isStylusModeActive && activeTool === 'highlighter'
               ? 'border-[#FF3D00] bg-[#1A1A1A] text-[#FF3D00]'
               : 'border-transparent text-[#737373] hover:text-[#FAFAFA]'
           }`}
@@ -103,11 +125,12 @@ export function VerticalStylusSidebar({
         {/* Eraser Tool (Click for Eraser Settings) */}
         <button
           onClick={() => {
+            if (!settings.isStylusModeActive) onToggleStylusMode();
             onSelectTool('eraser');
             onToggleEraserPopover();
           }}
           className={`p-2 border transition-colors ${
-            activeTool === 'eraser'
+            settings.isStylusModeActive && activeTool === 'eraser'
               ? 'border-[#FF3D00] bg-[#1A1A1A] text-[#FF3D00]'
               : 'border-transparent text-[#737373] hover:text-[#FAFAFA]'
           }`}
@@ -119,11 +142,12 @@ export function VerticalStylusSidebar({
         {/* Lasso Select Tool (Click for Lasso Settings) */}
         <button
           onClick={() => {
+            if (!settings.isStylusModeActive) onToggleStylusMode();
             onSelectTool('select');
             onToggleLassoPopover();
           }}
           className={`p-2 border transition-colors ${
-            activeTool === 'select'
+            settings.isStylusModeActive && activeTool === 'select'
               ? 'border-[#FF3D00] bg-[#1A1A1A] text-[#FF3D00]'
               : 'border-transparent text-[#737373] hover:text-[#FAFAFA]'
           }`}
@@ -135,10 +159,11 @@ export function VerticalStylusSidebar({
         {/* Auto-Shape Recognition Settings */}
         <button
           onClick={() => {
+            if (!settings.isStylusModeActive) onToggleStylusMode();
             onToggleShapePopover();
           }}
           className={`p-2 border transition-colors ${
-            settings.autoShapeRecognition
+            settings.isStylusModeActive && settings.autoShapeRecognition
               ? 'border-[#FF3D00] text-[#FF3D00]'
               : 'border-transparent text-[#737373] hover:text-[#FAFAFA]'
           }`}

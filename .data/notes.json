@@ -11,7 +11,7 @@
     "isArchived": false,
     "reminderAt": null,
     "createdAt": "2026-07-23T14:58:37.825Z",
-    "updatedAt": "2026-07-23T15:09:19.724Z",
+    "updatedAt": "2026-07-23T15:14:43.124Z",
     "drawingData": "[]"
   },
   {
@@ -19,14 +19,14 @@
     "userId": "default_user",
     "canvasId": null,
     "title": "Untitled Note",
-    "content": "<p></p>",
+    "content": "<p>t3t3t3</p>",
     "tags": [],
     "priority": "MEDIUM",
     "isPinned": false,
     "isArchived": false,
     "reminderAt": null,
     "createdAt": "2026-07-23T14:33:46.227Z",
-    "updatedAt": "2026-07-23T15:10:34.813Z",
+    "updatedAt": "2026-07-23T15:14:53.768Z",
     "drawingData": "[]"
   },
   {

@@ -758,7 +758,7 @@ export function NativeStylusCanvas({
           setBoxStart(null);
           setBoxCurrent(null);
         }}
-        className={`absolute inset-0 z-30 w-full h-full ${
+        className={`absolute inset-0 z-50 w-full h-full ${
           isActive ? (activeTool === 'select' ? 'cursor-grab' : activeTool === 'eraser' ? 'cursor-none' : 'cursor-crosshair') : 'pointer-events-none'
         }`}
         style={{ touchAction: settings.isStylusModeActive ? 'none' : 'auto' }}

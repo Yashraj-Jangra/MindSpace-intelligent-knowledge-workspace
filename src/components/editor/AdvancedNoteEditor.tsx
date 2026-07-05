@@ -211,6 +211,13 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
     },
   });
 
+  // Toggle Tiptap editor editability dynamically when switching between Text Edit Mode and Stylus Drawing Mode
+  useEffect(() => {
+    if (editor && !editor.isDestroyed) {
+      editor.setEditable(!stylusSettings.isStylusModeActive);
+    }
+  }, [editor, stylusSettings.isStylusModeActive]);
+
   // Undo / Redo Stacks for Vector Strokes
   const handleStrokesChange = (nextStrokes: VectorStroke[]) => {
     setUndoStack((prev) => [...prev, strokes]);
@@ -795,7 +802,9 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
               <RichTextBubbleCodeBlock />
 
               {/* Tiptap Core Editor Content */}
-              <EditorContent editor={editor} />
+              <div className={stylusSettings.isStylusModeActive ? 'pointer-events-none select-none' : 'pointer-events-auto'}>
+                <EditorContent editor={editor} />
+              </div>
 
               {/* Native Freehand Stylus Overlay Canvas (Completely DISABLED & non-interactive when Stylus Mode is OFF) */}
               <NativeStylusCanvas

@@ -26,8 +26,11 @@ interface VerticalStylusSidebarProps {
   onToggleShapePopover: () => void;
   settings: StylusSettings;
   onToggleStylusMode: () => void;
+  onActivateStylusMode: () => void;
+  onDeactivateStylusMode: () => void;
   onUndo: () => void;
   onRedo: () => void;
+  isSidebarVisible?: boolean;
 }
 
 export function VerticalStylusSidebar({
@@ -41,10 +44,13 @@ export function VerticalStylusSidebar({
   onToggleShapePopover,
   settings,
   onToggleStylusMode,
+  onActivateStylusMode,
+  onDeactivateStylusMode,
   onUndo,
   onRedo,
+  isSidebarVisible = true,
 }: VerticalStylusSidebarProps) {
-  if (!settings.isStylusModeActive) return null;
+  if (!isSidebarVisible) return null;
 
   return (
     <aside className="fixed top-14 left-0 bottom-0 z-30 w-12 bg-[#0F0F0F] border-r border-[#262626] flex flex-col justify-between items-center py-3 font-sans select-none shadow-2xl vertical-stylus-sidebar">
@@ -73,11 +79,7 @@ export function VerticalStylusSidebar({
       <div className="flex flex-col items-center gap-2">
         {/* Text Mode Toggle (Type into Note) */}
         <button
-          onClick={() => {
-            if (settings.isStylusModeActive) {
-              onToggleStylusMode();
-            }
-          }}
+          onClick={onDeactivateStylusMode}
           className={`p-2 border transition-colors ${
             !settings.isStylusModeActive
               ? 'border-[#3b82f6] bg-[#1A1A1A] text-[#3b82f6]'
@@ -93,7 +95,7 @@ export function VerticalStylusSidebar({
         {/* Pen Tool (Triggers PenSettingsPopover) */}
         <button
           onClick={() => {
-            if (!settings.isStylusModeActive) onToggleStylusMode();
+            onActivateStylusMode();
             onSelectTool('pen');
             onTogglePenPopover();
           }}
@@ -110,7 +112,7 @@ export function VerticalStylusSidebar({
         {/* Highlighter Tool (Click for Highlighter Settings) */}
         <button
           onClick={() => {
-            if (!settings.isStylusModeActive) onToggleStylusMode();
+            onActivateStylusMode();
             onSelectTool('highlighter');
             onToggleHighlighterPopover();
           }}
@@ -127,7 +129,7 @@ export function VerticalStylusSidebar({
         {/* Eraser Tool (Click for Eraser Settings) */}
         <button
           onClick={() => {
-            if (!settings.isStylusModeActive) onToggleStylusMode();
+            onActivateStylusMode();
             onSelectTool('eraser');
             onToggleEraserPopover();
           }}
@@ -144,7 +146,7 @@ export function VerticalStylusSidebar({
         {/* Lasso Select Tool (Click for Lasso Settings) */}
         <button
           onClick={() => {
-            if (!settings.isStylusModeActive) onToggleStylusMode();
+            onActivateStylusMode();
             onSelectTool('select');
             onToggleLassoPopover();
           }}
@@ -161,7 +163,7 @@ export function VerticalStylusSidebar({
         {/* Auto-Shape Recognition Settings */}
         <button
           onClick={() => {
-            if (!settings.isStylusModeActive) onToggleStylusMode();
+            onActivateStylusMode();
             onToggleShapePopover();
           }}
           className={`p-2 border transition-colors ${

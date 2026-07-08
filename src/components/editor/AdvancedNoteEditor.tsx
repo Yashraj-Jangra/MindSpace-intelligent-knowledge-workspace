@@ -125,6 +125,9 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
   const [pages, setPages] = useState<NotePageData[]>(initialPages);
   const [activePageIndex, setActivePageIndex] = useState<number>(0);
 
+  // Sidebar Visibility State (Controlled by Top Header Stylus Mode Toggle)
+  const [isSidebarVisible, setIsSidebarVisible] = useState(true);
+
   // Stylus Vector Stroke & Engine State
   const [activeTool, setActiveTool] = useState<StylusTool>('pen');
   const [activePenSubtype, setActivePenSubtype] = useState<PenSubtype>('ballpoint');
@@ -134,11 +137,27 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
   const [stylusSettings, setStylusSettings] = useState<StylusSettings>({
     ...DEFAULT_STYLUS_SETTINGS,
     isStylusModeActive: true,
-    stylusOnlyMode: true,
+    stylusOnlyMode: false,
   });
   const [strokes, setStrokes] = useState<VectorStroke[]>(initialPages[0]?.strokes || []);
   const [undoStack, setUndoStack] = useState<VectorStroke[][]>([]);
   const [redoStack, setRedoStack] = useState<VectorStroke[][]>([]);
+
+  // Mode Auto-Switching Helpers
+  const handleActivateStylusMode = () => {
+    setStylusSettings((prev) => ({ ...prev, isStylusModeActive: true }));
+    if (editor && !editor.isDestroyed) {
+      editor.setEditable(false);
+    }
+  };
+
+  const handleDeactivateStylusMode = () => {
+    setStylusSettings((prev) => ({ ...prev, isStylusModeActive: false }));
+    if (editor && !editor.isDestroyed) {
+      editor.setEditable(true);
+      editor.commands.focus();
+    }
+  };
 
   // Pen Box Presets & Popover State
   const [isPenPopoverOpen, setIsPenPopoverOpen] = useState(false);
@@ -557,12 +576,7 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
       {/* Vertical Stylus Sidebar Dock */}
       <VerticalStylusSidebar
         activeTool={activeTool}
-        onSelectTool={(tool) => {
-          setActiveTool(tool);
-          if (!stylusSettings.isStylusModeActive) {
-            setStylusSettings((prev) => ({ ...prev, isStylusModeActive: true }));
-          }
-        }}
+        onSelectTool={setActiveTool}
         onTogglePenPopover={() => {
           setIsPenPopoverOpen(!isPenPopoverOpen);
           setIsShapePopoverOpen(false);
@@ -611,8 +625,11 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
             isStylusModeActive: !prev.isStylusModeActive,
           }))
         }
+        onActivateStylusMode={handleActivateStylusMode}
+        onDeactivateStylusMode={handleDeactivateStylusMode}
         onUndo={handleUndo}
         onRedo={handleRedo}
+        isSidebarVisible={isSidebarVisible}
       />
 
       {/* Pen Popover Settings */}
@@ -714,36 +731,32 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
             </div>
           </div>
 
-          {/* Center Section: Prominent Sleek Stylus Mode Pill Toggle */}
+          {/* Center Section: Stylus Tools Master Visibility Toggle */}
           <div className="flex items-center justify-center shrink-0">
             <button
               onClick={() => {
-                const nextActive = !stylusSettings.isStylusModeActive;
-                setStylusSettings((prev) => ({
-                  ...prev,
-                  isStylusModeActive: nextActive,
-                }));
-                if (!nextActive) {
-                  setIsPenPopoverOpen(false);
-                  setIsHighlighterPopoverOpen(false);
-                  setIsEraserPopoverOpen(false);
-                  setIsShapePopoverOpen(false);
+                const nextVisible = !isSidebarVisible;
+                setIsSidebarVisible(nextVisible);
+                if (nextVisible) {
+                  handleActivateStylusMode();
+                } else {
+                  handleDeactivateStylusMode();
                 }
               }}
               className={`flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-full border text-[11px] sm:text-xs font-mono uppercase tracking-wider font-bold transition-all duration-200 ${
-                stylusSettings.isStylusModeActive
+                isSidebarVisible
                   ? 'border-[#FF3D00] bg-[#FF3D00]/15 text-[#FF3D00] shadow-md shadow-[#FF3D00]/20'
                   : 'border-[#262626] bg-[#0F0F0F] text-[#737373] hover:text-[#FAFAFA] hover:border-[#737373]'
               }`}
-              title="Toggle Stylus Mode (Drawing Overlay)"
+              title="Toggle Stylus Sidebar Dock Visibility"
             >
               <span
                 className={`w-2 h-2 rounded-full transition-all ${
-                  stylusSettings.isStylusModeActive ? 'bg-[#FF3D00] animate-pulse shadow-sm shadow-[#FF3D00]' : 'bg-[#737373]'
+                  isSidebarVisible ? 'bg-[#FF3D00] animate-pulse shadow-sm shadow-[#FF3D00]' : 'bg-[#737373]'
                 }`}
               />
               <PenTool className="w-3.5 h-3.5" />
-              <span>{stylusSettings.isStylusModeActive ? 'Stylus ON' : 'Stylus'}</span>
+              <span>{isSidebarVisible ? 'Stylus Tools ON' : 'Stylus Tools'}</span>
             </button>
           </div>
 
@@ -904,7 +917,7 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
               />
 
               {/* Right Group: Text Formatting & Components Toolbar */}
-              <div className="flex flex-wrap items-center gap-1 overflow-visible">
+              <div onClickCapture={handleDeactivateStylusMode} className="flex flex-wrap items-center gap-1 overflow-visible">
                 <RichTextUndo />
                 <RichTextRedo />
                 <div className="h-4 w-px bg-[#262626] mx-1" />

@@ -899,12 +899,12 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
           }
         />
 
-        {/* Editor Workspace Container */}
+        {/* Editor Workspace Container (Fixed Paper Boundaries: 850px x 1100px) */}
         {editor && (
           <RichTextProvider editor={editor}>
-            <div className="border border-[#262626] bg-[#0F0F0F] shadow-2xl relative min-h-[750px] text-[#FAFAFA] overflow-hidden">
+            <div className="border border-[#262626] bg-[#0F0F0F] shadow-2xl relative w-full max-w-[850px] mx-auto h-[1100px] text-[#FAFAFA] overflow-hidden my-6">
               {/* reactjs-tiptap-editor Sticky Toolbar */}
-              <div className="sticky top-16 z-40 bg-[#0F0F0F] border-b border-[#262626] p-2 flex flex-wrap items-center gap-1 overflow-visible">
+              <div className="sticky top-0 z-40 bg-[#0F0F0F] border-b border-[#262626] p-2 flex flex-wrap items-center gap-1 overflow-visible">
                 <RichTextUndo />
                 <RichTextRedo />
                 <div className="h-4 w-px bg-[#262626] mx-1" />
@@ -939,8 +939,8 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
               <RichTextBubbleLink />
               <RichTextBubbleCodeBlock />
 
-              {/* Paper Content & Ink Canvas Stack Container */}
-              <div className="relative min-h-[680px]">
+              {/* Paper Content & Fixed Ink Canvas Stack Container */}
+              <div className="relative h-[1035px] overflow-hidden">
                 {/* Tiptap Core Editor Content (Layered dynamically based on layerOrder) */}
                 <div
                   className={`p-4 ${

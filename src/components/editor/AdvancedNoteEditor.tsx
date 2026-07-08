@@ -890,7 +890,7 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
       {/* Main Workspace */}
       <main
         className={`flex-1 max-w-5xl w-full mx-auto p-8 flex flex-col space-y-6 transition-all duration-200 ${
-          stylusSettings.isStylusModeActive ? 'pl-16' : 'pl-8'
+          isSidebarVisible ? 'pl-16' : 'pl-8'
         }`}
       >
         {/* Title Input */}
@@ -1031,7 +1031,7 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
       {!isZenMode && (
         <footer
           className={`h-10 border-t border-[#262626] bg-[#0F0F0F] px-8 flex items-center justify-between font-mono text-[11px] text-[#737373] fixed bottom-0 left-0 right-0 z-30 transition-all duration-200 ${
-            stylusSettings.isStylusModeActive ? 'pl-20' : 'pl-8'
+            isSidebarVisible ? 'pl-20' : 'pl-8'
           }`}
         >
           <div className="flex items-center gap-6">

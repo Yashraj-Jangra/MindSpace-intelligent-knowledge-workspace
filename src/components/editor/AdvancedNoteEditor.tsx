@@ -884,27 +884,27 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
           />
         </div>
 
-        {/* Multi-Page Notebook Navigation Bar */}
-        <PageNavigationBar
-          pages={pages}
-          activePageIndex={activePageIndex}
-          onSelectPage={handleSelectPage}
-          onAddPage={handleAddPage}
-          onDuplicatePage={handleDuplicatePage}
-          onDeletePage={handleDeletePage}
-          onChangePaperTemplate={handleChangePaperTemplate}
-          stylusOnlyMode={stylusSettings.stylusOnlyMode}
-          onToggleStylusOnlyMode={() =>
-            setStylusSettings((prev) => ({ ...prev, stylusOnlyMode: !prev.stylusOnlyMode }))
-          }
-        />
-
-        {/* Editor Workspace Container (Fixed Paper Boundaries: 850px x 1100px) */}
+        {/* Sticky Unified Control Deck (Page Controls + Text Formatting Toolbar) */}
         {editor && (
           <RichTextProvider editor={editor}>
-            <div className="border border-[#262626] bg-[#0F0F0F] shadow-2xl relative w-full max-w-[850px] mx-auto h-[1100px] text-[#FAFAFA] overflow-hidden my-6">
-              {/* reactjs-tiptap-editor Sticky Toolbar */}
-              <div className="sticky top-0 z-40 bg-[#0F0F0F] border-b border-[#262626] p-2 flex flex-wrap items-center gap-1 overflow-visible">
+            <div className="sticky top-14 z-40 bg-[#141414] border-y border-[#262626] px-4 py-2 flex flex-wrap items-center justify-between gap-2 shadow-lg text-[#FAFAFA] font-sans text-xs select-none">
+              {/* Left Group: Page Navigation */}
+              <PageNavigationBar
+                pages={pages}
+                activePageIndex={activePageIndex}
+                onSelectPage={handleSelectPage}
+                onAddPage={handleAddPage}
+                onDuplicatePage={handleDuplicatePage}
+                onDeletePage={handleDeletePage}
+                onChangePaperTemplate={handleChangePaperTemplate}
+                stylusOnlyMode={stylusSettings.stylusOnlyMode}
+                onToggleStylusOnlyMode={() =>
+                  setStylusSettings((prev) => ({ ...prev, stylusOnlyMode: !prev.stylusOnlyMode }))
+                }
+              />
+
+              {/* Right Group: Text Formatting & Components Toolbar */}
+              <div className="flex flex-wrap items-center gap-1 overflow-visible">
                 <RichTextUndo />
                 <RichTextRedo />
                 <div className="h-4 w-px bg-[#262626] mx-1" />
@@ -931,19 +931,22 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
                 <RichTextClear />
                 <RichTextSearchAndReplace />
               </div>
+            </div>
 
-              {/* Floating Selection Bubble Menus */}
-              <RichTextBubbleText />
-              <RichTextBubbleTable />
-              <RichTextBubbleImage />
-              <RichTextBubbleLink />
-              <RichTextBubbleCodeBlock />
+            {/* Floating Selection Bubble Menus */}
+            <RichTextBubbleText />
+            <RichTextBubbleTable />
+            <RichTextBubbleImage />
+            <RichTextBubbleLink />
+            <RichTextBubbleCodeBlock />
 
-              {/* Paper Content & Fixed Ink Canvas Stack Container */}
-              <div className="relative h-[1035px] overflow-hidden">
+            {/* Notebook Paper Workspace Scroll Area */}
+            <div className="py-8 bg-[#050505] min-h-[calc(100vh-140px)] flex justify-center overflow-y-auto">
+              {/* Pure Clean Notebook Paper Canvas Sheet (Fixed A4 Boundaries: 850px x 1100px) */}
+              <div className="border border-[#262626] bg-[#0F0F0F] shadow-2xl relative w-full max-w-[850px] h-[1100px] text-[#FAFAFA] overflow-hidden">
                 {/* Tiptap Core Editor Content (Layered dynamically based on layerOrder) */}
                 <div
-                  className={`p-4 ${
+                  className={`p-8 ${
                     stylusSettings.layerOrder === 'ink_above_text' ? 'relative z-20' : 'relative z-30'
                   } ${
                     stylusSettings.isStylusModeActive && stylusSettings.layerOrder === 'ink_above_text'
@@ -954,7 +957,7 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
                   <EditorContent editor={editor} />
                 </div>
 
-                {/* Native Freehand Stylus Overlay Canvas (Positioned directly on top margin below toolbar) */}
+                {/* Native Freehand Stylus Overlay Canvas (Positioned 100% on paper sheet top margin) */}
                 <div
                   className={`absolute inset-0 ${
                     stylusSettings.layerOrder === 'ink_above_text' ? 'z-30' : 'z-20'

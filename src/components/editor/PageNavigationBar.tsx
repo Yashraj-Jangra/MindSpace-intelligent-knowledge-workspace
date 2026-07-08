@@ -47,7 +47,7 @@ export function PageNavigationBar({
   const totalPages = pages.length;
 
   return (
-    <div className="bg-[#0F0F0F] border-b border-[#262626] px-4 py-2 flex items-center justify-between font-sans text-xs select-none sticky top-14 z-40">
+    <div className="flex items-center gap-3 font-sans text-xs select-none">
       {/* Left: Page Counter & Switcher */}
       <div className="flex items-center gap-2">
         <button

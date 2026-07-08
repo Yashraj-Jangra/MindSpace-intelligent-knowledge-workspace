@@ -167,10 +167,42 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
   const [isLassoPopoverOpen, setIsLassoPopoverOpen] = useState(false);
   const [penBoxPresets, setPenBoxPresets] = useState<PenPreset[]>(DEFAULT_PEN_BOX_PRESETS);
 
-  // Editor View Mode & Status
+  // Editor View Mode & Native Full Screen Status
   const [isZenMode, setIsZenMode] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'unsaved'>('saved');
   const [isConverting, setIsConverting] = useState(false);
+
+  // Native HTML5 Fullscreen API Toggle
+  const toggleFullScreen = async () => {
+    try {
+      if (!document.fullscreenElement) {
+        if (document.documentElement.requestFullscreen) {
+          await document.documentElement.requestFullscreen();
+        }
+        setIsZenMode(true);
+      } else {
+        if (document.exitFullscreen) {
+          await document.exitFullscreen();
+        }
+        setIsZenMode(false);
+      }
+    } catch (err) {
+      console.error('Fullscreen toggle error:', err);
+      setIsZenMode((prev) => !prev);
+    }
+  };
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsZenMode(!!document.fullscreenElement);
+    };
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
+    };
+  }, []);
 
   // Modals & Popovers state
   const [isReminderOpen, setIsReminderOpen] = useState(false);
@@ -805,7 +837,7 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
 
             {/* Full Screen Immersion Toggle */}
             <button
-              onClick={() => setIsZenMode(!isZenMode)}
+              onClick={toggleFullScreen}
               className={`p-2 border transition-colors ${
                 isZenMode ? 'border-[#FF3D00] text-[#FF3D00]' : 'border-[#262626] text-[#737373] hover:text-[#FAFAFA]'
               }`}
@@ -846,7 +878,7 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
       {/* Floating Exit Full Screen Button (ONLY visible when Full Screen Immersive Mode is Active) */}
       {isZenMode && (
         <button
-          onClick={() => setIsZenMode(false)}
+          onClick={toggleFullScreen}
           className="fixed top-4 right-6 z-50 flex items-center gap-2 px-3 py-1.5 bg-[#0A0A0A]/90 border border-[#FF3D00] text-[#FF3D00] hover:bg-[#FF3D00] hover:text-[#0A0A0A] text-xs font-mono uppercase tracking-wider font-bold transition-all shadow-xl"
           title="Exit Full Screen Mode (or press Esc)"
         >

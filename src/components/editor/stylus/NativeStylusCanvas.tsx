@@ -773,7 +773,7 @@ export function NativeStylusCanvas({
   const selectionBbox = getGroupBoundingBox(selectedStrokes);
 
   return (
-    <div className="relative w-full h-full">
+    <div className="relative w-full h-full overflow-hidden">
       <canvas
         ref={canvasRef}
         onPointerDown={handlePointerDown}
@@ -785,10 +785,10 @@ export function NativeStylusCanvas({
           setBoxStart(null);
           setBoxCurrent(null);
         }}
-        className={`absolute inset-0 z-50 w-full h-full ${
+        className={`absolute inset-0 w-full h-full ${
           isActive ? (activeTool === 'select' ? 'cursor-grab' : activeTool === 'eraser' ? 'cursor-none' : 'cursor-crosshair') : 'pointer-events-none'
         }`}
-        style={{ touchAction: settings.isStylusModeActive ? 'none' : 'auto' }}
+        style={{ touchAction: settings.stylusOnlyMode ? 'pan-y' : settings.isStylusModeActive ? 'none' : 'auto' }}
       />
 
       {/* Floating Selection Quick Action Bar (Duplicate, Delete, OCR) */}

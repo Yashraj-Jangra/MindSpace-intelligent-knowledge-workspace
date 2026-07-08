@@ -902,7 +902,7 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
         {/* Editor Workspace Container */}
         {editor && (
           <RichTextProvider editor={editor}>
-            <div className="border border-[#262626] bg-[#0F0F0F] shadow-2xl relative min-h-[650px] text-[#FAFAFA]">
+            <div className="border border-[#262626] bg-[#0F0F0F] shadow-2xl relative min-h-[750px] text-[#FAFAFA] overflow-hidden">
               {/* reactjs-tiptap-editor Sticky Toolbar */}
               <div className="sticky top-16 z-40 bg-[#0F0F0F] border-b border-[#262626] p-2 flex flex-wrap items-center gap-1 overflow-visible">
                 <RichTextUndo />
@@ -939,24 +939,41 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
               <RichTextBubbleLink />
               <RichTextBubbleCodeBlock />
 
-              {/* Tiptap Core Editor Content */}
-              <div className={stylusSettings.isStylusModeActive ? 'pointer-events-none select-none' : 'pointer-events-auto'}>
-                <EditorContent editor={editor} />
-              </div>
+              {/* Paper Content & Ink Canvas Stack Container */}
+              <div className="relative min-h-[680px]">
+                {/* Tiptap Core Editor Content (Layered dynamically based on layerOrder) */}
+                <div
+                  className={`p-4 ${
+                    stylusSettings.layerOrder === 'ink_above_text' ? 'relative z-20' : 'relative z-30'
+                  } ${
+                    stylusSettings.isStylusModeActive && stylusSettings.layerOrder === 'ink_above_text'
+                      ? 'pointer-events-none select-none'
+                      : 'pointer-events-auto'
+                  }`}
+                >
+                  <EditorContent editor={editor} />
+                </div>
 
-              {/* Native Freehand Stylus Overlay Canvas (Completely DISABLED & non-interactive when Stylus Mode is OFF) */}
-              <NativeStylusCanvas
-                isActive={stylusSettings.isStylusModeActive}
-                activeTool={activeTool}
-                activePenSubtype={activePenSubtype}
-                activeColor={activeColor}
-                strokeWidth={strokeWidth}
-                lineType={lineType}
-                settings={stylusSettings}
-                strokes={strokes}
-                onStrokesChange={handleStrokesChange}
-                paperTemplate={pages[activePageIndex]?.paperTemplate || 'blank'}
-              />
+                {/* Native Freehand Stylus Overlay Canvas (Positioned directly on top margin below toolbar) */}
+                <div
+                  className={`absolute inset-0 ${
+                    stylusSettings.layerOrder === 'ink_above_text' ? 'z-30' : 'z-20'
+                  }`}
+                >
+                  <NativeStylusCanvas
+                    isActive={stylusSettings.isStylusModeActive}
+                    activeTool={activeTool}
+                    activePenSubtype={activePenSubtype}
+                    activeColor={activeColor}
+                    strokeWidth={strokeWidth}
+                    lineType={lineType}
+                    settings={stylusSettings}
+                    strokes={strokes}
+                    onStrokesChange={handleStrokesChange}
+                    paperTemplate={pages[activePageIndex]?.paperTemplate || 'blank'}
+                  />
+                </div>
+              </div>
             </div>
           </RichTextProvider>
         )}

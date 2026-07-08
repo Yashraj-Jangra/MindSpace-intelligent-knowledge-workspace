@@ -56,6 +56,57 @@ export function StylusSettingsModal({
             </button>
           </div>
 
+          {/* Strict Stylus-Only Mode */}
+          <div className="p-4 bg-[#1A1A1A] border border-[#262626] space-y-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-xs font-mono uppercase text-[#FAFAFA] font-bold">
+                <Shield className="w-4 h-4 text-[#10b981]" />
+                <span>Strict Stylus-Only Mode</span>
+              </div>
+              <input
+                type="checkbox"
+                checked={settings.stylusOnlyMode}
+                onChange={(e) => onUpdateSettings({ stylusOnlyMode: e.target.checked })}
+                className="accent-[#10b981] w-4 h-4 cursor-pointer"
+              />
+            </div>
+            <p className="text-[11px] font-mono text-[#737373] leading-relaxed">
+              When active, finger touch swipes scroll pages smoothly while active stylus pens draw freehand ink annotations.
+            </p>
+          </div>
+
+          {/* Layer Stacking Order (Ink Over Text vs Text Over Ink) */}
+          <div className="p-4 bg-[#1A1A1A] border border-[#262626] space-y-2">
+            <label className="text-xs font-mono uppercase text-[#737373] tracking-wider block font-bold">
+              Layer Stacking Order
+            </label>
+            <div className="grid grid-cols-2 gap-2 pt-1">
+              <button
+                onClick={() => onUpdateSettings({ layerOrder: 'ink_above_text' })}
+                className={`py-2 px-3 border text-xs font-mono uppercase tracking-wider transition-colors ${
+                  settings.layerOrder === 'ink_above_text'
+                    ? 'border-[#FF3D00] bg-[#FF3D00]/10 text-[#FF3D00] font-bold'
+                    : 'border-[#262626] text-[#737373] hover:text-[#FAFAFA]'
+                }`}
+              >
+                Ink Over Text
+              </button>
+              <button
+                onClick={() => onUpdateSettings({ layerOrder: 'text_above_ink' })}
+                className={`py-2 px-3 border text-xs font-mono uppercase tracking-wider transition-colors ${
+                  settings.layerOrder === 'text_above_ink'
+                    ? 'border-[#FF3D00] bg-[#FF3D00]/10 text-[#FF3D00] font-bold'
+                    : 'border-[#262626] text-[#737373] hover:text-[#FAFAFA]'
+                }`}
+              >
+                Text Over Ink
+              </button>
+            </div>
+            <p className="text-[11px] font-mono text-[#737373] leading-relaxed pt-1">
+              Choose whether freehand ink drawings layer over typed text or sit under text elements.
+            </p>
+          </div>
+
           {/* Touch Palm Rejection */}
           <div className="p-4 bg-[#1A1A1A] border border-[#262626] space-y-2">
             <div className="flex items-center justify-between">

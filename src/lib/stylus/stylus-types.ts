@@ -90,9 +90,12 @@ export interface VectorStroke {
   isSelected?: boolean;
 }
 
+export type LayerOrder = 'ink_above_text' | 'text_above_ink';
+
 export interface StylusSettings {
   isStylusModeActive: boolean;
   stylusOnlyMode: boolean; // Strict Stylus Only mode: Finger touches scroll page, active digitizer pen draws annotations
+  layerOrder: LayerOrder; // Configurable layer stacking: ink over text vs text over ink
   enablePalmRejection: boolean;
   autoShapeRecognition: boolean;
   shapeHoldTimerMs: number; // 300ms to 1500ms
@@ -130,7 +133,8 @@ export interface StylusSettings {
 
 export const DEFAULT_STYLUS_SETTINGS: StylusSettings = {
   isStylusModeActive: true,
-  stylusOnlyMode: true, // Default to Stylus-Only mode for seamless finger scrolling + pen drawing!
+  stylusOnlyMode: false, // Default to drawing with touch & stylus out of the box!
+  layerOrder: 'ink_above_text',
   enablePalmRejection: false,
   autoShapeRecognition: true,
   shapeHoldTimerMs: 500, // 0.5s default hold timer

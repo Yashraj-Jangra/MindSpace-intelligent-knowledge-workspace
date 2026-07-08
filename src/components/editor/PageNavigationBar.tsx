@@ -130,7 +130,7 @@ export function PageNavigationBar({
           </button>
 
           {isTemplateMenuOpen && (
-            <div className="absolute right-0 top-8 z-[70] w-40 bg-[#0A0A0A] border border-[#262626] shadow-2xl p-1 font-mono text-xs space-y-1">
+            <div className="absolute right-0 top-8 z-[80] w-40 bg-[#0A0A0A] border border-[#262626] shadow-2xl p-1 font-mono text-xs space-y-1">
               {(['blank', 'ruled', 'grid', 'dots'] as PaperTemplate[]).map((tmpl) => (
                 <button
                   key={tmpl}

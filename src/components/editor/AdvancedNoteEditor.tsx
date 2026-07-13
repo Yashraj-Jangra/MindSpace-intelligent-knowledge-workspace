@@ -989,23 +989,25 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
             <div className="py-8 bg-[#050505] min-h-[calc(100vh-140px)] flex justify-center overflow-y-auto">
               {/* Pure Clean Notebook Paper Canvas Sheet (Fixed A4 Boundaries: 850px x 1100px) */}
               <div className="border border-[#262626] bg-[#0F0F0F] shadow-2xl relative w-full max-w-[850px] h-[1100px] text-[#FAFAFA] overflow-hidden">
-                {/* Tiptap Core Editor Content (Layered dynamically based on layerOrder) */}
+                {/* Tiptap Core Editor Content (Layered dynamically based on mode & layerOrder) */}
                 <div
                   className={`p-8 ${
-                    stylusSettings.layerOrder === 'ink_above_text' ? 'relative z-20' : 'relative z-30'
-                  } ${
-                    stylusSettings.isStylusModeActive && stylusSettings.layerOrder === 'ink_above_text'
-                      ? 'pointer-events-none select-none'
-                      : 'pointer-events-auto'
+                    !stylusSettings.isStylusModeActive || stylusSettings.layerOrder === 'text_above_ink'
+                      ? 'relative z-30 pointer-events-auto select-text'
+                      : 'relative z-20 pointer-events-none select-none'
                   }`}
                 >
                   <EditorContent editor={editor} />
                 </div>
 
-                {/* Native Freehand Stylus Overlay Canvas (Positioned 100% on paper sheet top margin) */}
+                {/* Native Freehand Stylus Overlay Canvas Container (Ignore pointers when in Text Mode) */}
                 <div
                   className={`absolute inset-0 ${
-                    stylusSettings.layerOrder === 'ink_above_text' ? 'z-30' : 'z-20'
+                    stylusSettings.isStylusModeActive && stylusSettings.layerOrder === 'ink_above_text'
+                      ? 'z-30 pointer-events-auto'
+                      : stylusSettings.isStylusModeActive
+                      ? 'z-20 pointer-events-auto'
+                      : 'z-10 pointer-events-none'
                   }`}
                 >
                   <NativeStylusCanvas

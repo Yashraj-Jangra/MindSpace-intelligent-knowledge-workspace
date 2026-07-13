@@ -788,7 +788,10 @@ export function NativeStylusCanvas({
         className={`absolute inset-0 w-full h-full ${
           isActive ? (activeTool === 'select' ? 'cursor-grab' : activeTool === 'eraser' ? 'cursor-none' : 'cursor-crosshair') : 'pointer-events-none'
         }`}
-        style={{ touchAction: settings.stylusOnlyMode ? 'pan-y' : settings.isStylusModeActive ? 'none' : 'auto' }}
+        style={{
+          touchAction: settings.stylusOnlyMode ? 'pan-y' : settings.isStylusModeActive ? 'none' : 'auto',
+          pointerEvents: isActive ? 'auto' : 'none',
+        }}
       />
 
       {/* Floating Selection Quick Action Bar (Duplicate, Delete, OCR) */}

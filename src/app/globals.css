@@ -404,6 +404,21 @@ body {
   width: 100% !important;
 }
 
+/* Freeform Resizable Images & Media Blocks */
+.ProseMirror img {
+  max-width: 100%;
+  height: auto;
+  display: inline-block;
+  border: 1px solid #262626;
+  transition: all 150ms ease;
+}
+
+.ProseMirror img:hover,
+.ProseMirror img.ProseMirror-selectednode {
+  outline: 2px solid #FF3D00 !important;
+  cursor: pointer;
+}
+
 /* --- LIGHT MODE PROSEMIRROR TABLES --- */
 html.light .ProseMirror table,
 .light .ProseMirror table {

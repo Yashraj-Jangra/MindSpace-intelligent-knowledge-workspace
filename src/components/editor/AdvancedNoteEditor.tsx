@@ -208,6 +208,7 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
   const [isReminderOpen, setIsReminderOpen] = useState(false);
   const [isStylusSettingsOpen, setIsStylusSettingsOpen] = useState(false);
   const [isEditorSettingsOpen, setIsEditorSettingsOpen] = useState(false);
+  const [isColumnOptionsOpen, setIsColumnOptionsOpen] = useState(false);
 
   // Configure Extensions from reactjs-tiptap-editor
   const extensions = useMemo(() => {
@@ -985,9 +986,9 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
             <RichTextBubbleLink />
             <RichTextBubbleCodeBlock />
 
-            {/* Custom Table Position & Size Floating Controls */}
-            {editor.isActive('table') && (
-              <div className="fixed bottom-14 left-1/2 -translate-x-1/2 z-50 bg-[#0A0A0A] border border-[#FF3D00] shadow-2xl p-2 flex items-center gap-3 font-mono text-xs text-[#FAFAFA] rounded-md animate-in fade-in slide-in-from-bottom-2">
+            {/* Custom Table Position, Size & Column Options Floating Controls */}
+            {editor && editor.isActive('table') && (
+              <div className="fixed bottom-14 left-1/2 -translate-x-1/2 z-50 bg-[#0A0A0A] border border-[#FF3D00] shadow-2xl p-2 flex flex-wrap items-center gap-3 font-mono text-xs text-[#FAFAFA] rounded-md animate-in fade-in slide-in-from-bottom-2">
                 <span className="text-[#FF3D00] font-bold uppercase text-[10px] tracking-wider px-1">Table Controls:</span>
                 
                 {/* Table Alignment */}
@@ -1034,7 +1035,7 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
                 </div>
 
                 {/* Table Width */}
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-1 border-r border-[#262626] pr-2">
                   <button
                     onClick={() => {
                       const el = document.querySelector('.ProseMirror table');
@@ -1076,9 +1077,101 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
                   </button>
                 </div>
 
-                <span className="text-[10px] text-[#737373] border-l border-[#262626] pl-2 hidden sm:inline">
-                  Drag column borders to resize columns
-                </span>
+                {/* Column & Row Options Dropdown Trigger (2nd Click Options) */}
+                <div className="relative">
+                  <button
+                    onClick={(e) => {
+                      e.currentTarget.blur();
+                      setIsColumnOptionsOpen(!isColumnOptionsOpen);
+                    }}
+                    className={`px-2.5 py-1 border font-mono text-[11px] uppercase tracking-wider font-bold transition-all ${
+                      isColumnOptionsOpen
+                        ? 'border-[#FF3D00] bg-[#FF3D00] text-[#0A0A0A]'
+                        : 'border-[#FF3D00] text-[#FF3D00] hover:bg-[#FF3D00]/10'
+                    }`}
+                    title="Toggle Column & Row Options Menu"
+                  >
+                    Column Options {isColumnOptionsOpen ? '▲' : '▼'}
+                  </button>
+
+                  {isColumnOptionsOpen && (
+                    <div className="absolute bottom-9 right-0 z-[90] w-48 bg-[#0A0A0A] border border-[#FF3D00] shadow-2xl p-1.5 font-mono text-xs space-y-1 rounded-md animate-in fade-in slide-in-from-bottom-2">
+                      <div className="text-[10px] text-[#737373] uppercase tracking-wider px-2 py-1 font-bold border-b border-[#262626]">
+                        Columns
+                      </div>
+                      <button
+                        onClick={() => {
+                          editor.chain().focus().addColumnBefore().run();
+                          setIsColumnOptionsOpen(false);
+                        }}
+                        className="w-full text-left px-2 py-1 hover:bg-[#1A1A1A] hover:text-[#FF3D00] transition-colors"
+                      >
+                        + Add Column Left
+                      </button>
+                      <button
+                        onClick={() => {
+                          editor.chain().focus().addColumnAfter().run();
+                          setIsColumnOptionsOpen(false);
+                        }}
+                        className="w-full text-left px-2 py-1 hover:bg-[#1A1A1A] hover:text-[#FF3D00] transition-colors"
+                      >
+                        + Add Column Right
+                      </button>
+                      <button
+                        onClick={() => {
+                          editor.chain().focus().deleteColumn().run();
+                          setIsColumnOptionsOpen(false);
+                        }}
+                        className="w-full text-left px-2 py-1 hover:bg-[#1A1A1A] text-[#ef4444] transition-colors"
+                      >
+                        - Delete Column
+                      </button>
+
+                      <div className="text-[10px] text-[#737373] uppercase tracking-wider px-2 py-1 font-bold border-b border-[#262626] pt-1.5">
+                        Rows
+                      </div>
+                      <button
+                        onClick={() => {
+                          editor.chain().focus().addRowBefore().run();
+                          setIsColumnOptionsOpen(false);
+                        }}
+                        className="w-full text-left px-2 py-1 hover:bg-[#1A1A1A] hover:text-[#FF3D00] transition-colors"
+                      >
+                        + Add Row Above
+                      </button>
+                      <button
+                        onClick={() => {
+                          editor.chain().focus().addRowAfter().run();
+                          setIsColumnOptionsOpen(false);
+                        }}
+                        className="w-full text-left px-2 py-1 hover:bg-[#1A1A1A] hover:text-[#FF3D00] transition-colors"
+                      >
+                        + Add Row Below
+                      </button>
+                      <button
+                        onClick={() => {
+                          editor.chain().focus().deleteRow().run();
+                          setIsColumnOptionsOpen(false);
+                        }}
+                        className="w-full text-left px-2 py-1 hover:bg-[#1A1A1A] text-[#ef4444] transition-colors"
+                      >
+                        - Delete Row
+                      </button>
+
+                      <div className="border-t border-[#262626] pt-1">
+                        <button
+                          onClick={() => {
+                            editor.chain().focus().deleteTable().run();
+                            setIsColumnOptionsOpen(false);
+                          }}
+                          className="w-full text-left px-2 py-1 hover:bg-[#ef4444]/20 text-[#ef4444] font-bold transition-colors"
+                        >
+                          Delete Table
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
 

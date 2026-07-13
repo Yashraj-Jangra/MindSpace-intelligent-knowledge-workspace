@@ -51,7 +51,10 @@ export function PageNavigationBar({
       {/* Left: Page Counter & Switcher */}
       <div className="flex items-center gap-2">
         <button
-          onClick={() => setIsThumbnailsOpen(!isThumbnailsOpen)}
+          onClick={(e) => {
+            e.currentTarget.blur();
+            setIsThumbnailsOpen(!isThumbnailsOpen);
+          }}
           className={`flex items-center gap-1.5 px-2.5 py-1 border transition-colors ${
             isThumbnailsOpen ? 'border-[#FF3D00] text-[#FF3D00]' : 'border-[#262626] text-[#737373] hover:text-[#FAFAFA]'
           }`}
@@ -66,7 +69,10 @@ export function PageNavigationBar({
         {/* Previous Page */}
         <button
           disabled={activePageIndex === 0}
-          onClick={() => onSelectPage(Math.max(0, activePageIndex - 1))}
+          onClick={(e) => {
+            e.currentTarget.blur();
+            onSelectPage(Math.max(0, activePageIndex - 1));
+          }}
           className="p-1 border border-[#262626] disabled:opacity-40 hover:border-[#FAFAFA] text-[#FAFAFA] transition-colors"
           title="Previous Page"
         >
@@ -82,7 +88,10 @@ export function PageNavigationBar({
         {/* Next Page */}
         <button
           disabled={activePageIndex >= totalPages - 1}
-          onClick={() => onSelectPage(Math.min(totalPages - 1, activePageIndex + 1))}
+          onClick={(e) => {
+            e.currentTarget.blur();
+            onSelectPage(Math.min(totalPages - 1, activePageIndex + 1));
+          }}
           className="p-1 border border-[#262626] disabled:opacity-40 hover:border-[#FAFAFA] text-[#FAFAFA] transition-colors"
           title="Next Page"
         >
@@ -91,7 +100,10 @@ export function PageNavigationBar({
 
         {/* Add Page Button */}
         <button
-          onClick={onAddPage}
+          onClick={(e) => {
+            e.currentTarget.blur();
+            onAddPage();
+          }}
           className="flex items-center gap-1 px-3 py-1 bg-[#FF3D00] hover:bg-[#FAFAFA] text-[#0A0A0A] font-mono text-xs uppercase font-bold transition-colors ml-1"
           title="Add New Blank Page"
         >
@@ -104,7 +116,10 @@ export function PageNavigationBar({
       <div className="flex items-center gap-2">
         {/* Strict Stylus Only Mode Toggle */}
         <button
-          onClick={onToggleStylusOnlyMode}
+          onClick={(e) => {
+            e.currentTarget.blur();
+            onToggleStylusOnlyMode();
+          }}
           className={`flex items-center gap-1.5 px-3 py-1 rounded-full border font-mono text-[11px] uppercase font-bold transition-all ${
             stylusOnlyMode
               ? 'border-[#10b981] bg-[#10b981]/15 text-[#10b981]'
@@ -121,7 +136,10 @@ export function PageNavigationBar({
         {/* Paper Template Selector Dropdown */}
         <div className="relative">
           <button
-            onClick={() => setIsTemplateMenuOpen(!isTemplateMenuOpen)}
+            onClick={(e) => {
+              e.currentTarget.blur();
+              setIsTemplateMenuOpen(!isTemplateMenuOpen);
+            }}
             className="flex items-center gap-1.5 px-2.5 py-1 border border-[#262626] hover:border-[#FF3D00] text-[#FAFAFA] font-mono text-[11px] uppercase transition-colors"
             title="Paper Background Grid Style"
           >

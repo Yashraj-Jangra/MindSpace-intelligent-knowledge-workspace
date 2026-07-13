@@ -79,7 +79,10 @@ export function VerticalStylusSidebar({
       <div className="flex flex-col items-center gap-2">
         {/* Text Mode Toggle (Type into Note) */}
         <button
-          onClick={onDeactivateStylusMode}
+          onClick={(e) => {
+            e.currentTarget.blur();
+            onDeactivateStylusMode();
+          }}
           className={`p-2 border transition-colors ${
             !settings.isStylusModeActive
               ? 'border-[#3b82f6] bg-[#1A1A1A] text-[#3b82f6]'
@@ -92,77 +95,114 @@ export function VerticalStylusSidebar({
 
         <div className="w-6 h-px bg-[#262626] my-0.5" />
 
-        {/* Pen Tool (Triggers PenSettingsPopover) */}
+        {/* Pen Tool (1st click selects tool, 2nd click opens popover settings) */}
         <button
-          onClick={() => {
-            onActivateStylusMode();
-            onSelectTool('pen');
-            onTogglePenPopover();
+          onClick={(e) => {
+            e.currentTarget.blur();
+            if (activeTool === 'pen' && settings.isStylusModeActive) {
+              onTogglePenPopover();
+            } else {
+              onActivateStylusMode();
+              onSelectTool('pen');
+              onClosePenPopover();
+            }
           }}
           className={`p-2 border transition-colors ${
             settings.isStylusModeActive && activeTool === 'pen'
               ? 'border-[#FF3D00] bg-[#1A1A1A] text-[#FF3D00]'
               : 'border-transparent text-[#737373] hover:text-[#FAFAFA]'
           }`}
-          title="Pen Tool (Click for Pen Settings)"
+          title={
+            settings.isStylusModeActive && activeTool === 'pen'
+              ? 'Click again for Pen Settings'
+              : 'Switch to Pen Tool'
+          }
         >
           <Pen className="w-4 h-4 stroke-[2]" />
         </button>
 
-        {/* Highlighter Tool (Click for Highlighter Settings) */}
+        {/* Highlighter Tool (1st click selects tool, 2nd click opens popover settings) */}
         <button
-          onClick={() => {
-            onActivateStylusMode();
-            onSelectTool('highlighter');
-            onToggleHighlighterPopover();
+          onClick={(e) => {
+            e.currentTarget.blur();
+            if (activeTool === 'highlighter' && settings.isStylusModeActive) {
+              onToggleHighlighterPopover();
+            } else {
+              onActivateStylusMode();
+              onSelectTool('highlighter');
+              onClosePenPopover();
+            }
           }}
           className={`p-2 border transition-colors ${
             settings.isStylusModeActive && activeTool === 'highlighter'
               ? 'border-[#FF3D00] bg-[#1A1A1A] text-[#FF3D00]'
               : 'border-transparent text-[#737373] hover:text-[#FAFAFA]'
           }`}
-          title="Translucent Highlighter (Click for Highlighter Settings)"
+          title={
+            settings.isStylusModeActive && activeTool === 'highlighter'
+              ? 'Click again for Highlighter Settings'
+              : 'Switch to Highlighter Tool'
+          }
         >
           <Highlighter className="w-4 h-4 stroke-[2]" />
         </button>
 
-        {/* Eraser Tool (Click for Eraser Settings) */}
+        {/* Eraser Tool (1st click selects tool, 2nd click opens popover settings) */}
         <button
-          onClick={() => {
-            onActivateStylusMode();
-            onSelectTool('eraser');
-            onToggleEraserPopover();
+          onClick={(e) => {
+            e.currentTarget.blur();
+            if (activeTool === 'eraser' && settings.isStylusModeActive) {
+              onToggleEraserPopover();
+            } else {
+              onActivateStylusMode();
+              onSelectTool('eraser');
+              onClosePenPopover();
+            }
           }}
           className={`p-2 border transition-colors ${
             settings.isStylusModeActive && activeTool === 'eraser'
               ? 'border-[#FF3D00] bg-[#1A1A1A] text-[#FF3D00]'
               : 'border-transparent text-[#737373] hover:text-[#FAFAFA]'
           }`}
-          title="Eraser Tool (Click for Eraser Settings)"
+          title={
+            settings.isStylusModeActive && activeTool === 'eraser'
+              ? 'Click again for Eraser Settings'
+              : 'Switch to Eraser Tool'
+          }
         >
           <Eraser className="w-4 h-4 stroke-[2]" />
         </button>
 
-        {/* Lasso Select Tool (Click for Lasso Settings) */}
+        {/* Lasso Select Tool (1st click selects tool, 2nd click opens popover settings) */}
         <button
-          onClick={() => {
-            onActivateStylusMode();
-            onSelectTool('select');
-            onToggleLassoPopover();
+          onClick={(e) => {
+            e.currentTarget.blur();
+            if (activeTool === 'select' && settings.isStylusModeActive) {
+              onToggleLassoPopover();
+            } else {
+              onActivateStylusMode();
+              onSelectTool('select');
+              onClosePenPopover();
+            }
           }}
           className={`p-2 border transition-colors ${
             settings.isStylusModeActive && activeTool === 'select'
               ? 'border-[#FF3D00] bg-[#1A1A1A] text-[#FF3D00]'
               : 'border-transparent text-[#737373] hover:text-[#FAFAFA]'
           }`}
-          title="Lasso Select & Control Handles"
+          title={
+            settings.isStylusModeActive && activeTool === 'select'
+              ? 'Click again for Lasso Settings'
+              : 'Switch to Lasso Select Tool'
+          }
         >
           <MousePointer className="w-4 h-4 stroke-[2]" />
         </button>
 
         {/* Auto-Shape Recognition Settings */}
         <button
-          onClick={() => {
+          onClick={(e) => {
+            e.currentTarget.blur();
             onActivateStylusMode();
             onToggleShapePopover();
           }}

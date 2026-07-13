@@ -348,7 +348,7 @@ body {
   border-bottom: 2px solid #FF3D00 !important;
 }
 
-.ProseMirror .selectedCell:after {
+.ProseMirror table .selectedCell:after {
   z-index: 2;
   position: absolute;
   content: "";
@@ -356,6 +356,52 @@ body {
   background: rgba(255, 61, 0, 0.25) !important;
   border: 2px solid #FF3D00 !important;
   pointer-events: none;
+}
+
+/* Column Resizing Handles & Resizable Cursor */
+.ProseMirror table .column-resize-handle {
+  position: absolute;
+  right: -2px;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background-color: #FF3D00 !important;
+  pointer-events: auto !important;
+  cursor: col-resize !important;
+  z-index: 20;
+}
+
+.ProseMirror table.resize-cursor,
+.ProseMirror .resize-cursor {
+  cursor: col-resize !important;
+}
+
+/* Table Alignment & Position Classes */
+.ProseMirror table.table-align-left {
+  margin-left: 0 !important;
+  margin-right: auto !important;
+}
+
+.ProseMirror table.table-align-center {
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+.ProseMirror table.table-align-right {
+  margin-left: auto !important;
+  margin-right: 0 !important;
+}
+
+.ProseMirror table.table-size-compact {
+  width: 50% !important;
+}
+
+.ProseMirror table.table-size-medium {
+  width: 75% !important;
+}
+
+.ProseMirror table.table-size-full {
+  width: 100% !important;
 }
 
 /* --- LIGHT MODE PROSEMIRROR TABLES --- */

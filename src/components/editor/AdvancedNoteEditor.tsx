@@ -985,6 +985,103 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
             <RichTextBubbleLink />
             <RichTextBubbleCodeBlock />
 
+            {/* Custom Table Position & Size Floating Controls */}
+            {editor.isActive('table') && (
+              <div className="fixed bottom-14 left-1/2 -translate-x-1/2 z-50 bg-[#0A0A0A] border border-[#FF3D00] shadow-2xl p-2 flex items-center gap-3 font-mono text-xs text-[#FAFAFA] rounded-md animate-in fade-in slide-in-from-bottom-2">
+                <span className="text-[#FF3D00] font-bold uppercase text-[10px] tracking-wider px-1">Table Controls:</span>
+                
+                {/* Table Alignment */}
+                <div className="flex items-center gap-1 border-r border-[#262626] pr-2">
+                  <button
+                    onClick={() => {
+                      const el = document.querySelector('.ProseMirror table');
+                      if (el) {
+                        el.classList.remove('table-align-center', 'table-align-right');
+                        el.classList.add('table-align-left');
+                      }
+                    }}
+                    className="p-1.5 border border-[#262626] hover:border-[#FF3D00] hover:text-[#FF3D00] transition-colors"
+                    title="Align Table Left"
+                  >
+                    Left
+                  </button>
+                  <button
+                    onClick={() => {
+                      const el = document.querySelector('.ProseMirror table');
+                      if (el) {
+                        el.classList.remove('table-align-left', 'table-align-right');
+                        el.classList.add('table-align-center');
+                      }
+                    }}
+                    className="p-1.5 border border-[#262626] hover:border-[#FF3D00] hover:text-[#FF3D00] transition-colors"
+                    title="Center Table"
+                  >
+                    Center
+                  </button>
+                  <button
+                    onClick={() => {
+                      const el = document.querySelector('.ProseMirror table');
+                      if (el) {
+                        el.classList.remove('table-align-left', 'table-align-center');
+                        el.classList.add('table-align-right');
+                      }
+                    }}
+                    className="p-1.5 border border-[#262626] hover:border-[#FF3D00] hover:text-[#FF3D00] transition-colors"
+                    title="Align Table Right"
+                  >
+                    Right
+                  </button>
+                </div>
+
+                {/* Table Width */}
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => {
+                      const el = document.querySelector('.ProseMirror table');
+                      if (el) {
+                        el.classList.remove('table-size-medium', 'table-size-full');
+                        el.classList.add('table-size-compact');
+                      }
+                    }}
+                    className="px-2 py-1 border border-[#262626] hover:border-[#FF3D00] hover:text-[#FF3D00] text-[11px] transition-colors"
+                    title="Set Table Width to 50%"
+                  >
+                    50%
+                  </button>
+                  <button
+                    onClick={() => {
+                      const el = document.querySelector('.ProseMirror table');
+                      if (el) {
+                        el.classList.remove('table-size-compact', 'table-size-full');
+                        el.classList.add('table-size-medium');
+                      }
+                    }}
+                    className="px-2 py-1 border border-[#262626] hover:border-[#FF3D00] hover:text-[#FF3D00] text-[11px] transition-colors"
+                    title="Set Table Width to 75%"
+                  >
+                    75%
+                  </button>
+                  <button
+                    onClick={() => {
+                      const el = document.querySelector('.ProseMirror table');
+                      if (el) {
+                        el.classList.remove('table-size-compact', 'table-size-medium');
+                        el.classList.add('table-size-full');
+                      }
+                    }}
+                    className="px-2 py-1 border border-[#262626] hover:border-[#FF3D00] hover:text-[#FF3D00] text-[11px] transition-colors"
+                    title="Set Table Width to 100%"
+                  >
+                    100%
+                  </button>
+                </div>
+
+                <span className="text-[10px] text-[#737373] border-l border-[#262626] pl-2 hidden sm:inline">
+                  Drag column borders to resize columns
+                </span>
+              </div>
+            )}
+
             {/* Notebook Paper Workspace Scroll Area */}
             <div className="py-8 bg-[#050505] min-h-[calc(100vh-140px)] flex justify-center overflow-y-auto">
               {/* Pure Clean Notebook Paper Canvas Sheet (Fixed A4 Boundaries: 850px x 1100px) */}

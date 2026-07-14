@@ -517,72 +517,99 @@ div[data-richtext-portal] {
   font-family: 'Inter Tight', sans-serif !important;
 }
 
-/* Force All Buttons, Icons, Text Labels, Popups to Crisp White & High Contrast */
-.reactjs-tiptap-editor button,
-.reactjs-tiptap-editor [role="button"],
-div[data-richtext-portal] button,
-div[data-richtext-portal] [role="menuitem"] {
+/* High Z-Index & Hover Elevation for All Tiptap Popovers, Dropdowns, Tooltips & Portals */
+[data-radix-popper-content-wrapper],
+div[data-richtext-portal],
+.richtext-bg-popover,
+.richtext-bubble-menu,
+div[role="menu"],
+div[role="dialog"],
+div[role="listbox"],
+.table-grid-size-editor {
+  z-index: 100 !important;
+}
+
+.note-editor-toolbar-row1 button:hover,
+.note-editor-toolbar-row2 button:hover,
+.reactjs-tiptap-editor button:hover,
+.richtext-editor-button:hover {
+  position: relative;
+  z-index: 50 !important;
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   DARK MODE TIPTAP TOOLBAR, MENUS, PORTALS & BUBBLE MENUS
+   ────────────────────────────────────────────────────────────────────────── */
+
+/* Force Buttons, Icons & Text to Crisp White in Dark Mode */
+body:not(.light) .reactjs-tiptap-editor button,
+body:not(.light) .reactjs-tiptap-editor [role="button"],
+body:not(.light) div[data-richtext-portal] button,
+body:not(.light) div[data-richtext-portal] [role="menuitem"],
+body:not(.light) div[data-richtext-portal] [role="option"] {
   border-radius: 0px !important;
   color: #FAFAFA !important;
   transition: all 150ms cubic-bezier(0.25, 0, 0, 1) !important;
 }
 
-.reactjs-tiptap-editor button *,
-.reactjs-tiptap-editor [role="button"] *,
-div[data-richtext-portal] * {
+body:not(.light) .reactjs-tiptap-editor button *,
+body:not(.light) .reactjs-tiptap-editor [role="button"] *,
+body:not(.light) div[data-richtext-portal] * {
   color: #FAFAFA !important;
 }
 
-.reactjs-tiptap-editor button svg,
-.reactjs-tiptap-editor [role="button"] svg,
-div[data-richtext-portal] svg {
+body:not(.light) .reactjs-tiptap-editor button svg,
+body:not(.light) .reactjs-tiptap-editor [role="button"] svg,
+body:not(.light) div[data-richtext-portal] svg {
   color: #FAFAFA !important;
   stroke: #FAFAFA !important;
 }
 
-/* Hover State - Vermillion Text/Icon on Elevated Dark Background */
-.reactjs-tiptap-editor button:hover,
-.reactjs-tiptap-editor [role="button"]:hover,
-div[data-richtext-portal] button:hover,
-div[data-richtext-portal] [role="menuitem"]:hover {
+/* Hover State (Dark Mode) */
+body:not(.light) .reactjs-tiptap-editor button:hover,
+body:not(.light) .reactjs-tiptap-editor [role="button"]:hover,
+body:not(.light) div[data-richtext-portal] button:hover,
+body:not(.light) div[data-richtext-portal] [role="menuitem"]:hover,
+body:not(.light) div[data-richtext-portal] [role="option"]:hover {
   background-color: #1E1E1E !important;
   color: #FF3D00 !important;
 }
 
-.reactjs-tiptap-editor button:hover *,
-.reactjs-tiptap-editor [role="button"]:hover *,
-div[data-richtext-portal] button:hover *,
-div[data-richtext-portal] [role="menuitem"]:hover * {
+body:not(.light) .reactjs-tiptap-editor button:hover *,
+body:not(.light) .reactjs-tiptap-editor [role="button"]:hover *,
+body:not(.light) div[data-richtext-portal] button:hover *,
+body:not(.light) div[data-richtext-portal] [role="menuitem"]:hover *,
+body:not(.light) div[data-richtext-portal] [role="option"]:hover * {
   color: #FF3D00 !important;
 }
 
-.reactjs-tiptap-editor button:hover svg,
-.reactjs-tiptap-editor [role="button"]:hover svg,
-div[data-richtext-portal] button:hover svg,
-div[data-richtext-portal] [role="menuitem"]:hover svg {
+body:not(.light) .reactjs-tiptap-editor button:hover svg,
+body:not(.light) .reactjs-tiptap-editor [role="button"]:hover svg,
+body:not(.light) div[data-richtext-portal] button:hover svg,
+body:not(.light) div[data-richtext-portal] [role="menuitem"]:hover svg {
   color: #FF3D00 !important;
   stroke: #FF3D00 !important;
 }
 
-/* Active Selected State */
-.reactjs-tiptap-editor button[data-state="on"],
-.reactjs-tiptap-editor button[aria-pressed="true"],
-.reactjs-tiptap-editor button.active,
-.reactjs-tiptap-editor [data-state="on"] {
+/* Active Selected State (Dark Mode) */
+body:not(.light) .reactjs-tiptap-editor button[data-state="on"],
+body:not(.light) .reactjs-tiptap-editor button[aria-pressed="true"],
+body:not(.light) .reactjs-tiptap-editor button.active,
+body:not(.light) .reactjs-tiptap-editor [data-state="on"] {
   background-color: #1E1E1E !important;
   color: #FF3D00 !important;
   border-bottom: 2px solid #FF3D00 !important;
 }
 
-.reactjs-tiptap-editor button[data-state="on"] *,
-.reactjs-tiptap-editor button[aria-pressed="true"] *,
-.reactjs-tiptap-editor button.active * {
+body:not(.light) .reactjs-tiptap-editor button[data-state="on"] *,
+body:not(.light) .reactjs-tiptap-editor button[aria-pressed="true"] *,
+body:not(.light) .reactjs-tiptap-editor button.active * {
   color: #FF3D00 !important;
 }
 
-.reactjs-tiptap-editor button[data-state="on"] svg,
-.reactjs-tiptap-editor button[aria-pressed="true"] svg,
-.reactjs-tiptap-editor button.active svg {
+body:not(.light) .reactjs-tiptap-editor button[data-state="on"] svg,
+body:not(.light) .reactjs-tiptap-editor button[aria-pressed="true"] svg,
+body:not(.light) .reactjs-tiptap-editor button.active svg {
   color: #FF3D00 !important;
   stroke: #FF3D00 !important;
 }
@@ -597,23 +624,24 @@ div[data-richtext-portal] [role="menuitem"]:hover svg {
   padding: 0 !important;
 }
 
-/* Actual Single Card Surface for Floating Table Options, Menus & Dialogs */
-.richtext-bg-popover,
-.richtext-bg-card,
-.richtext-bubble-menu,
-div[role="dialog"],
-div[role="menu"] {
+/* Single Card Surface for Floating Table Options, Menus & Dialogs (Dark Mode) */
+body:not(.light) .richtext-bg-popover,
+body:not(.light) .richtext-bg-card,
+body:not(.light) .richtext-bubble-menu,
+body:not(.light) div[role="dialog"],
+body:not(.light) div[role="menu"],
+body:not(.light) div[role="listbox"] {
   background-color: #0F0F0F !important;
   border: 2px solid #333333 !important;
   color: #FAFAFA !important;
   box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.95) !important;
 }
 
-.richtext-bg-popover button,
-.richtext-bg-popover [role="button"],
-.richtext-bubble-menu button,
-div[role="menu"] button,
-div[role="menu"] [role="menuitem"] {
+body:not(.light) .richtext-bg-popover button,
+body:not(.light) .richtext-bg-popover [role="button"],
+body:not(.light) .richtext-bubble-menu button,
+body:not(.light) div[role="menu"] button,
+body:not(.light) div[role="menu"] [role="menuitem"] {
   background-color: #0F0F0F !important;
   color: #FAFAFA !important;
   border: 1px solid transparent !important;
@@ -621,129 +649,59 @@ div[role="menu"] [role="menuitem"] {
   transition: all 120ms cubic-bezier(0.25, 0, 0, 1) !important;
 }
 
-.richtext-bg-popover button svg,
-.richtext-bg-popover [role="button"] svg,
-.richtext-bubble-menu button svg,
-div[role="menu"] svg {
+body:not(.light) .richtext-bg-popover button svg,
+body:not(.light) .richtext-bg-popover [role="button"] svg,
+body:not(.light) .richtext-bubble-menu button svg,
+body:not(.light) div[role="menu"] svg {
   color: #FAFAFA !important;
   stroke: #FAFAFA !important;
 }
 
-.richtext-bg-popover button:hover,
-.richtext-bg-popover [role="button"]:hover,
-.richtext-bubble-menu button:hover,
-div[role="menu"] [role="menuitem"]:hover {
+body:not(.light) .richtext-bg-popover button:hover,
+body:not(.light) .richtext-bg-popover [role="button"]:hover,
+body:not(.light) .richtext-bubble-menu button:hover,
+body:not(.light) div[role="menu"] [role="menuitem"]:hover {
   background-color: #1E1E1E !important;
   color: #FF3D00 !important;
   border-color: #FF3D00 !important;
 }
 
-.richtext-bg-popover button:hover svg,
-.richtext-bg-popover [role="button"]:hover svg,
-.richtext-bubble-menu button:hover svg,
-div[role="menu"] [role="menuitem"]:hover svg {
+body:not(.light) .richtext-bg-popover button:hover svg,
+body:not(.light) .richtext-bg-popover [role="button"]:hover svg,
+body:not(.light) .richtext-bubble-menu button:hover svg,
+body:not(.light) div[role="menu"] [role="menuitem"]:hover svg {
   color: #FF3D00 !important;
   stroke: #FF3D00 !important;
 }
 
-.richtext-bg-popover button[data-state="on"],
-.richtext-bg-popover button.active,
-.richtext-bubble-menu button[data-state="on"],
-.richtext-bubble-menu button.active {
-  background-color: #1E1E1E !important;
-  color: #FF3D00 !important;
-  border-bottom: 2px solid #FF3D00 !important;
-}
-
-.richtext-bg-popover button[data-state="on"] svg,
-.richtext-bg-popover button.active svg,
-.richtext-bubble-menu button[data-state="on"] svg,
-.richtext-bubble-menu button.active svg {
-  color: #FF3D00 !important;
-  stroke: #FF3D00 !important;
-}
-
-/* Force All Buttons inside Bubble Menus & Floating Toolbars */
-[data-radix-popper-content-wrapper] button,
-div[data-richtext-portal] button,
-.richtext-bubble-menu button,
-[role="toolbar"] button {
+body:not(.light) [data-radix-popper-content-wrapper] button,
+body:not(.light) div[data-richtext-portal] button,
+body:not(.light) .richtext-bubble-menu button,
+body:not(.light) [role="toolbar"] button {
   background-color: #0F0F0F !important;
   color: #FAFAFA !important;
   border-radius: 0px !important;
 }
 
-[data-radix-popper-content-wrapper] button *,
-div[data-richtext-portal] button *,
-.richtext-bubble-menu button *,
-[role="toolbar"] button * {
+body:not(.light) [data-radix-popper-content-wrapper] button *,
+body:not(.light) div[data-richtext-portal] button *,
+body:not(.light) .richtext-bubble-menu button *,
+body:not(.light) [role="toolbar"] button * {
   color: #FAFAFA !important;
 }
 
-[data-radix-popper-content-wrapper] button svg,
-div[data-richtext-portal] button svg,
-.richtext-bubble-menu button svg,
-[role="toolbar"] button svg {
+body:not(.light) [data-radix-popper-content-wrapper] button svg,
+body:not(.light) div[data-richtext-portal] button svg,
+body:not(.light) .richtext-bubble-menu button svg,
+body:not(.light) [role="toolbar"] button svg {
   color: #FAFAFA !important;
   stroke: #FAFAFA !important;
 }
 
-/* Active state in Bubble Menu */
-[data-radix-popper-content-wrapper] button[data-state="on"],
-div[data-richtext-portal] button[data-state="on"],
-.richtext-bubble-menu button[data-state="on"],
-[role="toolbar"] button[data-state="on"],
-[data-radix-popper-content-wrapper] button.active,
-div[data-richtext-portal] button.active,
-.richtext-bubble-menu button.active {
-  background-color: #1E1E1E !important;
-  color: #FF3D00 !important;
-  border-bottom: 2px solid #FF3D00 !important;
-}
-
-[data-radix-popper-content-wrapper] button[data-state="on"] *,
-div[data-richtext-portal] button[data-state="on"] *,
-.richtext-bubble-menu button[data-state="on"] *,
-[role="toolbar"] button[data-state="on"] * {
-  color: #FF3D00 !important;
-}
-
-[data-radix-popper-content-wrapper] button[data-state="on"] svg,
-div[data-richtext-portal] button[data-state="on"] svg,
-.richtext-bubble-menu button[data-state="on"] svg,
-[role="toolbar"] button[data-state="on"] svg {
-  color: #FF3D00 !important;
-  stroke: #FF3D00 !important;
-}
-
-/* Hover state in Bubble Menu */
-[data-radix-popper-content-wrapper] button:hover,
-div[data-richtext-portal] button:hover,
-.richtext-bubble-menu button:hover,
-[role="toolbar"] button:hover {
-  background-color: #1E1E1E !important;
-  color: #FF3D00 !important;
-}
-
-[data-radix-popper-content-wrapper] button:hover *,
-div[data-richtext-portal] button:hover *,
-.richtext-bubble-menu button:hover *,
-[role="toolbar"] button:hover * {
-  color: #FF3D00 !important;
-}
-
-[data-radix-popper-content-wrapper] button:hover svg,
-div[data-richtext-portal] button:hover svg,
-.richtext-bubble-menu button:hover svg,
-[role="toolbar"] button:hover svg {
-  color: #FF3D00 !important;
-  stroke: #FF3D00 !important;
-}
-
-/* Inputs Inside Dialogs & Link Modals */
-div[data-richtext-portal] input,
-div[role="dialog"] input,
-div[role="menu"] input {
+/* Dark Mode Inputs Inside Dialogs & Link Modals */
+body:not(.light) div[data-richtext-portal] input,
+body:not(.light) div[role="dialog"] input,
+body:not(.light) div[role="menu"] input {
   background-color: #1E1E1E !important;
   border: 1px solid #333333 !important;
   color: #FAFAFA !important;
@@ -753,10 +711,222 @@ div[role="menu"] input {
   outline: none !important;
 }
 
-div[data-richtext-portal] input:focus,
-div[role="dialog"] input:focus,
-div[role="menu"] input:focus {
+body:not(.light) div[data-richtext-portal] input:focus,
+body:not(.light) div[role="dialog"] input:focus,
+body:not(.light) div[role="menu"] input:focus {
   border-color: #FF3D00 !important;
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   LIGHT MODE / WHITE THEME TIPTAP TOOLBAR, MENUS, PORTALS & BUBBLE MENUS
+   ────────────────────────────────────────────────────────────────────────── */
+
+html.light .reactjs-tiptap-editor,
+html.light .reactjs-tiptap-editor-theme,
+html.light div[data-richtext-portal],
+.light .reactjs-tiptap-editor,
+.light .reactjs-tiptap-editor-theme,
+.light div[data-richtext-portal] {
+  --background: 0 0% 100% !important;
+  --foreground: 222 47% 11% !important; /* #0F172A */
+  --card: 0 0% 100% !important;
+  --card-foreground: 222 47% 11% !important;
+  --popover: 0 0% 100% !important;
+  --popover-foreground: 222 47% 11% !important;
+  --border: 214 32% 91% !important; /* #E2E8F0 */
+  --input: 214 32% 91% !important;
+  color: #0F172A !important;
+  background-color: #FFFFFF !important;
+}
+
+/* Light Mode Buttons, Icons, Text Labels & Dropdown Items */
+html.light .reactjs-tiptap-editor button,
+html.light .reactjs-tiptap-editor [role="button"],
+html.light div[data-richtext-portal] button,
+html.light div[data-richtext-portal] [role="menuitem"],
+html.light div[data-richtext-portal] [role="option"],
+.light div[data-richtext-portal] button,
+.light div[data-richtext-portal] [role="menuitem"],
+.light div[data-richtext-portal] [role="option"] {
+  border-radius: 0px !important;
+  color: #0F172A !important;
+  transition: all 150ms cubic-bezier(0.25, 0, 0, 1) !important;
+}
+
+html.light .reactjs-tiptap-editor button *,
+html.light .reactjs-tiptap-editor [role="button"] *,
+html.light div[data-richtext-portal] *,
+.light div[data-richtext-portal] * {
+  color: #0F172A !important;
+}
+
+html.light .reactjs-tiptap-editor button svg,
+html.light .reactjs-tiptap-editor [role="button"] svg,
+html.light div[data-richtext-portal] svg,
+.light div[data-richtext-portal] svg {
+  color: #0F172A !important;
+  stroke: #0F172A !important;
+}
+
+/* Light Mode Hover State */
+html.light .reactjs-tiptap-editor button:hover,
+html.light .reactjs-tiptap-editor [role="button"]:hover,
+html.light div[data-richtext-portal] button:hover,
+html.light div[data-richtext-portal] [role="menuitem"]:hover,
+html.light div[data-richtext-portal] [role="option"]:hover,
+.light div[data-richtext-portal] button:hover,
+.light div[data-richtext-portal] [role="menuitem"]:hover {
+  background-color: #F1F5F9 !important;
+  color: #FF3D00 !important;
+}
+
+html.light .reactjs-tiptap-editor button:hover *,
+html.light .reactjs-tiptap-editor [role="button"]:hover *,
+html.light div[data-richtext-portal] button:hover *,
+html.light div[data-richtext-portal] [role="menuitem"]:hover *,
+html.light div[data-richtext-portal] [role="option"]:hover *,
+.light div[data-richtext-portal] button:hover * {
+  color: #FF3D00 !important;
+}
+
+html.light .reactjs-tiptap-editor button:hover svg,
+html.light .reactjs-tiptap-editor [role="button"]:hover svg,
+html.light div[data-richtext-portal] button:hover svg,
+html.light div[data-richtext-portal] [role="menuitem"]:hover svg,
+.light div[data-richtext-portal] button:hover svg {
+  color: #FF3D00 !important;
+  stroke: #FF3D00 !important;
+}
+
+/* Light Mode Active Selected State */
+html.light .reactjs-tiptap-editor button[data-state="on"],
+html.light .reactjs-tiptap-editor button[aria-pressed="true"],
+html.light .reactjs-tiptap-editor button.active,
+html.light .reactjs-tiptap-editor [data-state="on"],
+html.light div[data-richtext-portal] button[data-state="on"],
+html.light div[data-richtext-portal] button.active {
+  background-color: #FFF5F3 !important;
+  color: #FF3D00 !important;
+  border-bottom: 2px solid #FF3D00 !important;
+}
+
+html.light .reactjs-tiptap-editor button[data-state="on"] *,
+html.light .reactjs-tiptap-editor button[aria-pressed="true"] *,
+html.light div[data-richtext-portal] button[data-state="on"] * {
+  color: #FF3D00 !important;
+}
+
+html.light .reactjs-tiptap-editor button[data-state="on"] svg,
+html.light .reactjs-tiptap-editor button[aria-pressed="true"] svg,
+html.light div[data-richtext-portal] button[data-state="on"] svg {
+  color: #FF3D00 !important;
+  stroke: #FF3D00 !important;
+}
+
+/* Floating Popover Cards, Bubble Menus, Dialogs & Dropdown Cards (Light Mode) */
+html.light .richtext-bg-popover,
+html.light .richtext-bg-card,
+html.light .richtext-bubble-menu,
+html.light div[role="dialog"],
+html.light div[role="menu"],
+html.light div[role="listbox"],
+.light .richtext-bg-popover,
+.light .richtext-bg-card,
+.light .richtext-bubble-menu,
+.light div[role="dialog"],
+.light div[role="menu"] {
+  background-color: #FFFFFF !important;
+  border: 1px solid #E2E8F0 !important;
+  color: #0F172A !important;
+  box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.12) !important;
+}
+
+html.light .richtext-bg-popover button,
+html.light .richtext-bg-popover [role="button"],
+html.light .richtext-bubble-menu button,
+html.light div[role="menu"] button,
+html.light div[role="menu"] [role="menuitem"],
+.light .richtext-bubble-menu button,
+.light div[role="menu"] [role="menuitem"] {
+  background-color: #FFFFFF !important;
+  color: #0F172A !important;
+}
+
+html.light .richtext-bg-popover button svg,
+html.light .richtext-bg-popover [role="button"] svg,
+html.light .richtext-bubble-menu button svg,
+html.light div[role="menu"] svg {
+  color: #0F172A !important;
+  stroke: #0F172A !important;
+}
+
+html.light .richtext-bg-popover button:hover,
+html.light .richtext-bg-popover [role="button"]:hover,
+html.light .richtext-bubble-menu button:hover,
+html.light div[role="menu"] [role="menuitem"]:hover {
+  background-color: #F1F5F9 !important;
+  color: #FF3D00 !important;
+  border-color: #FF3D00 !important;
+}
+
+html.light .richtext-bg-popover button:hover svg,
+html.light .richtext-bg-popover [role="button"]:hover svg,
+html.light .richtext-bubble-menu button:hover svg,
+html.light div[role="menu"] [role="menuitem"]:hover svg {
+  color: #FF3D00 !important;
+  stroke: #FF3D00 !important;
+}
+
+/* Light Mode Inputs (Link modal, Search modal, Color hex) */
+html.light div[data-richtext-portal] input,
+html.light div[role="dialog"] input,
+html.light div[role="menu"] input,
+.light div[data-richtext-portal] input,
+.light div[role="dialog"] input {
+  background-color: #F8FAFC !important;
+  border: 1px solid #CBD5E1 !important;
+  color: #0F172A !important;
+  font-family: 'JetBrains Mono', monospace !important;
+  font-size: 0.85rem !important;
+  padding: 0.4rem 0.6rem !important;
+  outline: none !important;
+}
+
+html.light div[data-richtext-portal] input::placeholder,
+html.light div[role="dialog"] input::placeholder {
+  color: #94A3B8 !important;
+}
+
+html.light div[data-richtext-portal] input:focus,
+html.light div[role="dialog"] input:focus {
+  border-color: #FF3D00 !important;
+  background-color: #FFFFFF !important;
+}
+
+/* Color Swatches / Picker Popovers in Light Mode */
+html.light .richtext-color-picker,
+html.light div[data-richtext-portal] div[class*="color"],
+.light div[data-richtext-portal] div[class*="color"] {
+  background-color: #FFFFFF !important;
+  border-color: #E2E8F0 !important;
+  color: #0F172A !important;
+}
+
+/* Emoji Picker Popover in Light Mode */
+html.light em-emoji-picker,
+html.light div[data-richtext-portal] em-emoji-picker,
+.light em-emoji-picker {
+  --bg-color: #FFFFFF !important;
+  --border-color: #E2E8F0 !important;
+  --text-color: #0F172A !important;
+  --category-icon-color: #64748B !important;
+  --category-icon-active-color: #FF3D00 !important;
+  --input-bg-color: #F8FAFC !important;
+  --input-border-color: #CBD5E1 !important;
+  background-color: #FFFFFF !important;
+  border: 1px solid #E2E8F0 !important;
+}
+
 }
 
 /* ==========================================================================

@@ -1464,20 +1464,28 @@ html.light [data-radix-popper-content-wrapper] [role="menuitem"]:hover *,
 }
 
 /* ===================================================
-   TOOLBAR ROW 2 STICKY Z-INDEX UTILITY
+   TOOLBAR ROW 2 STICKY Z-INDEX UTILITY & HOVER ELEVATION
    =================================================== */
 .z-39 {
   z-index: 39;
+}
+
+/* Elevate Row 2 above Row 1 (z-[41]) on hover, focus, or when popover is open */
+.note-editor-toolbar-row2:hover,
+.note-editor-toolbar-row2:focus-within,
+.note-editor-toolbar-row2:has([aria-expanded="true"]),
+.note-editor-toolbar-row2:has([data-state="open"]) {
+  z-index: 45 !important;
 }
 
 /* ===================================================
    RICHTEXT TIPTAP TOOLBAR — DARK & LIGHT OVERRIDES
    =================================================== */
 
-/* Base dark: all toolbar buttons default look */
-.richtext-editor-button,
-button[class*="richtext-"],
-[class*="richtext-toolbar"] button {
+/* Dark mode: default toolbar buttons look */
+body:not(.light) .richtext-editor-button,
+body:not(.light) button[class*="richtext-"],
+body:not(.light) [class*="richtext-toolbar"] button {
   color: #737373 !important;
   background: transparent !important;
   border: none !important;
@@ -1485,67 +1493,144 @@ button[class*="richtext-"],
 }
 
 /* Dark mode: hover */
-.richtext-editor-button:hover,
-button[class*="richtext-"]:hover,
-[class*="richtext-toolbar"] button:hover {
+body:not(.light) .richtext-editor-button:hover,
+body:not(.light) button[class*="richtext-"]:hover,
+body:not(.light) [class*="richtext-toolbar"] button:hover {
   color: #FAFAFA !important;
   background: #1A1A1A !important;
 }
 
+body:not(.light) .richtext-editor-button:hover *,
+body:not(.light) button[class*="richtext-"]:hover *,
+body:not(.light) [class*="richtext-toolbar"] button:hover * {
+  color: #FAFAFA !important;
+}
+
+body:not(.light) .richtext-editor-button:hover svg,
+body:not(.light) button[class*="richtext-"]:hover svg,
+body:not(.light) [class*="richtext-toolbar"] button:hover svg {
+  color: #FAFAFA !important;
+  stroke: #FAFAFA !important;
+}
+
 /* Dark mode: active / is-active state */
-.richtext-editor-button.is-active,
-.richtext-editor-button[data-active="true"],
-button[class*="richtext-"].is-active,
-button[class*="richtext-"][data-active="true"],
-[class*="richtext-toolbar"] button.is-active,
-[class*="richtext-toolbar"] button[data-active="true"] {
+body:not(.light) .richtext-editor-button.is-active,
+body:not(.light) .richtext-editor-button[data-active="true"],
+body:not(.light) button[class*="richtext-"].is-active,
+body:not(.light) button[class*="richtext-"][data-active="true"],
+body:not(.light) [class*="richtext-toolbar"] button.is-active,
+body:not(.light) [class*="richtext-toolbar"] button[data-active="true"] {
   color: #FF3D00 !important;
   background: rgba(255, 61, 0, 0.1) !important;
 }
 
 /* Dark mode: focus-visible */
-.richtext-editor-button:focus-visible,
-button[class*="richtext-"]:focus-visible,
-[class*="richtext-toolbar"] button:focus-visible {
+body:not(.light) .richtext-editor-button:focus-visible,
+body:not(.light) button[class*="richtext-"]:focus-visible,
+body:not(.light) [class*="richtext-toolbar"] button:focus-visible {
   outline: 2px solid #FF3D00 !important;
   outline-offset: 2px !important;
 }
 
 /* Dark mode: disabled */
-.richtext-editor-button:disabled,
-button[class*="richtext-"]:disabled {
+body:not(.light) .richtext-editor-button:disabled,
+body:not(.light) button[class*="richtext-"]:disabled {
   opacity: 0.3 !important;
   pointer-events: none !important;
 }
 
-/* LIGHT MODE overrides */
+/* LIGHT MODE overrides for Row 2 & Tiptap toolbar buttons */
+html.light .note-editor-toolbar-row2,
+.light .note-editor-toolbar-row2 {
+  background-color: #FAFAFA !important;
+  border-bottom-color: #E2E8F0 !important;
+}
+
 html.light .richtext-editor-button,
 html.light button[class*="richtext-"],
 html.light [class*="richtext-toolbar"] button,
+html.light .note-editor-toolbar-row2 button,
+html.light .note-editor-toolbar-row2 [role="button"],
 .light .richtext-editor-button,
 .light button[class*="richtext-"],
-.light [class*="richtext-toolbar"] button {
-  color: #737373 !important;
+.light [class*="richtext-toolbar"] button,
+.light .note-editor-toolbar-row2 button {
+  color: #475569 !important;
+  background: transparent !important;
+  border-color: transparent !important;
 }
 
+html.light .note-editor-toolbar-row2 button *,
+html.light .note-editor-toolbar-row2 .richtext-editor-button *,
+html.light button[class*="richtext-"] *,
+.light button[class*="richtext-"] * {
+  color: #475569 !important;
+}
+
+html.light .note-editor-toolbar-row2 button svg,
+html.light .note-editor-toolbar-row2 .richtext-editor-button svg,
+html.light button[class*="richtext-"] svg,
+.light button[class*="richtext-"] svg {
+  color: #475569 !important;
+  stroke: #475569 !important;
+}
+
+/* Light mode hover state */
 html.light .richtext-editor-button:hover,
 html.light button[class*="richtext-"]:hover,
 html.light [class*="richtext-toolbar"] button:hover,
+html.light .note-editor-toolbar-row2 button:hover,
+html.light .note-editor-toolbar-row2 [role="button"]:hover,
 .light .richtext-editor-button:hover,
 .light button[class*="richtext-"]:hover,
-.light [class*="richtext-toolbar"] button:hover {
-  color: #0F0F0F !important;
-  background: #F1F5F9 !important;
+.light [class*="richtext-toolbar"] button:hover,
+.light .note-editor-toolbar-row2 button:hover {
+  color: #0F172A !important;
+  background-color: #E2E8F0 !important;
 }
 
+html.light .note-editor-toolbar-row2 button:hover *,
+html.light .note-editor-toolbar-row2 .richtext-editor-button:hover *,
+html.light button[class*="richtext-"]:hover *,
+.light button[class*="richtext-"]:hover * {
+  color: #0F172A !important;
+}
+
+html.light .note-editor-toolbar-row2 button:hover svg,
+html.light .note-editor-toolbar-row2 .richtext-editor-button:hover svg,
+html.light button[class*="richtext-"]:hover svg,
+.light button[class*="richtext-"]:hover svg {
+  color: #0F172A !important;
+  stroke: #0F172A !important;
+}
+
+/* Light mode active state */
 html.light .richtext-editor-button.is-active,
 html.light button[class*="richtext-"].is-active,
 html.light [class*="richtext-toolbar"] button.is-active,
+html.light .note-editor-toolbar-row2 button.is-active,
+html.light .note-editor-toolbar-row2 button[data-active="true"],
+html.light .note-editor-toolbar-row2 button[aria-pressed="true"],
+html.light .note-editor-toolbar-row2 button[data-state="on"],
 .light .richtext-editor-button.is-active,
 .light button[class*="richtext-"].is-active,
-.light [class*="richtext-toolbar"] button.is-active {
+.light [class*="richtext-toolbar"] button.is-active,
+.light .note-editor-toolbar-row2 button.is-active {
   color: #FF3D00 !important;
-  background: rgba(255, 61, 0, 0.08) !important;
+  background-color: rgba(255, 61, 0, 0.1) !important;
+}
+
+html.light .note-editor-toolbar-row2 button.is-active *,
+html.light .note-editor-toolbar-row2 button[data-active="true"] *,
+html.light button[class*="richtext-"].is-active * {
+  color: #FF3D00 !important;
+}
+
+html.light .note-editor-toolbar-row2 button.is-active svg,
+html.light .note-editor-toolbar-row2 button[data-active="true"] svg,
+html.light button[class*="richtext-"].is-active svg {
+  color: #FF3D00 !important;
+  stroke: #FF3D00 !important;
 }
 
 /* Toolbar container backgrounds — dark */

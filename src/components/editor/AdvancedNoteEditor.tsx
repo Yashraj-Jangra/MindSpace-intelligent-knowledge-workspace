@@ -41,8 +41,6 @@ import {
 import { TableContextMenu } from './table/TableContextMenu';
 import { ResizableTableWrapper } from './table/ResizableTableWrapper';
 
-import 'reactjs-tiptap-editor/style.css';
-
 import {
   ArrowLeft,
   Check,

@@ -15,7 +15,6 @@ import {
   BackgroundVariant,
   Panel,
 } from '@xyflow/react';
-import '@xyflow/react/dist/style.css';
 import { ConceptNode } from '../nodes/ConceptNode';
 import { LayoutGrid, ShieldCheck } from 'lucide-react';
 import { calculateElkLayout } from '@/lib/graph/layout';

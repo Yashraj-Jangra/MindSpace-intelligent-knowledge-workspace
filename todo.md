@@ -93,6 +93,7 @@
       - Built freeform 2D drag grip header bar with live `(X, Y)` position telemetry and 1-tap reset.
       - Built bottom-right corner drag handle (`Maximize2`) with smooth scaling and automatic row/column grid extension.
       - Built Scope-based Right-Click Context Menu (`TableContextMenu.tsx`) featuring 4 target scopes (`Cell`, `Row`, `Column`, `Table`), 7 background color swatches, text alignment controls (Left, Center, Right), row/column insertion and deletion, and table deletion.
+    - **Turbopack CSS Loader Fix (`globals.css`, `AdvancedNoteEditor.tsx`, `MindSpaceCanvas.tsx`)**: Consolidated package CSS imports (`reactjs-tiptap-editor/style.css`, `@xyflow/react/dist/style.css`) into `globals.css` `@import` declarations, fixing Next.js Turbopack `localsInner` undefined error when rendering client components.
 
 ## Next Steps
 - [ ] Test live note creation, rich text editing, freehand stylus writing, and mind map canvas drawing in browser.

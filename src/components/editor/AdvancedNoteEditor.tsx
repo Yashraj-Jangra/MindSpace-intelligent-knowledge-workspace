@@ -38,6 +38,9 @@ import {
   RichTextBubbleCodeBlock,
 } from 'reactjs-tiptap-editor/bubble';
 
+import { TableContextMenu } from './table/TableContextMenu';
+import { ResizableTableWrapper } from './table/ResizableTableWrapper';
+
 import 'reactjs-tiptap-editor/style.css';
 
 import {
@@ -1031,192 +1034,13 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
               <RichTextSearchAndReplace />
             </div>
 
-            {/* Right-Click Context Menu for Table & Column Options */}
+            {/* Scope-Based Right-Click Context Menu for Table & Column Controls */}
             {contextMenuPos && editor && editor.isActive('table') && (
-              <div
-                className="fixed z-[80] w-56 bg-[#0A0A0A] border border-[#FF3D00] shadow-2xl p-2 font-mono text-xs text-[#FAFAFA] animate-in fade-in zoom-in-95"
-                style={{
-                  left: Math.min(contextMenuPos.x, typeof window !== 'undefined' ? window.innerWidth - 240 : 200),
-                  top: Math.min(contextMenuPos.y, typeof window !== 'undefined' ? window.innerHeight - 320 : 200),
-                }}
-              >
-                <div className="text-[10px] text-[#FF3D00] uppercase tracking-wider px-2 py-1 font-bold border-b border-[#262626] flex items-center justify-between">
-                  <span>Table Options</span>
-                  <span className="text-[#737373] text-[9px]">Right-Click</span>
-                </div>
-
-                {/* Column Operations */}
-                <div className="py-1">
-                  <div className="text-[9px] text-[#737373] uppercase tracking-wider px-2 py-0.5 font-bold">Columns</div>
-                  <button
-                    onClick={() => {
-                      editor.chain().focus().addColumnBefore().run();
-                      setContextMenuPos(null);
-                    }}
-                    className="w-full text-left px-2 py-1 hover:bg-[#1A1A1A] hover:text-[#FF3D00] flex items-center gap-1.5 transition-colors"
-                  >
-                    <Plus className="w-3 h-3 text-[#FF3D00]" /> Add Column Left
-                  </button>
-                  <button
-                    onClick={() => {
-                      editor.chain().focus().addColumnAfter().run();
-                      setContextMenuPos(null);
-                    }}
-                    className="w-full text-left px-2 py-1 hover:bg-[#1A1A1A] hover:text-[#FF3D00] flex items-center gap-1.5 transition-colors"
-                  >
-                    <Plus className="w-3 h-3 text-[#FF3D00]" /> Add Column Right
-                  </button>
-                  <button
-                    onClick={() => {
-                      editor.chain().focus().deleteColumn().run();
-                      setContextMenuPos(null);
-                    }}
-                    className="w-full text-left px-2 py-1 hover:bg-[#1A1A1A] text-[#ef4444] flex items-center gap-1.5 transition-colors"
-                  >
-                    <Minus className="w-3 h-3" /> Delete Column
-                  </button>
-                </div>
-
-                {/* Row Operations */}
-                <div className="py-1 border-t border-[#262626]">
-                  <div className="text-[9px] text-[#737373] uppercase tracking-wider px-2 py-0.5 font-bold">Rows</div>
-                  <button
-                    onClick={() => {
-                      editor.chain().focus().addRowBefore().run();
-                      setContextMenuPos(null);
-                    }}
-                    className="w-full text-left px-2 py-1 hover:bg-[#1A1A1A] hover:text-[#FF3D00] flex items-center gap-1.5 transition-colors"
-                  >
-                    <Plus className="w-3 h-3 text-[#FF3D00]" /> Add Row Above
-                  </button>
-                  <button
-                    onClick={() => {
-                      editor.chain().focus().addRowAfter().run();
-                      setContextMenuPos(null);
-                    }}
-                    className="w-full text-left px-2 py-1 hover:bg-[#1A1A1A] hover:text-[#FF3D00] flex items-center gap-1.5 transition-colors"
-                  >
-                    <Plus className="w-3 h-3 text-[#FF3D00]" /> Add Row Below
-                  </button>
-                  <button
-                    onClick={() => {
-                      editor.chain().focus().deleteRow().run();
-                      setContextMenuPos(null);
-                    }}
-                    className="w-full text-left px-2 py-1 hover:bg-[#1A1A1A] text-[#ef4444] flex items-center gap-1.5 transition-colors"
-                  >
-                    <Minus className="w-3 h-3" /> Delete Row
-                  </button>
-                </div>
-
-                {/* Alignment Controls */}
-                <div className="py-1 border-t border-[#262626]">
-                  <div className="text-[9px] text-[#737373] uppercase tracking-wider px-2 py-0.5 font-bold">Alignment</div>
-                  <div className="grid grid-cols-3 gap-1 px-1 py-1">
-                    <button
-                      onClick={() => {
-                        const el = document.querySelector('.ProseMirror table');
-                        if (el) {
-                          el.classList.remove('table-align-center', 'table-align-right');
-                          el.classList.add('table-align-left');
-                        }
-                        setContextMenuPos(null);
-                      }}
-                      className="px-1.5 py-1 text-center border border-[#262626] hover:border-[#FF3D00] hover:text-[#FF3D00] text-[10px]"
-                    >
-                      Left
-                    </button>
-                    <button
-                      onClick={() => {
-                        const el = document.querySelector('.ProseMirror table');
-                        if (el) {
-                          el.classList.remove('table-align-left', 'table-align-right');
-                          el.classList.add('table-align-center');
-                        }
-                        setContextMenuPos(null);
-                      }}
-                      className="px-1.5 py-1 text-center border border-[#262626] hover:border-[#FF3D00] hover:text-[#FF3D00] text-[10px]"
-                    >
-                      Center
-                    </button>
-                    <button
-                      onClick={() => {
-                        const el = document.querySelector('.ProseMirror table');
-                        if (el) {
-                          el.classList.remove('table-align-left', 'table-align-center');
-                          el.classList.add('table-align-right');
-                        }
-                        setContextMenuPos(null);
-                      }}
-                      className="px-1.5 py-1 text-center border border-[#262626] hover:border-[#FF3D00] hover:text-[#FF3D00] text-[10px]"
-                    >
-                      Right
-                    </button>
-                  </div>
-                </div>
-
-                {/* Table Removal */}
-                <div className="pt-1 border-t border-[#262626]">
-                  <button
-                    onClick={() => {
-                      editor.chain().focus().deleteTable().run();
-                      setContextMenuPos(null);
-                    }}
-                    className="w-full text-left px-2 py-1 hover:bg-[#ef4444]/20 text-[#ef4444] font-bold flex items-center gap-1.5 transition-colors"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" /> Delete Table
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Floating Top Drag & Rotate Table Bar */}
-            {editor && editor.isActive('table') && (
-              <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[45] bg-[#0A0A0A] border border-[#FF3D00] shadow-2xl p-2 flex items-center gap-3 font-mono text-xs text-[#FAFAFA] animate-in fade-in slide-in-from-bottom-2">
-                <div className="flex items-center gap-1.5 border-r border-[#262626] pr-3">
-                  <GripVertical className="w-4 h-4 text-[#FF3D00]" />
-                  <span className="uppercase text-[10px] font-bold tracking-wider text-[#FAFAFA]">Table Controls</span>
-                </div>
-
-                {/* Rotate Table Button */}
-                <button
-                  onClick={() => {
-                    const table = document.querySelector('.ProseMirror table') as HTMLElement;
-                    if (table) {
-                      const nextAngle = (tableRotation + 90) % 360;
-                      setTableRotation(nextAngle);
-                      table.style.transform = `rotate(${nextAngle}deg)`;
-                      table.style.transition = 'transform 200ms ease';
-                    }
-                  }}
-                  className="flex items-center gap-1 px-2.5 py-1 border border-[#262626] hover:border-[#FF3D00] hover:text-[#FF3D00] text-[11px] transition-colors"
-                  title="Rotate Table 90°"
-                >
-                  <RotateCw className="w-3 h-3 text-[#FF3D00]" />
-                  <span>Rotate ({tableRotation}°)</span>
-                </button>
-
-                {/* Reset Position & Rotation */}
-                <button
-                  onClick={() => {
-                    const table = document.querySelector('.ProseMirror table') as HTMLElement;
-                    if (table) {
-                      setTableRotation(0);
-                      table.style.transform = 'translate3d(0px, 0px, 0px) rotate(0deg)';
-                      table.style.transition = 'transform 200ms ease';
-                    }
-                  }}
-                  className="flex items-center gap-1 px-2.5 py-1 border border-[#262626] hover:border-[#FF3D00] hover:text-[#FF3D00] text-[11px] transition-colors"
-                  title="Reset Position & Rotation"
-                >
-                  <RotateCcw className="w-3 h-3" />
-                  <span>Reset</span>
-                </button>
-
-                <span className="text-[10px] text-[#737373] border-l border-[#262626] pl-2 hidden sm:inline">
-                  Right-click inside table for Column & Row Options
-                </span>
-              </div>
+              <TableContextMenu
+                editor={editor}
+                position={contextMenuPos}
+                onClose={() => setContextMenuPos(null)}
+              />
             )}
 
             {/* Notebook Paper Workspace Scroll Area */}
@@ -1237,47 +1061,6 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
                 >
                   {/* Tiptap Core Editor Content (Layered dynamically based on mode & layerOrder) */}
                   <div
-                    onPointerDown={(e) => {
-                      const target = e.target as HTMLElement;
-                      const table = target.closest('table');
-                      if (!table) return;
-
-                      const rect = table.getBoundingClientRect();
-                      const isNearBorder =
-                        e.clientX <= rect.left + 14 ||
-                        e.clientX >= rect.right - 14 ||
-                        e.clientY <= rect.top + 14 ||
-                        e.clientY >= rect.bottom - 14;
-
-                      if (isNearBorder) {
-                        document
-                          .querySelectorAll('.ProseMirror table')
-                          .forEach((t) => t.classList.remove('table-selected'));
-                        table.classList.add('table-selected');
-
-                        const computedStyle = window.getComputedStyle(table);
-                        const matrix = new DOMMatrixReadOnly(computedStyle.transform);
-                        const startX = matrix.m41;
-                        const startY = matrix.m42;
-
-                        const initialMouseX = e.clientX;
-                        const initialMouseY = e.clientY;
-
-                        const onPointerMove = (moveEvent: PointerEvent) => {
-                          const deltaX = moveEvent.clientX - initialMouseX;
-                          const deltaY = moveEvent.clientY - initialMouseY;
-                          table.style.transform = `translate3d(${startX + deltaX}px, ${startY + deltaY}px, 0)`;
-                        };
-
-                        const onPointerUp = () => {
-                          window.removeEventListener('pointermove', onPointerMove);
-                          window.removeEventListener('pointerup', onPointerUp);
-                        };
-
-                        window.addEventListener('pointermove', onPointerMove);
-                        window.addEventListener('pointerup', onPointerUp);
-                      }
-                    }}
                     onContextMenu={(e) => {
                       const target = e.target as HTMLElement;
                       const table = target.closest('table, td, th');

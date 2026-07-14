@@ -1039,13 +1039,13 @@ html.light .table-grid-size-editor > div:last-child,
 }
 
 /* High Contrast Tooltips (Dark Mode) */
-[role="tooltip"],
-.richtext-tooltip,
-[data-state="delayed-open"],
-div[class*="tooltip"],
-div[class*="Tooltip"],
-[data-radix-popper-content-wrapper] [role="tooltip"],
-div[data-richtext-portal] [role="tooltip"] {
+body:not(.light) [role="tooltip"],
+body:not(.light) .richtext-tooltip,
+body:not(.light) [data-state="delayed-open"],
+body:not(.light) div[class*="tooltip"],
+body:not(.light) div[class*="Tooltip"],
+body:not(.light) [data-radix-popper-content-wrapper] [role="tooltip"],
+body:not(.light) div[data-richtext-portal] [role="tooltip"] {
   background-color: #141414 !important;
   border: 1px solid #333333 !important;
   color: #FAFAFA !important;
@@ -1055,18 +1055,18 @@ div[data-richtext-portal] [role="tooltip"] {
   text-transform: uppercase !important;
   padding: 4px 8px !important;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.8) !important;
-  z-index: 9999 !important;
+  z-index: 99999 !important;
 }
 
-[role="tooltip"] *,
-.richtext-tooltip *,
-[data-state="delayed-open"] *,
-div[class*="tooltip"] *,
-div[class*="Tooltip"] * {
+body:not(.light) [role="tooltip"] *,
+body:not(.light) .richtext-tooltip *,
+body:not(.light) [data-state="delayed-open"] *,
+body:not(.light) div[class*="tooltip"] *,
+body:not(.light) div[class*="Tooltip"] * {
   color: #FAFAFA !important;
 }
 
-/* High Contrast Tooltips (Light Mode - Dark Slate Pill + Crisp White Monospace Text) */
+/* High Contrast Tooltips (Light Mode - Crisp White Pill + Dark Slate Monospace Text) */
 html.light [role="tooltip"],
 html.light .richtext-tooltip,
 html.light [data-state="delayed-open"],
@@ -1081,16 +1081,17 @@ html.light div[data-richtext-portal] [role="tooltip"],
 .light div[class*="Tooltip"],
 .light [data-radix-popper-content-wrapper] [role="tooltip"],
 .light div[data-richtext-portal] [role="tooltip"] {
-  background-color: #0F172A !important;
-  border: 1px solid #0F172A !important;
-  color: #FFFFFF !important;
+  background-color: #FFFFFF !important;
+  border: 1px solid #CBD5E1 !important;
+  color: #0F172A !important;
   font-family: 'JetBrains Mono', monospace !important;
   font-size: 11px !important;
+  font-weight: 600 !important;
   letter-spacing: 0.05em !important;
   text-transform: uppercase !important;
   padding: 4px 8px !important;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2) !important;
-  z-index: 9999 !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12) !important;
+  z-index: 99999 !important;
 }
 
 html.light [role="tooltip"] *,
@@ -1103,7 +1104,7 @@ html.light div[class*="Tooltip"] *,
 .light [data-state="delayed-open"] *,
 .light div[class*="tooltip"] *,
 .light div[class*="Tooltip"] * {
-  color: #FFFFFF !important;
+  color: #0F172A !important;
 }
 
 /* Bubble Menu Popover Smooth Animation */

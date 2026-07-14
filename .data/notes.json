@@ -4,20 +4,58 @@
     "userId": "default_user",
     "canvasId": null,
     "title": "Test 2",
-    "content": "<p style=\"text-align: left;\"></p><table style=\"border: 1px solid rgb(0, 0, 0); border-collapse: collapse; width: 100%; min-width: 428px;\"><colgroup><col style=\"width: 82px;\"><col style=\"width: 89px;\"><col style=\"width: 88px;\"><col style=\"min-width: 25px;\"><col style=\"min-width: 25px;\"><col style=\"min-width: 25px;\"><col style=\"width: 94px;\"></colgroup><tbody><tr><td colspan=\"1\" rowspan=\"1\" colwidth=\"82\"><p></p></td><td colspan=\"1\" rowspan=\"1\" colwidth=\"89\"><p></p></td><td colspan=\"1\" rowspan=\"1\" colwidth=\"88\"><p></p></td><td colspan=\"1\" rowspan=\"1\"><p></p></td><td colspan=\"1\" rowspan=\"1\"><p></p></td><td colspan=\"1\" rowspan=\"1\"><p></p></td><td colspan=\"1\" rowspan=\"1\" colwidth=\"94\"><p></p></td></tr><tr><td colspan=\"1\" rowspan=\"1\" colwidth=\"82\"><p></p></td><td colspan=\"1\" rowspan=\"1\" colwidth=\"89\"><p></p></td><td colspan=\"1\" rowspan=\"1\" colwidth=\"88\"><p></p></td><td colspan=\"1\" rowspan=\"1\"><p></p></td><td colspan=\"1\" rowspan=\"1\"><p></p></td><td colspan=\"1\" rowspan=\"1\"><p></p></td><td colspan=\"1\" rowspan=\"1\" colwidth=\"94\"><p></p></td></tr><tr><td colspan=\"1\" rowspan=\"1\" colwidth=\"82\"><p></p></td><td colspan=\"1\" rowspan=\"1\" colwidth=\"89\"><p></p></td><td colspan=\"1\" rowspan=\"1\" colwidth=\"88\"><p></p></td><td colspan=\"1\" rowspan=\"1\"><p></p></td><td colspan=\"1\" rowspan=\"1\"><p></p></td><td colspan=\"1\" rowspan=\"1\"><p></p></td><td colspan=\"1\" rowspan=\"1\" colwidth=\"94\"><p></p></td></tr><tr><td colspan=\"1\" rowspan=\"1\" colwidth=\"82\"><p></p></td><td colspan=\"1\" rowspan=\"1\" colwidth=\"89\"><p></p></td><td colspan=\"1\" rowspan=\"1\" colwidth=\"88\"><p></p></td><td colspan=\"1\" rowspan=\"1\"><p></p></td><td colspan=\"1\" rowspan=\"1\"><p></p></td><td colspan=\"1\" rowspan=\"1\"><p></p></td><td colspan=\"1\" rowspan=\"1\" colwidth=\"94\"><p></p></td></tr></tbody></table><p></p>",
+    "content": "<p style=\"text-align: left;\"></p><table style=\"border: 1px solid rgb(0, 0, 0); border-collapse: collapse; width: 100%; min-width: 445px;\"><colgroup><col style=\"width: 82px;\"><col style=\"width: 89px;\"><col style=\"width: 88px;\"><col style=\"min-width: 25px;\"><col style=\"min-width: 25px;\"><col style=\"width: 79px;\"><col style=\"width: 57px;\"></colgroup><tbody><tr><td colspan=\"1\" rowspan=\"1\" colwidth=\"82\"><p></p></td><td colspan=\"1\" rowspan=\"1\" colwidth=\"89\"><p></p></td><td colspan=\"1\" rowspan=\"1\" colwidth=\"88\"><p></p></td><td colspan=\"1\" rowspan=\"1\"><p></p></td><td colspan=\"1\" rowspan=\"1\"><p></p></td><td colspan=\"1\" rowspan=\"1\" colwidth=\"79\"><p></p></td><td colspan=\"1\" rowspan=\"1\" colwidth=\"57\"><p></p></td></tr><tr><td colspan=\"1\" rowspan=\"1\" colwidth=\"82\"><p></p></td><td colspan=\"1\" rowspan=\"1\" colwidth=\"89\"><p></p></td><td colspan=\"1\" rowspan=\"1\" colwidth=\"88\"><p></p></td><td colspan=\"1\" rowspan=\"1\"><p></p></td><td colspan=\"1\" rowspan=\"1\"><p></p></td><td colspan=\"1\" rowspan=\"1\" colwidth=\"79\"><p></p></td><td colspan=\"1\" rowspan=\"1\" colwidth=\"57\"><p></p></td></tr><tr><td colspan=\"1\" rowspan=\"1\" colwidth=\"82\"><p></p></td><td colspan=\"1\" rowspan=\"1\" colwidth=\"89\"><p></p></td><td colspan=\"1\" rowspan=\"1\" colwidth=\"88\"><p></p></td><td colspan=\"1\" rowspan=\"1\"><p></p></td><td colspan=\"1\" rowspan=\"1\"><p></p></td><td colspan=\"1\" rowspan=\"1\" colwidth=\"79\"><p></p></td><td colspan=\"1\" rowspan=\"1\" colwidth=\"57\"><p></p></td></tr><tr><td colspan=\"1\" rowspan=\"1\" colwidth=\"82\"><p></p></td><td colspan=\"1\" rowspan=\"1\" colwidth=\"89\"><p></p></td><td colspan=\"1\" rowspan=\"1\" colwidth=\"88\"><p></p></td><td colspan=\"1\" rowspan=\"1\"><p></p></td><td colspan=\"1\" rowspan=\"1\"><p></p></td><td colspan=\"1\" rowspan=\"1\" colwidth=\"79\"><p></p></td><td colspan=\"1\" rowspan=\"1\" colwidth=\"57\"><p></p></td></tr></tbody></table><p></p>",
     "tags": [],
     "priority": "MEDIUM",
     "isPinned": false,
     "isArchived": false,
     "reminderAt": null,
     "createdAt": "2026-07-23T15:27:39.790Z",
-    "updatedAt": "2026-07-23T16:48:37.027Z",
+    "updatedAt": "2026-07-23T16:52:09.063Z",
     "pages": [
       {
         "id": "p-1784821859621-kjsy",
         "pageNumber": 1,
-        "content": "<p style=\"text-align: left;\"></p><table style=\"border: 1px solid rgb(0, 0, 0); border-collapse: collapse; width: 100%; min-width: 428px;\"><colgroup><col style=\"width: 82px;\"><col style=\"width: 89px;\"><col style=\"width: 88px;\"><col style=\"min-width: 25px;\"><col style=\"min-width: 25px;\"><col style=\"min-width: 25px;\"><col style=\"width: 94px;\"></colgroup><tbody><tr><td colspan=\"1\" rowspan=\"1\" colwidth=\"82\"><p></p></td><td colspan=\"1\" rowspan=\"1\" colwidth=\"89\"><p></p></td><td colspan=\"1\" rowspan=\"1\" colwidth=\"88\"><p></p></td><td colspan=\"1\" rowspan=\"1\"><p></p></td><td colspan=\"1\" rowspan=\"1\"><p></p></td><td colspan=\"1\" rowspan=\"1\"><p></p></td><td colspan=\"1\" rowspan=\"1\" colwidth=\"94\"><p></p></td></tr><tr><td colspan=\"1\" rowspan=\"1\" colwidth=\"82\"><p></p></td><td colspan=\"1\" rowspan=\"1\" colwidth=\"89\"><p></p></td><td colspan=\"1\" rowspan=\"1\" colwidth=\"88\"><p></p></td><td colspan=\"1\" rowspan=\"1\"><p></p></td><td colspan=\"1\" rowspan=\"1\"><p></p></td><td colspan=\"1\" rowspan=\"1\"><p></p></td><td colspan=\"1\" rowspan=\"1\" colwidth=\"94\"><p></p></td></tr><tr><td colspan=\"1\" rowspan=\"1\" colwidth=\"82\"><p></p></td><td colspan=\"1\" rowspan=\"1\" colwidth=\"89\"><p></p></td><td colspan=\"1\" rowspan=\"1\" colwidth=\"88\"><p></p></td><td colspan=\"1\" rowspan=\"1\"><p></p></td><td colspan=\"1\" rowspan=\"1\"><p></p></td><td colspan=\"1\" rowspan=\"1\"><p></p></td><td colspan=\"1\" rowspan=\"1\" colwidth=\"94\"><p></p></td></tr><tr><td colspan=\"1\" rowspan=\"1\" colwidth=\"82\"><p></p></td><td colspan=\"1\" rowspan=\"1\" colwidth=\"89\"><p></p></td><td colspan=\"1\" rowspan=\"1\" colwidth=\"88\"><p></p></td><td colspan=\"1\" rowspan=\"1\"><p></p></td><td colspan=\"1\" rowspan=\"1\"><p></p></td><td colspan=\"1\" rowspan=\"1\"><p></p></td><td colspan=\"1\" rowspan=\"1\" colwidth=\"94\"><p></p></td></tr></tbody></table><p></p>",
-        "strokes": [],
+        "content": "<p style=\"text-align: left;\"></p><table style=\"border: 1px solid rgb(0, 0, 0); border-collapse: collapse; width: 100%; min-width: 445px;\"><colgroup><col style=\"width: 82px;\"><col style=\"width: 89px;\"><col style=\"width: 88px;\"><col style=\"min-width: 25px;\"><col style=\"min-width: 25px;\"><col style=\"width: 79px;\"><col style=\"width: 57px;\"></colgroup><tbody><tr><td colspan=\"1\" rowspan=\"1\" colwidth=\"82\"><p></p></td><td colspan=\"1\" rowspan=\"1\" colwidth=\"89\"><p></p></td><td colspan=\"1\" rowspan=\"1\" colwidth=\"88\"><p></p></td><td colspan=\"1\" rowspan=\"1\"><p></p></td><td colspan=\"1\" rowspan=\"1\"><p></p></td><td colspan=\"1\" rowspan=\"1\" colwidth=\"79\"><p></p></td><td colspan=\"1\" rowspan=\"1\" colwidth=\"57\"><p></p></td></tr><tr><td colspan=\"1\" rowspan=\"1\" colwidth=\"82\"><p></p></td><td colspan=\"1\" rowspan=\"1\" colwidth=\"89\"><p></p></td><td colspan=\"1\" rowspan=\"1\" colwidth=\"88\"><p></p></td><td colspan=\"1\" rowspan=\"1\"><p></p></td><td colspan=\"1\" rowspan=\"1\"><p></p></td><td colspan=\"1\" rowspan=\"1\" colwidth=\"79\"><p></p></td><td colspan=\"1\" rowspan=\"1\" colwidth=\"57\"><p></p></td></tr><tr><td colspan=\"1\" rowspan=\"1\" colwidth=\"82\"><p></p></td><td colspan=\"1\" rowspan=\"1\" colwidth=\"89\"><p></p></td><td colspan=\"1\" rowspan=\"1\" colwidth=\"88\"><p></p></td><td colspan=\"1\" rowspan=\"1\"><p></p></td><td colspan=\"1\" rowspan=\"1\"><p></p></td><td colspan=\"1\" rowspan=\"1\" colwidth=\"79\"><p></p></td><td colspan=\"1\" rowspan=\"1\" colwidth=\"57\"><p></p></td></tr><tr><td colspan=\"1\" rowspan=\"1\" colwidth=\"82\"><p></p></td><td colspan=\"1\" rowspan=\"1\" colwidth=\"89\"><p></p></td><td colspan=\"1\" rowspan=\"1\" colwidth=\"88\"><p></p></td><td colspan=\"1\" rowspan=\"1\"><p></p></td><td colspan=\"1\" rowspan=\"1\"><p></p></td><td colspan=\"1\" rowspan=\"1\" colwidth=\"79\"><p></p></td><td colspan=\"1\" rowspan=\"1\" colwidth=\"57\"><p></p></td></tr></tbody></table><p></p>",
+        "strokes": [
+          {
+            "id": "stroke-1784825355461-acdzs",
+            "tool": "pen",
+            "penSubtype": "ballpoint",
+            "highlighterSubtype": "flat",
+            "isStraightLine": false,
+            "color": "#FF3D00",
+            "width": 3,
+            "lineType": "solid",
+            "smoothing": "mild",
+            "pencilDensity": 0.85,
+            "points": [
+              {
+                "x": 433.4000244140625,
+                "y": 237.20005798339844,
+                "pressure": 0.5,
+                "tiltX": 0,
+                "tiltY": 0,
+                "timeStamp": 42156.60000000149
+              }
+            ],
+            "createdAt": 1784825355461,
+            "controlPoints": [
+              {
+                "id": "stroke-1784825355461-acdzs-start",
+                "x": 433.4000244140625,
+                "y": 237.20005798339844,
+                "type": "endpoint"
+              },
+              {
+                "id": "stroke-1784825355461-acdzs-end",
+                "x": 433.4000244140625,
+                "y": 237.20005798339844,
+                "type": "endpoint"
+              }
+            ]
+          }
+        ],
         "paperTemplate": "blank"
       },
       {
@@ -35,7 +73,7 @@
         "paperTemplate": "blank"
       }
     ],
-    "drawingData": "[]"
+    "drawingData": "[{\"id\":\"stroke-1784825355461-acdzs\",\"tool\":\"pen\",\"penSubtype\":\"ballpoint\",\"highlighterSubtype\":\"flat\",\"isStraightLine\":false,\"color\":\"#FF3D00\",\"width\":3,\"lineType\":\"solid\",\"smoothing\":\"mild\",\"pencilDensity\":0.85,\"points\":[{\"x\":433.4000244140625,\"y\":237.20005798339844,\"pressure\":0.5,\"tiltX\":0,\"tiltY\":0,\"timeStamp\":42156.60000000149}],\"createdAt\":1784825355461,\"controlPoints\":[{\"id\":\"stroke-1784825355461-acdzs-start\",\"x\":433.4000244140625,\"y\":237.20005798339844,\"type\":\"endpoint\"},{\"id\":\"stroke-1784825355461-acdzs-end\",\"x\":433.4000244140625,\"y\":237.20005798339844,\"type\":\"endpoint\"}]}]"
   },
   {
     "id": "note_862iec8q",

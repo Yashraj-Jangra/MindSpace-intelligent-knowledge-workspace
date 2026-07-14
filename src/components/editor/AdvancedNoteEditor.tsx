@@ -2,6 +2,7 @@ import { common, createLowlight } from 'lowlight';
 
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import { GripVertical, RotateCw, RotateCcw, Plus, Minus, Move } from 'lucide-react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 
@@ -204,13 +205,19 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
     };
   }, []);
 
+  useEffect(() => {
+    const handleClickOutside = () => setContextMenuPos(null);
+    window.addEventListener('click', handleClickOutside);
+    return () => window.removeEventListener('click', handleClickOutside);
+  }, []);
+
   // Modals & Popovers state
   const [isReminderOpen, setIsReminderOpen] = useState(false);
   const [isStylusSettingsOpen, setIsStylusSettingsOpen] = useState(false);
   const [isEditorSettingsOpen, setIsEditorSettingsOpen] = useState(false);
   const [isColumnOptionsOpen, setIsColumnOptionsOpen] = useState(false);
-  const [showTableOptionsPopup, setShowTableOptionsPopup] = useState(false);
-  const lastClickedCellRef = useRef<HTMLElement | null>(null);
+  const [contextMenuPos, setContextMenuPos] = useState<{ x: number; y: number } | null>(null);
+  const [tableRotation, setTableRotation] = useState<number>(0);
 
   // Configure Extensions from reactjs-tiptap-editor
   const extensions = useMemo(() => {
@@ -981,199 +988,191 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
               </div>
             </div>
 
-            {/* Floating Selection Bubble Menus */}
-            <RichTextBubbleText />
-            {showTableOptionsPopup && <RichTextBubbleTable />}
-            <RichTextBubbleImage />
-            <RichTextBubbleLink />
-            <RichTextBubbleCodeBlock />
+            {/* Right-Click Context Menu for Table & Column Options */}
+            {contextMenuPos && editor && editor.isActive('table') && (
+              <div
+                className="fixed z-[100] w-56 bg-[#0A0A0A] border border-[#FF3D00] shadow-2xl p-2 font-mono text-xs text-[#FAFAFA] rounded-md animate-in fade-in zoom-in-95"
+                style={{
+                  left: Math.min(contextMenuPos.x, typeof window !== 'undefined' ? window.innerWidth - 240 : 200),
+                  top: Math.min(contextMenuPos.y, typeof window !== 'undefined' ? window.innerHeight - 320 : 200),
+                }}
+              >
+                <div className="text-[10px] text-[#FF3D00] uppercase tracking-wider px-2 py-1 font-bold border-b border-[#262626] flex items-center justify-between">
+                  <span>Table Options</span>
+                  <span className="text-[#737373] text-[9px]">Right-Click</span>
+                </div>
 
-            {/* Custom Table Position, Size & Column Options Floating Controls (Shown on 2nd Click) */}
-            {editor && editor.isActive('table') && showTableOptionsPopup && (
-              <div className="fixed bottom-14 left-1/2 -translate-x-1/2 z-50 bg-[#0A0A0A] border border-[#FF3D00] shadow-2xl p-2 flex flex-wrap items-center gap-3 font-mono text-xs text-[#FAFAFA] rounded-md animate-in fade-in slide-in-from-bottom-2">
-                <span className="text-[#FF3D00] font-bold uppercase text-[10px] tracking-wider px-1">Table Controls:</span>
-                
-                {/* Table Alignment */}
-                <div className="flex items-center gap-1 border-r border-[#262626] pr-2">
+                {/* Column Operations */}
+                <div className="py-1">
+                  <div className="text-[9px] text-[#737373] uppercase tracking-wider px-2 py-0.5 font-bold">Columns</div>
                   <button
                     onClick={() => {
-                      const el = document.querySelector('.ProseMirror table');
-                      if (el) {
-                        el.classList.remove('table-align-center', 'table-align-right');
-                        el.classList.add('table-align-left');
-                      }
+                      editor.chain().focus().addColumnBefore().run();
+                      setContextMenuPos(null);
                     }}
-                    className="p-1.5 border border-[#262626] hover:border-[#FF3D00] hover:text-[#FF3D00] transition-colors"
-                    title="Align Table Left"
+                    className="w-full text-left px-2 py-1 hover:bg-[#1A1A1A] hover:text-[#FF3D00] flex items-center gap-1.5 transition-colors"
                   >
-                    Left
+                    <Plus className="w-3 h-3 text-[#FF3D00]" /> Add Column Left
                   </button>
                   <button
                     onClick={() => {
-                      const el = document.querySelector('.ProseMirror table');
-                      if (el) {
-                        el.classList.remove('table-align-left', 'table-align-right');
-                        el.classList.add('table-align-center');
-                      }
+                      editor.chain().focus().addColumnAfter().run();
+                      setContextMenuPos(null);
                     }}
-                    className="p-1.5 border border-[#262626] hover:border-[#FF3D00] hover:text-[#FF3D00] transition-colors"
-                    title="Center Table"
+                    className="w-full text-left px-2 py-1 hover:bg-[#1A1A1A] hover:text-[#FF3D00] flex items-center gap-1.5 transition-colors"
                   >
-                    Center
+                    <Plus className="w-3 h-3 text-[#FF3D00]" /> Add Column Right
                   </button>
                   <button
                     onClick={() => {
-                      const el = document.querySelector('.ProseMirror table');
-                      if (el) {
-                        el.classList.remove('table-align-left', 'table-align-center');
-                        el.classList.add('table-align-right');
-                      }
+                      editor.chain().focus().deleteColumn().run();
+                      setContextMenuPos(null);
                     }}
-                    className="p-1.5 border border-[#262626] hover:border-[#FF3D00] hover:text-[#FF3D00] transition-colors"
-                    title="Align Table Right"
+                    className="w-full text-left px-2 py-1 hover:bg-[#1A1A1A] text-[#ef4444] flex items-center gap-1.5 transition-colors"
                   >
-                    Right
+                    <Minus className="w-3 h-3" /> Delete Column
                   </button>
                 </div>
 
-                {/* Table Width */}
-                <div className="flex items-center gap-1 border-r border-[#262626] pr-2">
+                {/* Row Operations */}
+                <div className="py-1 border-t border-[#262626]">
+                  <div className="text-[9px] text-[#737373] uppercase tracking-wider px-2 py-0.5 font-bold">Rows</div>
                   <button
                     onClick={() => {
-                      const el = document.querySelector('.ProseMirror table');
-                      if (el) {
-                        el.classList.remove('table-size-medium', 'table-size-full');
-                        el.classList.add('table-size-compact');
-                      }
+                      editor.chain().focus().addRowBefore().run();
+                      setContextMenuPos(null);
                     }}
-                    className="px-2 py-1 border border-[#262626] hover:border-[#FF3D00] hover:text-[#FF3D00] text-[11px] transition-colors"
-                    title="Set Table Width to 50%"
+                    className="w-full text-left px-2 py-1 hover:bg-[#1A1A1A] hover:text-[#FF3D00] flex items-center gap-1.5 transition-colors"
                   >
-                    50%
+                    <Plus className="w-3 h-3 text-[#FF3D00]" /> Add Row Above
                   </button>
                   <button
                     onClick={() => {
-                      const el = document.querySelector('.ProseMirror table');
-                      if (el) {
-                        el.classList.remove('table-size-compact', 'table-size-full');
-                        el.classList.add('table-size-medium');
-                      }
+                      editor.chain().focus().addRowAfter().run();
+                      setContextMenuPos(null);
                     }}
-                    className="px-2 py-1 border border-[#262626] hover:border-[#FF3D00] hover:text-[#FF3D00] text-[11px] transition-colors"
-                    title="Set Table Width to 75%"
+                    className="w-full text-left px-2 py-1 hover:bg-[#1A1A1A] hover:text-[#FF3D00] flex items-center gap-1.5 transition-colors"
                   >
-                    75%
+                    <Plus className="w-3 h-3 text-[#FF3D00]" /> Add Row Below
                   </button>
                   <button
                     onClick={() => {
-                      const el = document.querySelector('.ProseMirror table');
-                      if (el) {
-                        el.classList.remove('table-size-compact', 'table-size-medium');
-                        el.classList.add('table-size-full');
-                      }
+                      editor.chain().focus().deleteRow().run();
+                      setContextMenuPos(null);
                     }}
-                    className="px-2 py-1 border border-[#262626] hover:border-[#FF3D00] hover:text-[#FF3D00] text-[11px] transition-colors"
-                    title="Set Table Width to 100%"
+                    className="w-full text-left px-2 py-1 hover:bg-[#1A1A1A] text-[#ef4444] flex items-center gap-1.5 transition-colors"
                   >
-                    100%
+                    <Minus className="w-3 h-3" /> Delete Row
                   </button>
                 </div>
 
-                {/* Column & Row Options Dropdown Trigger (2nd Click Options) */}
-                <div className="relative">
-                  <button
-                    onClick={(e) => {
-                      e.currentTarget.blur();
-                      setIsColumnOptionsOpen(!isColumnOptionsOpen);
-                    }}
-                    className={`px-2.5 py-1 border font-mono text-[11px] uppercase tracking-wider font-bold transition-all ${
-                      isColumnOptionsOpen
-                        ? 'border-[#FF3D00] bg-[#FF3D00] text-[#0A0A0A]'
-                        : 'border-[#FF3D00] text-[#FF3D00] hover:bg-[#FF3D00]/10'
-                    }`}
-                    title="Toggle Column & Row Options Menu"
-                  >
-                    Column Options {isColumnOptionsOpen ? '▲' : '▼'}
-                  </button>
-
-                  {isColumnOptionsOpen && (
-                    <div className="absolute bottom-9 right-0 z-[90] w-48 bg-[#0A0A0A] border border-[#FF3D00] shadow-2xl p-1.5 font-mono text-xs space-y-1 rounded-md animate-in fade-in slide-in-from-bottom-2">
-                      <div className="text-[10px] text-[#737373] uppercase tracking-wider px-2 py-1 font-bold border-b border-[#262626]">
-                        Columns
-                      </div>
-                      <button
-                        onClick={() => {
-                          editor.chain().focus().addColumnBefore().run();
-                          setIsColumnOptionsOpen(false);
-                        }}
-                        className="w-full text-left px-2 py-1 hover:bg-[#1A1A1A] hover:text-[#FF3D00] transition-colors"
-                      >
-                        + Add Column Left
-                      </button>
-                      <button
-                        onClick={() => {
-                          editor.chain().focus().addColumnAfter().run();
-                          setIsColumnOptionsOpen(false);
-                        }}
-                        className="w-full text-left px-2 py-1 hover:bg-[#1A1A1A] hover:text-[#FF3D00] transition-colors"
-                      >
-                        + Add Column Right
-                      </button>
-                      <button
-                        onClick={() => {
-                          editor.chain().focus().deleteColumn().run();
-                          setIsColumnOptionsOpen(false);
-                        }}
-                        className="w-full text-left px-2 py-1 hover:bg-[#1A1A1A] text-[#ef4444] transition-colors"
-                      >
-                        - Delete Column
-                      </button>
-
-                      <div className="text-[10px] text-[#737373] uppercase tracking-wider px-2 py-1 font-bold border-b border-[#262626] pt-1.5">
-                        Rows
-                      </div>
-                      <button
-                        onClick={() => {
-                          editor.chain().focus().addRowBefore().run();
-                          setIsColumnOptionsOpen(false);
-                        }}
-                        className="w-full text-left px-2 py-1 hover:bg-[#1A1A1A] hover:text-[#FF3D00] transition-colors"
-                      >
-                        + Add Row Above
-                      </button>
-                      <button
-                        onClick={() => {
-                          editor.chain().focus().addRowAfter().run();
-                          setIsColumnOptionsOpen(false);
-                        }}
-                        className="w-full text-left px-2 py-1 hover:bg-[#1A1A1A] hover:text-[#FF3D00] transition-colors"
-                      >
-                        + Add Row Below
-                      </button>
-                      <button
-                        onClick={() => {
-                          editor.chain().focus().deleteRow().run();
-                          setIsColumnOptionsOpen(false);
-                        }}
-                        className="w-full text-left px-2 py-1 hover:bg-[#1A1A1A] text-[#ef4444] transition-colors"
-                      >
-                        - Delete Row
-                      </button>
-
-                      <div className="border-t border-[#262626] pt-1">
-                        <button
-                          onClick={() => {
-                            editor.chain().focus().deleteTable().run();
-                            setIsColumnOptionsOpen(false);
-                          }}
-                          className="w-full text-left px-2 py-1 hover:bg-[#ef4444]/20 text-[#ef4444] font-bold transition-colors"
-                        >
-                          Delete Table
-                        </button>
-                      </div>
-                    </div>
-                  )}
+                {/* Alignment Controls */}
+                <div className="py-1 border-t border-[#262626]">
+                  <div className="text-[9px] text-[#737373] uppercase tracking-wider px-2 py-0.5 font-bold">Alignment</div>
+                  <div className="grid grid-cols-3 gap-1 px-1 py-1">
+                    <button
+                      onClick={() => {
+                        const el = document.querySelector('.ProseMirror table');
+                        if (el) {
+                          el.classList.remove('table-align-center', 'table-align-right');
+                          el.classList.add('table-align-left');
+                        }
+                        setContextMenuPos(null);
+                      }}
+                      className="px-1.5 py-1 text-center border border-[#262626] hover:border-[#FF3D00] hover:text-[#FF3D00] text-[10px]"
+                    >
+                      Left
+                    </button>
+                    <button
+                      onClick={() => {
+                        const el = document.querySelector('.ProseMirror table');
+                        if (el) {
+                          el.classList.remove('table-align-left', 'table-align-right');
+                          el.classList.add('table-align-center');
+                        }
+                        setContextMenuPos(null);
+                      }}
+                      className="px-1.5 py-1 text-center border border-[#262626] hover:border-[#FF3D00] hover:text-[#FF3D00] text-[10px]"
+                    >
+                      Center
+                    </button>
+                    <button
+                      onClick={() => {
+                        const el = document.querySelector('.ProseMirror table');
+                        if (el) {
+                          el.classList.remove('table-align-left', 'table-align-center');
+                          el.classList.add('table-align-right');
+                        }
+                        setContextMenuPos(null);
+                      }}
+                      className="px-1.5 py-1 text-center border border-[#262626] hover:border-[#FF3D00] hover:text-[#FF3D00] text-[10px]"
+                    >
+                      Right
+                    </button>
+                  </div>
                 </div>
+
+                {/* Table Removal */}
+                <div className="pt-1 border-t border-[#262626]">
+                  <button
+                    onClick={() => {
+                      editor.chain().focus().deleteTable().run();
+                      setContextMenuPos(null);
+                    }}
+                    className="w-full text-left px-2 py-1 hover:bg-[#ef4444]/20 text-[#ef4444] font-bold flex items-center gap-1.5 transition-colors"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" /> Delete Table
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Floating Top Drag & Rotate Table Bar */}
+            {editor && editor.isActive('table') && (
+              <div className="fixed bottom-14 left-1/2 -translate-x-1/2 z-50 bg-[#0A0A0A] border border-[#FF3D00] shadow-2xl p-2 flex items-center gap-3 font-mono text-xs text-[#FAFAFA] rounded-md animate-in fade-in slide-in-from-bottom-2">
+                <div className="flex items-center gap-1.5 border-r border-[#262626] pr-3">
+                  <GripVertical className="w-4 h-4 text-[#FF3D00]" />
+                  <span className="uppercase text-[10px] font-bold tracking-wider text-[#FAFAFA]">Table Controls</span>
+                </div>
+
+                {/* Rotate Table Button */}
+                <button
+                  onClick={() => {
+                    const table = document.querySelector('.ProseMirror table') as HTMLElement;
+                    if (table) {
+                      const nextAngle = (tableRotation + 90) % 360;
+                      setTableRotation(nextAngle);
+                      table.style.transform = `rotate(${nextAngle}deg)`;
+                      table.style.transition = 'transform 200ms ease';
+                    }
+                  }}
+                  className="flex items-center gap-1 px-2.5 py-1 border border-[#262626] hover:border-[#FF3D00] hover:text-[#FF3D00] text-[11px] transition-colors"
+                  title="Rotate Table 90°"
+                >
+                  <RotateCw className="w-3 h-3 text-[#FF3D00]" />
+                  <span>Rotate ({tableRotation}°)</span>
+                </button>
+
+                {/* Reset Position & Rotation */}
+                <button
+                  onClick={() => {
+                    const table = document.querySelector('.ProseMirror table') as HTMLElement;
+                    if (table) {
+                      setTableRotation(0);
+                      table.style.transform = 'translate3d(0px, 0px, 0px) rotate(0deg)';
+                      table.style.transition = 'transform 200ms ease';
+                    }
+                  }}
+                  className="flex items-center gap-1 px-2.5 py-1 border border-[#262626] hover:border-[#FF3D00] hover:text-[#FF3D00] text-[11px] transition-colors"
+                  title="Reset Position & Rotation"
+                >
+                  <RotateCcw className="w-3 h-3" />
+                  <span>Reset</span>
+                </button>
+
+                <span className="text-[10px] text-[#737373] border-l border-[#262626] pl-2 hidden sm:inline">
+                  Right-click inside table for Column & Row Options
+                </span>
               </div>
             )}
 
@@ -1224,23 +1223,14 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
                       window.addEventListener('pointerup', onPointerUp);
                     }
                   }}
-                  onClick={(e) => {
+                  onContextMenu={(e) => {
                     const target = e.target as HTMLElement;
-                    const cell = target.closest('td, th');
-
-                    if (!cell) {
-                      setShowTableOptionsPopup(false);
-                      lastClickedCellRef.current = null;
-                      return;
-                    }
-
-                    if (lastClickedCellRef.current === cell) {
-                      // 2nd Click on the same cell -> Show options popup!
-                      setShowTableOptionsPopup(true);
+                    const table = target.closest('table, td, th');
+                    if (table) {
+                      e.preventDefault();
+                      setContextMenuPos({ x: e.clientX, y: e.clientY });
                     } else {
-                      // 1st Click on new cell -> Focus for data entry, keep options popup hidden!
-                      lastClickedCellRef.current = cell as HTMLElement;
-                      setShowTableOptionsPopup(false);
+                      setContextMenuPos(null);
                     }
                   }}
                   className={`p-8 ${

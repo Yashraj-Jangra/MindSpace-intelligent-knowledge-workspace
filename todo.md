@@ -92,8 +92,10 @@
       - Removed legacy `DraggableTableWrapper.tsx`, floating bottom `Table Controls` pill, and manual transform DOM listeners.
       - Built freeform 2D drag grip header bar with live `(X, Y)` position telemetry and 1-tap reset.
       - Built bottom-right corner drag handle (`Maximize2`) with smooth scaling and automatic row/column grid extension.
-      - Built Scope-based Right-Click Context Menu (`TableContextMenu.tsx`) featuring 4 target scopes (`Cell`, `Row`, `Column`, `Table`), 7 background color swatches, text alignment controls (Left, Center, Right), row/column insertion and deletion, and table deletion.
-    - **Turbopack CSS Loader Fix (`globals.css`, `AdvancedNoteEditor.tsx`, `MindSpaceCanvas.tsx`)**: Consolidated package CSS imports (`reactjs-tiptap-editor/style.css`, `@xyflow/react/dist/style.css`) into `globals.css` `@import` declarations, fixing Next.js Turbopack `localsInner` undefined error when rendering client components.
+    - **Table Engine Persistence & Live Resizing Fix (`TableContextMenu.tsx`, `AdvancedNoteEditor.tsx`, `globals.css`)**:
+      - Fixed context menu auto-closing bug: menu now stays open when toggling target scopes (`Cell`, `Row`, `Column`, `Table`), selecting color swatches, or setting text alignment.
+      - Fixed cell targeting bug: context menu now binds directly to the right-clicked cell (`targetCell`), ensuring background colors and text alignment apply 100% reliably.
+      - Mounted live Table DOM Decorators: Top freeform drag grip bar (`:: DRAG TABLE`) + Bottom-right corner resize handle (`Maximize2`) for whole table scaling/resizing + Vermillion Tiptap column resize handles (`.column-resize-handle`).
 
 ## Next Steps
 - [ ] Test live note creation, rich text editing, freehand stylus writing, and mind map canvas drawing in browser.

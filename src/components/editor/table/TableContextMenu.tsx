@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Editor } from '@tiptap/react';
 import {
   Plus,
@@ -15,11 +15,13 @@ import {
   Columns,
   Square,
   Sparkles,
+  X,
 } from 'lucide-react';
 
 interface TableContextMenuProps {
   editor: Editor;
   position: { x: number; y: number };
+  targetCell: HTMLElement | null;
   onClose: () => void;
 }
 
@@ -35,107 +37,119 @@ const COLOR_SWATCHES = [
   { label: 'Clear', hex: 'transparent' },
 ];
 
-export function TableContextMenu({ editor, position, onClose }: TableContextMenuProps) {
+export function TableContextMenu({ editor, position, targetCell, onClose }: TableContextMenuProps) {
   const [activeScope, setActiveScope] = useState<ScopeMode>('cell');
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handleOutsideClick = (e: MouseEvent | PointerEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        onClose();
+      }
+    };
+    window.addEventListener('pointerdown', handleOutsideClick);
+    return () => window.removeEventListener('pointerdown', handleOutsideClick);
+  }, [onClose]);
 
   if (!editor || !editor.isActive('table')) return null;
 
+  // Resolve target cell element
+  const getCellElement = (): HTMLElement | null => {
+    if (targetCell && document.body.contains(targetCell)) return targetCell;
+    const ptElement = document.elementFromPoint(position.x, position.y);
+    return (ptElement?.closest('td, th') as HTMLElement) || document.querySelector('.ProseMirror td, .ProseMirror th');
+  };
+
   // ── Color Cell/Row/Column Background ──────────────────────
   const handleApplyColor = (colorHex: string) => {
-    if (activeScope === 'cell') {
+    const cell = getCellElement();
+    const table = cell?.closest('table') || document.querySelector('.ProseMirror table');
+
+    if (activeScope === 'cell' && cell) {
+      cell.style.backgroundColor = colorHex;
       editor.chain().focus().setCellAttribute('backgroundColor', colorHex).run();
-    } else if (activeScope === 'row') {
-      // Apply color to all cells in the current row
-      const table = document.querySelector('.ProseMirror table');
-      const activeCell = document.activeElement?.closest('td, th');
-      const row = activeCell?.parentElement;
+    } else if (activeScope === 'row' && cell) {
+      const row = cell.parentElement;
       if (row) {
-        row.querySelectorAll('td, th').forEach((cell) => {
-          (cell as HTMLElement).style.backgroundColor = colorHex;
+        row.querySelectorAll('td, th').forEach((c) => {
+          (c as HTMLElement).style.backgroundColor = colorHex;
         });
       }
-      editor.chain().focus().setCellAttribute('backgroundColor', colorHex).run();
-    } else if (activeScope === 'column') {
-      const activeCell = document.activeElement?.closest('td, th');
-      if (activeCell && activeCell.parentElement) {
-        const colIndex = Array.from(activeCell.parentElement.children).indexOf(activeCell);
-        const table = activeCell.closest('table');
-        if (table && colIndex !== -1) {
-          table.querySelectorAll('tr').forEach((row) => {
-            const cell = row.children[colIndex] as HTMLElement;
-            if (cell) cell.style.backgroundColor = colorHex;
-          });
-        }
-      }
-      editor.chain().focus().setCellAttribute('backgroundColor', colorHex).run();
-    } else {
-      // Table scope
-      const table = document.querySelector('.ProseMirror table');
-      if (table) {
-        table.querySelectorAll('td, th').forEach((cell) => {
-          (cell as HTMLElement).style.backgroundColor = colorHex;
+    } else if (activeScope === 'column' && cell && cell.parentElement) {
+      const colIndex = Array.from(cell.parentElement.children).indexOf(cell);
+      if (table && colIndex !== -1) {
+        table.querySelectorAll('tr').forEach((r) => {
+          const target = r.children[colIndex] as HTMLElement;
+          if (target) target.style.backgroundColor = colorHex;
         });
       }
+    } else if (activeScope === 'table' && table) {
+      table.querySelectorAll('td, th').forEach((c) => {
+        (c as HTMLElement).style.backgroundColor = colorHex;
+      });
     }
-    onClose();
+    // Note: Do NOT call onClose() here so user can keep editing colors/alignments!
   };
 
   // ── Apply Text Alignment ──────────────────────────────────
   const handleApplyAlignment = (alignment: 'left' | 'center' | 'right') => {
-    const activeCell = document.activeElement?.closest('td, th') as HTMLElement;
+    const cell = getCellElement();
+    const table = cell?.closest('table') || document.querySelector('.ProseMirror table');
 
-    if (activeScope === 'cell') {
-      if (activeCell) activeCell.style.textAlign = alignment;
-    } else if (activeScope === 'row') {
-      const row = activeCell?.parentElement;
+    if (activeScope === 'cell' && cell) {
+      cell.style.textAlign = alignment;
+    } else if (activeScope === 'row' && cell) {
+      const row = cell.parentElement;
       if (row) {
-        row.querySelectorAll('td, th').forEach((cell) => {
-          (cell as HTMLElement).style.textAlign = alignment;
+        row.querySelectorAll('td, th').forEach((c) => {
+          (c as HTMLElement).style.textAlign = alignment;
         });
       }
-    } else if (activeScope === 'column') {
-      if (activeCell && activeCell.parentElement) {
-        const colIndex = Array.from(activeCell.parentElement.children).indexOf(activeCell);
-        const table = activeCell.closest('table');
-        if (table && colIndex !== -1) {
-          table.querySelectorAll('tr').forEach((row) => {
-            const cell = row.children[colIndex] as HTMLElement;
-            if (cell) cell.style.textAlign = alignment;
-          });
-        }
-      }
-    } else {
-      // Table scope
-      const table = document.querySelector('.ProseMirror table');
-      if (table) {
-        table.querySelectorAll('td, th').forEach((cell) => {
-          (cell as HTMLElement).style.textAlign = alignment;
+    } else if (activeScope === 'column' && cell && cell.parentElement) {
+      const colIndex = Array.from(cell.parentElement.children).indexOf(cell);
+      if (table && colIndex !== -1) {
+        table.querySelectorAll('tr').forEach((r) => {
+          const target = r.children[colIndex] as HTMLElement;
+          if (target) target.style.textAlign = alignment;
         });
       }
+    } else if (activeScope === 'table' && table) {
+      table.querySelectorAll('td, th').forEach((c) => {
+        (c as HTMLElement).style.textAlign = alignment;
+      });
     }
-    onClose();
+    // Note: Do NOT call onClose() here so menu stays open!
   };
 
   return (
     <div
+      ref={menuRef}
       className="fixed z-[100] w-64 bg-[#0A0A0A] border border-[#FF3D00] shadow-2xl p-2.5 font-mono text-xs text-[#FAFAFA] select-none animate-in fade-in zoom-in-95"
       style={{
         left: Math.min(position.x, typeof window !== 'undefined' ? window.innerWidth - 270 : 200),
-        top: Math.min(position.y, typeof window !== 'undefined' ? window.innerHeight - 420 : 200),
+        top: Math.min(position.y, typeof window !== 'undefined' ? window.innerHeight - 450 : 200),
       }}
+      onPointerDown={(e) => e.stopPropagation()}
     >
-      {/* Header */}
+      {/* Header with Close Button */}
       <div className="text-[10px] text-[#FF3D00] uppercase tracking-wider px-2 py-1 font-bold border-b border-[#262626] flex items-center justify-between">
         <span className="flex items-center gap-1.5">
           <LayoutGrid className="w-3.5 h-3.5 text-[#FF3D00]" /> Table Controls
         </span>
-        <span className="text-[#737373] text-[9px]">Right-Click</span>
+        <button
+          onClick={onClose}
+          className="text-[#737373] hover:text-[#FF3D00] transition-colors p-0.5"
+          title="Close Menu"
+        >
+          <X className="w-3.5 h-3.5" />
+        </button>
       </div>
 
       {/* Target Scope Tabs */}
       <div className="py-2 border-b border-[#262626]">
         <div className="text-[9px] text-[#737373] uppercase tracking-wider px-2 py-0.5 font-bold mb-1">
-          Apply Controls To:
+          Target Scope:
         </div>
         <div className="grid grid-cols-4 gap-1">
           <button
@@ -185,7 +199,7 @@ export function TableContextMenu({ editor, position, onClose }: TableContextMenu
       <div className="py-2 border-b border-[#262626]">
         <div className="text-[9px] text-[#737373] uppercase tracking-wider px-2 py-0.5 font-bold mb-1.5 flex items-center gap-1">
           <Palette className="w-3 h-3 text-[#FF3D00]" />
-          <span>Background Color ({activeScope.toUpperCase()})</span>
+          <span>Background ({activeScope.toUpperCase()})</span>
         </div>
         <div className="flex items-center gap-1.5 px-2">
           {COLOR_SWATCHES.map((swatch) => (
@@ -214,19 +228,19 @@ export function TableContextMenu({ editor, position, onClose }: TableContextMenu
         <div className="grid grid-cols-3 gap-1 px-1">
           <button
             onClick={() => handleApplyAlignment('left')}
-            className="px-2 py-1 border border-[#262626] hover:border-[#FF3D00] hover:text-[#FF3D00] flex items-center justify-center gap-1 text-[10px]"
+            className="px-2 py-1 border border-[#262626] hover:border-[#FF3D00] hover:text-[#FF3D00] flex items-center justify-center gap-1 text-[10px] transition-colors"
           >
             <AlignLeft className="w-3 h-3" /> Left
           </button>
           <button
             onClick={() => handleApplyAlignment('center')}
-            className="px-2 py-1 border border-[#262626] hover:border-[#FF3D00] hover:text-[#FF3D00] flex items-center justify-center gap-1 text-[10px]"
+            className="px-2 py-1 border border-[#262626] hover:border-[#FF3D00] hover:text-[#FF3D00] flex items-center justify-center gap-1 text-[10px] transition-colors"
           >
             <AlignCenter className="w-3 h-3" /> Center
           </button>
           <button
             onClick={() => handleApplyAlignment('right')}
-            className="px-2 py-1 border border-[#262626] hover:border-[#FF3D00] hover:text-[#FF3D00] flex items-center justify-center gap-1 text-[10px]"
+            className="px-2 py-1 border border-[#262626] hover:border-[#FF3D00] hover:text-[#FF3D00] flex items-center justify-center gap-1 text-[10px] transition-colors"
           >
             <AlignRight className="w-3 h-3" /> Right
           </button>
@@ -236,32 +250,25 @@ export function TableContextMenu({ editor, position, onClose }: TableContextMenu
       {/* Column Operations */}
       <div className="py-1 border-b border-[#262626]">
         <div className="text-[9px] text-[#737373] uppercase tracking-wider px-2 py-0.5 font-bold">
-          Column Controls
+          Columns
+        </div>
+        <div className="grid grid-cols-2 gap-1 px-1 py-0.5">
+          <button
+            onClick={() => editor.chain().focus().addColumnBefore().run()}
+            className="px-2 py-1 text-left hover:bg-[#1A1A1A] hover:text-[#FF3D00] flex items-center gap-1 text-[10px] transition-colors border border-[#262626]"
+          >
+            <Plus className="w-3 h-3 text-[#FF3D00]" /> Left
+          </button>
+          <button
+            onClick={() => editor.chain().focus().addColumnAfter().run()}
+            className="px-2 py-1 text-left hover:bg-[#1A1A1A] hover:text-[#FF3D00] flex items-center gap-1 text-[10px] transition-colors border border-[#262626]"
+          >
+            <Plus className="w-3 h-3 text-[#FF3D00]" /> Right
+          </button>
         </div>
         <button
-          onClick={() => {
-            editor.chain().focus().addColumnBefore().run();
-            onClose();
-          }}
-          className="w-full text-left px-2 py-1 hover:bg-[#1A1A1A] hover:text-[#FF3D00] flex items-center gap-1.5 transition-colors"
-        >
-          <Plus className="w-3 h-3 text-[#FF3D00]" /> Add Column Left
-        </button>
-        <button
-          onClick={() => {
-            editor.chain().focus().addColumnAfter().run();
-            onClose();
-          }}
-          className="w-full text-left px-2 py-1 hover:bg-[#1A1A1A] hover:text-[#FF3D00] flex items-center gap-1.5 transition-colors"
-        >
-          <Plus className="w-3 h-3 text-[#FF3D00]" /> Add Column Right
-        </button>
-        <button
-          onClick={() => {
-            editor.chain().focus().deleteColumn().run();
-            onClose();
-          }}
-          className="w-full text-left px-2 py-1 hover:bg-[#1A1A1A] text-[#ef4444] flex items-center gap-1.5 transition-colors"
+          onClick={() => editor.chain().focus().deleteColumn().run()}
+          className="w-full text-left px-2 py-1 hover:bg-[#1A1A1A] text-[#ef4444] flex items-center gap-1.5 text-[10px] transition-colors"
         >
           <Minus className="w-3 h-3" /> Delete Column
         </button>
@@ -270,32 +277,25 @@ export function TableContextMenu({ editor, position, onClose }: TableContextMenu
       {/* Row Operations */}
       <div className="py-1 border-b border-[#262626]">
         <div className="text-[9px] text-[#737373] uppercase tracking-wider px-2 py-0.5 font-bold">
-          Row Controls
+          Rows
+        </div>
+        <div className="grid grid-cols-2 gap-1 px-1 py-0.5">
+          <button
+            onClick={() => editor.chain().focus().addRowBefore().run()}
+            className="px-2 py-1 text-left hover:bg-[#1A1A1A] hover:text-[#FF3D00] flex items-center gap-1 text-[10px] transition-colors border border-[#262626]"
+          >
+            <Plus className="w-3 h-3 text-[#FF3D00]" /> Above
+          </button>
+          <button
+            onClick={() => editor.chain().focus().addRowAfter().run()}
+            className="px-2 py-1 text-left hover:bg-[#1A1A1A] hover:text-[#FF3D00] flex items-center gap-1 text-[10px] transition-colors border border-[#262626]"
+          >
+            <Plus className="w-3 h-3 text-[#FF3D00]" /> Below
+          </button>
         </div>
         <button
-          onClick={() => {
-            editor.chain().focus().addRowBefore().run();
-            onClose();
-          }}
-          className="w-full text-left px-2 py-1 hover:bg-[#1A1A1A] hover:text-[#FF3D00] flex items-center gap-1.5 transition-colors"
-        >
-          <Plus className="w-3 h-3 text-[#FF3D00]" /> Add Row Above
-        </button>
-        <button
-          onClick={() => {
-            editor.chain().focus().addRowAfter().run();
-            onClose();
-          }}
-          className="w-full text-left px-2 py-1 hover:bg-[#1A1A1A] hover:text-[#FF3D00] flex items-center gap-1.5 transition-colors"
-        >
-          <Plus className="w-3 h-3 text-[#FF3D00]" /> Add Row Below
-        </button>
-        <button
-          onClick={() => {
-            editor.chain().focus().deleteRow().run();
-            onClose();
-          }}
-          className="w-full text-left px-2 py-1 hover:bg-[#1A1A1A] text-[#ef4444] flex items-center gap-1.5 transition-colors"
+          onClick={() => editor.chain().focus().deleteRow().run()}
+          className="w-full text-left px-2 py-1 hover:bg-[#1A1A1A] text-[#ef4444] flex items-center gap-1.5 text-[10px] transition-colors"
         >
           <Minus className="w-3 h-3" /> Delete Row
         </button>
@@ -308,9 +308,9 @@ export function TableContextMenu({ editor, position, onClose }: TableContextMenu
             editor.chain().focus().deleteTable().run();
             onClose();
           }}
-          className="w-full text-left px-2 py-1 hover:bg-[#ef4444]/20 text-[#ef4444] font-bold flex items-center gap-1.5 transition-colors"
+          className="w-full text-left px-2 py-1 hover:bg-[#ef4444]/20 text-[#ef4444] font-bold flex items-center gap-1.5 text-[11px] transition-colors"
         >
-          <Trash2 className="w-3.5 h-3.5" /> Delete Table
+          <Trash2 className="w-3.5 h-3.5" /> Delete Entire Table
         </button>
       </div>
     </div>

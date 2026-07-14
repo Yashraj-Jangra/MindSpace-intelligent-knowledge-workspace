@@ -1062,6 +1062,69 @@ html.light div[class*="fixed"][class*="border-[#FF3D00]"] div[class*="border-[#2
   border-color: #E2E8F0 !important;
 }
 
+/* ==========================================================================
+   TIPTAP TABLE NATIVE COLUMN & ROW RESIZING HANDLES
+   ========================================================================== */
+.ProseMirror table {
+  border-collapse: collapse;
+  table-layout: fixed;
+  width: 100%;
+  margin: 1.5rem 0;
+  overflow: visible;
+  position: relative;
+}
+
+.ProseMirror td,
+.ProseMirror th {
+  min-width: 2em;
+  border: 1px solid #333333;
+  padding: 8px 12px;
+  vertical-align: top;
+  box-sizing: border-box;
+  position: relative;
+  transition: background-color 120ms ease;
+}
+
+html.light .ProseMirror td,
+html.light .ProseMirror th {
+  border-color: #CBD5E1;
+}
+
+.ProseMirror th {
+  font-weight: bold;
+  text-align: left;
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+html.light .ProseMirror th {
+  background-color: rgba(0, 0, 0, 0.03);
+}
+
+.ProseMirror .selectedCell:after {
+  z-index: 2;
+  position: absolute;
+  content: "";
+  left: 0; right: 0; top: 0; bottom: 0;
+  background: rgba(255, 61, 0, 0.15);
+  pointer-events: none;
+  border: 1px solid #FF3D00;
+}
+
+.ProseMirror .column-resize-handle {
+  background-color: #FF3D00 !important;
+  bottom: -2px !important;
+  position: absolute !important;
+  right: -2px !important;
+  pointer-events: none !important;
+  top: 0 !important;
+  width: 4px !important;
+  z-index: 25 !important;
+}
+
+.ProseMirror.resize-cursor {
+  cursor: col-resize !important;
+}
+
 /* High Contrast Tooltips (Dark Mode) */
 body:not(.light) [role="tooltip"],
 body:not(.light) .richtext-tooltip,

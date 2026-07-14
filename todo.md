@@ -79,11 +79,21 @@
   - Built File Upload API (`/api/upload`) for note media attachments.
   - Integrated Document Telemetry bar (Word count, character count, estimated reading time) & Zen Focus writing mode.
 
+  - **Note Editor Full UI/UX Redesign (`AdvancedNoteEditor.tsx`, `PageNavigationBar.tsx`, `globals.css`)**: Complete visual overhaul of the Advanced Note Editor:
+    - **Top Bar**: Fixed-height `h-14` sticky header. Title is now **inline-editable directly in the top bar** (synced to save state). Right actions cleaned up: Convert to Mind Map (hidden on mobile), Pin, Bell, Fullscreen, `⋯ More` (`MoreHorizontal`) overflow trigger — replacing the old raw Settings gear icon.
+    - **Two-Row Full-Width Sticky Toolbar**: Row 1 = Page Controls (prev/next/counter/add/dup/delete/template/stylus-only mode). Row 2 = Text formatting with group labels (`History | Format | Layout | Insert | Tools`) separated by thin dividers. Both rows span 100% width with horizontal scroll + no-scrollbar for overflow.
+    - **Tag & Stats Bar**: Compact tag manager row between top bar and toolbar. Right side now shows inline word count / char count / reading time — replacing the old fixed bottom footer.
+    - **Zoomable Canvas**: Paper sheet wraps in a `transform: scale(zoom)` container. Zoom range 40%–200% in 10% steps. Floating zoom pill at bottom-right: `ZoomOut` / zoom% label (click to reset to 100%) / `ZoomIn` / `Crosshair` center-lock toggle. `lockCenter` state controls `justify-center` vs `justify-start` on the transform wrapper.
+    - **Footer Removed**: The fixed `h-10` bottom footer is gone. Stats moved inline to the tag bar.
+    - **Left-Side Page Thumbnail Panel (`PageNavigationBar.tsx`)**: Clicking "Pages" now opens a **fixed left-side slide-in panel** (280px wide, full-height, `z-[70]`) with backdrop overlay. Each page shows a content preview card with per-page duplicate/delete actions on hover. Panel closes on backdrop click or X button.
+    - **Normalized Z-Index Layering Hierarchy (`AdvancedNoteEditor.tsx`, `EditorSettingsPopover.tsx`, `globals.css`)**: Established a safe, strict z-index stack across all editor elements: Header (`z-40`), Toolbar Row 1 (`z-[41]`), Toolbar Row 2 (`z-[39]`), Table Controls / Zoom Pill (`z-[45]`), Popovers (`z-[50]`), Exit Fullscreen (`z-[55]`), Page Thumbnail Drawer (`z-[70]`), Right-Click Context Menu (`z-[80]`), and Zen Focus Overlay (`z-[90]`).
+    - **Comprehensive Light Theme Editor Styling (`AdvancedNoteEditor.tsx`, `globals.css`)**: Added semantic class hooks (`note-editor-root`, `note-editor-header`, `note-editor-tagbar`, `note-editor-toolbar-row1`, `note-editor-toolbar-row2`, `note-editor-canvas-area`, `note-editor-paper`) and complete `html.light` CSS overrides covering all text colors, backgrounds, borders, popovers, stylus docks, floating table controls, right-click context menus, zoom pills, and ProseMirror content elements in light mode.
+
 ## Next Steps
 - [ ] Test live note creation, rich text editing, freehand stylus writing, and mind map canvas drawing in browser.
-
-
-
+- [ ] Verify zoom controls work correctly with stylus pointer coordinate compensation.
+- [ ] Check that the two-row toolbar scrolls cleanly on mobile without breaking layout.
+- [ ] Validate the left-panel page thumbnail drawer slide-in animation and per-page actions.
 
 
 

@@ -1414,4 +1414,521 @@ html.light [class*="richtext-toolbar"] button.is-active,
    =================================================== */
 .canvas-zoom-wrapper {
   overflow-x: hidden;
+}/* =====================================================
+   LIGHT THEME — COMPLETE EDITOR SURFACE OVERRIDES
+   Using semantic class names for precise targeting.
+   ===================================================== */
+
+/* ── Root Shell ─────────────────────────────────────── */
+html.light .note-editor-root {
+  background-color: #F5F5F5 !important;
+  color: #0A0A0A !important;
+}
+
+/* ── Top Header Bar ─────────────────────────────────── */
+html.light .note-editor-header {
+  background-color: rgba(255, 255, 255, 0.98) !important;
+  border-bottom-color: #E5E5E5 !important;
+}
+
+html.light .note-editor-header input {
+  color: #0A0A0A !important;
+}
+
+html.light .note-editor-header input::placeholder {
+  color: #C0C0C0 !important;
+}
+
+html.light .note-editor-header button {
+  color: #525252 !important;
+  border-color: #E0E0E0 !important;
+}
+
+html.light .note-editor-header button:hover {
+  color: #0A0A0A !important;
+  border-color: #888888 !important;
+  background-color: #F0F0F0 !important;
+}
+
+/* Ink toggle pill */
+html.light .note-editor-header button[class*="rounded-full"] {
+  background-color: #F2F2F2 !important;
+  border-color: #D0D0D0 !important;
+  color: #525252 !important;
+}
+
+/* Active ink pill */
+html.light .note-editor-header button[class*="border-\[#FF3D00\]"] {
+  background-color: rgba(255, 61, 0, 0.08) !important;
+  color: #FF3D00 !important;
+}
+
+/* Mind Map CTA button keeps accent */
+html.light .note-editor-header button[class*="bg-\[#FF3D00\]"] {
+  background-color: #FF3D00 !important;
+  color: #FFFFFF !important;
+  border-color: #FF3D00 !important;
+}
+
+html.light .note-editor-header button[class*="bg-\[#FF3D00\]"]:hover {
+  background-color: #FF5722 !important;
+}
+
+/* Divider lines inside header */
+html.light .note-editor-header div[class*="bg-\[#262626\]"] {
+  background-color: #E5E5E5 !important;
+}
+
+/* ── Tag & Stats Bar ─────────────────────────────────── */
+html.light .note-editor-tagbar {
+  background-color: #F8F8F8 !important;
+  border-bottom-color: #E5E5E5 !important;
+  color: #0A0A0A !important;
+}
+
+html.light .note-editor-tagbar input {
+  color: #525252 !important;
+}
+
+html.light .note-editor-tagbar input::placeholder {
+  color: #BBBBBB !important;
+}
+
+html.light .note-editor-tagbar span {
+  color: #525252 !important;
+}
+
+/* Tag chips */
+html.light .note-editor-tagbar span[class*="bg-\[#1A1A1A\]"] {
+  background-color: #EBEBEB !important;
+  border-color: #D4D4D4 !important;
+  color: #0A0A0A !important;
+}
+
+/* Stats text */
+html.light .note-editor-tagbar div[class*="text-\[#3a3a3a\]"] {
+  color: #AAAAAA !important;
+}
+
+/* ── Toolbar Row 1 (Page Controls) ──────────────────── */
+html.light .note-editor-toolbar-row1 {
+  background-color: #FFFFFF !important;
+  border-bottom-color: #E5E5E5 !important;
+}
+
+html.light .note-editor-toolbar-row1 button {
+  color: #525252 !important;
+  border-color: #E5E5E5 !important;
+}
+
+html.light .note-editor-toolbar-row1 button:hover {
+  color: #0A0A0A !important;
+  background-color: #F0F0F0 !important;
+}
+
+html.light .note-editor-toolbar-row1 button:disabled {
+  opacity: 0.3 !important;
+}
+
+/* Active page button accent */
+html.light .note-editor-toolbar-row1 button[class*="bg-\[#FF3D00\]"] {
+  background-color: #FF3D00 !important;
+  color: #FFFFFF !important;
+}
+
+html.light .note-editor-toolbar-row1 button[class*="text-\[#10b981\]"],
+html.light .note-editor-toolbar-row1 button[class*="text-\[#10b981\]"] span {
+  color: #10b981 !important;
+}
+
+html.light .note-editor-toolbar-row1 span[class*="text-\[#FAFAFA\]"] {
+  color: #0A0A0A !important;
+}
+
+html.light .note-editor-toolbar-row1 span[class*="text-\[#737373\]"],
+html.light .note-editor-toolbar-row1 span[class*="text-\[#3a3a3a\]"] {
+  color: #888888 !important;
+}
+
+/* Vertical dividers between control groups */
+html.light .note-editor-toolbar-row1 div[class*="border-r"] {
+  border-right-color: #E5E5E5 !important;
+}
+
+/* Paper template dropdown */
+html.light .note-editor-toolbar-row1 div[class*="absolute"] {
+  background-color: #FFFFFF !important;
+  border-color: #E5E5E5 !important;
+  border-top-color: #FF3D00 !important;
+}
+
+html.light .note-editor-toolbar-row1 div[class*="absolute"] button {
+  color: #0A0A0A !important;
+}
+
+html.light .note-editor-toolbar-row1 div[class*="absolute"] button:hover {
+  background-color: #F5F5F5 !important;
+  color: #FF3D00 !important;
+}
+
+/* ── Toolbar Row 2 (Formatting) ─────────────────────── */
+html.light .note-editor-toolbar-row2 {
+  background-color: #FAFAFA !important;
+  border-bottom-color: #EBEBEB !important;
+}
+
+/* Group label text */
+html.light .note-editor-toolbar-row2 span[class*="text-\[#3a3a3a\]"] {
+  color: #C0C0C0 !important;
+}
+
+/* Group separator lines */
+html.light .note-editor-toolbar-row2 div[class*="bg-\[#1E1E1E\]"] {
+  background-color: #E5E5E5 !important;
+}
+
+/* All richtext toolbar buttons in light */
+html.light .note-editor-toolbar-row2 button,
+html.light .note-editor-toolbar-row2 .richtext-editor-button {
+  color: #525252 !important;
+  background: transparent !important;
+}
+
+html.light .note-editor-toolbar-row2 button:hover,
+html.light .note-editor-toolbar-row2 .richtext-editor-button:hover {
+  color: #0A0A0A !important;
+  background-color: #F0F0F0 !important;
+}
+
+html.light .note-editor-toolbar-row2 button.is-active,
+html.light .note-editor-toolbar-row2 button[data-active="true"],
+html.light .note-editor-toolbar-row2 .richtext-editor-button.is-active {
+  color: #FF3D00 !important;
+  background-color: rgba(255, 61, 0, 0.08) !important;
+}
+
+/* ── Canvas Scroll Area (dark outer background) ──────── */
+html.light .note-editor-canvas-area {
+  background-color: #DCDCDC !important;
+}
+
+/* ── A4 Paper Sheet ─────────────────────────────────── */
+html.light .note-editor-paper {
+  background-color: #FFFFFF !important;
+  border-color: #CCCCCC !important;
+  color: #0A0A0A !important;
+}
+
+/* ── ProseMirror Content ─────────────────────────────── */
+html.light .note-editor-paper .ProseMirror {
+  color: #0A0A0A !important;
+}
+
+html.light .note-editor-paper .ProseMirror h1,
+html.light .note-editor-paper .ProseMirror h2,
+html.light .note-editor-paper .ProseMirror h3,
+html.light .note-editor-paper .ProseMirror h4,
+html.light .note-editor-paper .ProseMirror h5,
+html.light .note-editor-paper .ProseMirror h6 {
+  color: #0A0A0A !important;
+}
+
+html.light .note-editor-paper .ProseMirror p {
+  color: #1A1A1A !important;
+}
+
+html.light .note-editor-paper .ProseMirror li {
+  color: #1A1A1A !important;
+}
+
+html.light .note-editor-paper .ProseMirror blockquote {
+  border-left-color: #FF3D00 !important;
+  color: #525252 !important;
+}
+
+html.light .note-editor-paper .ProseMirror code {
+  background-color: #F0F0F0 !important;
+  color: #E64A19 !important;
+}
+
+html.light .note-editor-paper .ProseMirror pre {
+  background-color: #F5F5F5 !important;
+  border-color: #E0E0E0 !important;
+  color: #0A0A0A !important;
+}
+
+html.light .note-editor-paper .ProseMirror p.is-editor-empty:first-child::before {
+  color: #BBBBBB !important;
+}
+
+/* ── Right-Click Context Menu ────────────────────────── */
+html.light div.note-editor-root div[class*="z-\[80\]"][class*="fixed"]:not([class*="left-16"]) {
+  background-color: #FFFFFF !important;
+  border-color: #FF3D00 !important;
+  color: #0A0A0A !important;
+}
+
+html.light div.note-editor-root div[class*="z-\[80\]"][class*="fixed"]:not([class*="left-16"]) button {
+  color: #0A0A0A !important;
+}
+
+html.light div.note-editor-root div[class*="z-\[80\]"][class*="fixed"]:not([class*="left-16"]) button:hover {
+  background-color: #F5F5F5 !important;
+  color: #FF3D00 !important;
+}
+
+html.light div.note-editor-root div[class*="z-\[80\]"][class*="fixed"]:not([class*="left-16"]) div[class*="border-\[#262626\]"] {
+  border-color: #E5E5E5 !important;
+}
+
+html.light div.note-editor-root div[class*="z-\[80\]"][class*="fixed"]:not([class*="left-16"]) div[class*="text-\[#737373\]"],
+html.light div.note-editor-root div[class*="z-\[80\]"][class*="fixed"]:not([class*="left-16"]) span[class*="text-\[#737373\]"] {
+  color: #888888 !important;
+}
+
+/* ── Table Floating Controls + Zoom Pill (z-[45]) ───── */
+html.light div[class*="z-\[45\]"] {
+  background-color: rgba(255, 255, 255, 0.98) !important;
+  border-color: #FF3D00 !important;
+  color: #0A0A0A !important;
+}
+
+html.light div[class*="z-\[45\]"] button {
+  color: #525252 !important;
+  border-color: #E5E5E5 !important;
+}
+
+html.light div[class*="z-\[45\]"] button:hover {
+  color: #0A0A0A !important;
+  background-color: #F5F5F5 !important;
+  border-color: #FF3D00 !important;
+}
+
+html.light div[class*="z-\[45\]"] span[class*="text-\[#737373\]"],
+html.light div[class*="z-\[45\]"] span[class*="text-\[#FAFAFA\]"] {
+  color: #0A0A0A !important;
+}
+
+/* Zoom pill specifically — keep light border */
+html.light div[class*="z-\[45\]"][class*="right-6"] {
+  border-color: #D4D4D4 !important;
+}
+
+html.light div[class*="z-\[45\]"][class*="right-6"] button[class*="border-r"] {
+  border-right-color: #E5E5E5 !important;
+}
+
+/* ── Editor Settings Popover (z-[50]) ────────────────── */
+html.light div[class*="z-\[50\]"] {
+  background-color: #FFFFFF !important;
+  border-color: #E5E5E5 !important;
+  color: #0A0A0A !important;
+}
+
+html.light div[class*="z-\[50\]"] span,
+html.light div[class*="z-\[50\]"] p {
+  color: #0A0A0A !important;
+}
+
+html.light div[class*="z-\[50\]"] label {
+  color: #525252 !important;
+}
+
+html.light div[class*="z-\[50\]"] button {
+  color: #0A0A0A !important;
+  border-color: #E5E5E5 !important;
+}
+
+html.light div[class*="z-\[50\]"] button:hover {
+  background-color: #F5F5F5 !important;
+  color: #FF3D00 !important;
+}
+
+html.light div[class*="z-\[50\]"] div[class*="bg-\[#0F0F0F\]"],
+html.light div[class*="z-\[50\]"] div[class*="bg-\[#1A1A1A\]"],
+html.light div[class*="z-\[50\]"] div[class*="bg-\[#0A0A0A\]"] {
+  background-color: #F5F5F5 !important;
+  border-color: #E5E5E5 !important;
+}
+
+html.light div[class*="z-\[50\]"] div[class*="border-\[#262626\]"] {
+  border-color: #E5E5E5 !important;
+}
+
+/* ── Page Thumbnail Backdrop (z-[60]) ────────────────── */
+html.light div[class*="z-\[60\]"] {
+  background-color: rgba(0, 0, 0, 0.25) !important;
+  backdrop-filter: blur(2px) !important;
+}
+
+/* ── Page Thumbnail Panel (z-[70]) ───────────────────── */
+html.light div[class*="z-\[70\]"] {
+  background-color: #FFFFFF !important;
+  border-right-color: #E5E5E5 !important;
+  color: #0A0A0A !important;
+}
+
+html.light div[class*="z-\[70\]"] div[class*="border-b"],
+html.light div[class*="z-\[70\]"] div[class*="border-\[#262626\]"],
+html.light div[class*="z-\[70\]"] div[class*="border-\[#1E1E1E\]"] {
+  border-color: #E5E5E5 !important;
+}
+
+html.light div[class*="z-\[70\]"] div[class*="bg-\[#0A0A0A\]"],
+html.light div[class*="z-\[70\]"] div[class*="bg-\[#0D0D0D\]"],
+html.light div[class*="z-\[70\]"] div[class*="bg-\[#0F0F0F\]"] {
+  background-color: #F5F5F5 !important;
+}
+
+/* Active page card in thumbnail panel */
+html.light div[class*="z-\[70\]"] div[class*="border-\[#FF3D00\]"] {
+  background-color: #FFF5F3 !important;
+  border-color: #FF3D00 !important;
+}
+
+html.light div[class*="z-\[70\]"] span {
+  color: #0A0A0A !important;
+}
+
+html.light div[class*="z-\[70\]"] span[class*="text-\[#737373\]"],
+html.light div[class*="z-\[70\]"] span[class*="text-\[#3a3a3a\]"] {
+  color: #888888 !important;
+}
+
+html.light div[class*="z-\[70\]"] div[class*="h-20"] {
+  background-color: #FAFAFA !important;
+  border-color: #E5E5E5 !important;
+  color: #666666 !important;
+}
+
+html.light div[class*="z-\[70\]"] button {
+  color: #525252 !important;
+}
+
+html.light div[class*="z-\[70\]"] button:hover {
+  color: #0A0A0A !important;
+  background-color: #F0F0F0 !important;
+}
+
+/* Add page button in thumbnail panel */
+html.light div[class*="z-\[70\]"] button[class*="bg-\[#FF3D00\]"] {
+  background-color: #FF3D00 !important;
+  color: #FFFFFF !important;
+}
+
+/* ── Stylus Sidebar Dock ─────────────────────────────── */
+html.light .vertical-stylus-sidebar {
+  background-color: #F8F8F8 !important;
+  border-right-color: #E5E5E5 !important;
+}
+
+html.light .vertical-stylus-sidebar button {
+  color: #525252 !important;
+}
+
+html.light .vertical-stylus-sidebar button:hover {
+  color: #0A0A0A !important;
+  background-color: #EFEFEF !important;
+}
+
+html.light .vertical-stylus-sidebar button[class*="border-\[#FF3D00\]"] {
+  color: #FF3D00 !important;
+  background-color: rgba(255, 61, 0, 0.08) !important;
+  border-color: #FF3D00 !important;
+}
+
+html.light .vertical-stylus-sidebar button[class*="text-\[#737373\]"] {
+  color: #888888 !important;
+}
+
+/* ── Stylus Tool Popovers (z-[80] fixed left-16 top-14) ─ */
+html.light div[class*="z-\[80\]"][class*="fixed"][class*="left-16"] {
+  background-color: rgba(255, 255, 255, 0.99) !important;
+  border-color: #E5E5E5 !important;
+  color: #0A0A0A !important;
+}
+
+html.light div[class*="z-\[80\]"][class*="fixed"][class*="left-16"] span,
+html.light div[class*="z-\[80\]"][class*="fixed"][class*="left-16"] label,
+html.light div[class*="z-\[80\]"][class*="fixed"][class*="left-16"] p {
+  color: #0A0A0A !important;
+}
+
+html.light div[class*="z-\[80\]"][class*="fixed"][class*="left-16"] div[class*="bg-\[#1A1A1A\]"],
+html.light div[class*="z-\[80\]"][class*="fixed"][class*="left-16"] div[class*="bg-\[#0A0A0A\]"],
+html.light div[class*="z-\[80\]"][class*="fixed"][class*="left-16"] div[class*="bg-\[#0F0F0F\]"] {
+  background-color: #F5F5F5 !important;
+  border-color: #E5E5E5 !important;
+}
+
+html.light div[class*="z-\[80\]"][class*="fixed"][class*="left-16"] div[class*="border-\[#262626\]"],
+html.light div[class*="z-\[80\]"][class*="fixed"][class*="left-16"] div[class*="border-b"] {
+  border-color: #E5E5E5 !important;
+}
+
+html.light div[class*="z-\[80\]"][class*="fixed"][class*="left-16"] button {
+  color: #525252 !important;
+  border-color: #E0E0E0 !important;
+}
+
+html.light div[class*="z-\[80\]"][class*="fixed"][class*="left-16"] button:hover {
+  background-color: #F0F0F0 !important;
+  color: #0A0A0A !important;
+}
+
+html.light div[class*="z-\[80\]"][class*="fixed"][class*="left-16"] input[type="range"] {
+  accent-color: #FF3D00 !important;
+}
+
+/* ── StylusSettingsModal (full-screen inset) ─────────── */
+html.light div[class*="z-50"][class*="inset-0"] {
+  background-color: rgba(0, 0, 0, 0.35) !important;
+}
+
+html.light div[class*="z-50"][class*="inset-0"] > div {
+  background-color: #FFFFFF !important;
+  border-color: #E5E5E5 !important;
+  color: #0A0A0A !important;
+}
+
+html.light div[class*="z-50"][class*="inset-0"] span,
+html.light div[class*="z-50"][class*="inset-0"] label,
+html.light div[class*="z-50"][class*="inset-0"] p {
+  color: #0A0A0A !important;
+}
+
+html.light div[class*="z-50"][class*="inset-0"] div[class*="bg-\[#0F0F0F\]"],
+html.light div[class*="z-50"][class*="inset-0"] div[class*="bg-\[#0A0A0A\]"],
+html.light div[class*="z-50"][class*="inset-0"] div[class*="bg-\[#1A1A1A\]"] {
+  background-color: #F5F5F5 !important;
+  border-color: #E5E5E5 !important;
+}
+
+html.light div[class*="z-50"][class*="inset-0"] button {
+  color: #525252 !important;
+  border-color: #E5E5E5 !important;
+}
+
+html.light div[class*="z-50"][class*="inset-0"] button:hover {
+  background-color: #F0F0F0 !important;
+  color: #0A0A0A !important;
+}
+
+/* ── Exit Fullscreen Button (z-[55]) ─────────────────── */
+html.light button[class*="z-\[55\]"] {
+  background-color: rgba(255, 255, 255, 0.92) !important;
+  border-color: #FF3D00 !important;
+  color: #FF3D00 !important;
+}
+
+html.light button[class*="z-\[55\]"]:hover {
+  background-color: #FF3D00 !important;
+  color: #FFFFFF !important;
+}
+
+/* ── ThemeToggle button ───────────────────────────────── */
+html.light button[class*="bg-\[#1A1A1A\]"] {
+  background-color: #F0F0F0 !important;
+  border-color: #D0D0D0 !important;
+  color: #0A0A0A !important;
 }

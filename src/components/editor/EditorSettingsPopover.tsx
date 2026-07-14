@@ -48,7 +48,7 @@ export function EditorSettingsPopover({
   return (
     <div
       ref={popoverRef}
-      className="fixed top-14 right-6 z-50 w-[280px] bg-[#0A0A0A]/95 backdrop-blur-xl border border-[#262626] rounded-none shadow-2xl p-4 text-[#FAFAFA] font-sans select-none animate-in fade-in zoom-in-95 duration-150"
+      className="fixed top-14 right-6 z-[50] w-[280px] bg-[#0A0A0A]/95 backdrop-blur-xl border border-[#262626] shadow-2xl p-4 text-[#FAFAFA] font-sans select-none animate-in fade-in zoom-in-95 duration-150"
     >
       {/* Top Header */}
       <div className="flex items-center justify-between border-b border-[#262626] pb-2.5 mb-3">

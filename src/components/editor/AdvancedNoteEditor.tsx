@@ -1,6 +1,6 @@
 import { common, createLowlight } from 'lowlight';
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
@@ -209,6 +209,8 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
   const [isStylusSettingsOpen, setIsStylusSettingsOpen] = useState(false);
   const [isEditorSettingsOpen, setIsEditorSettingsOpen] = useState(false);
   const [isColumnOptionsOpen, setIsColumnOptionsOpen] = useState(false);
+  const [showTableOptionsPopup, setShowTableOptionsPopup] = useState(false);
+  const lastClickedCellRef = useRef<HTMLElement | null>(null);
 
   // Configure Extensions from reactjs-tiptap-editor
   const extensions = useMemo(() => {
@@ -981,13 +983,13 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
 
             {/* Floating Selection Bubble Menus */}
             <RichTextBubbleText />
-            <RichTextBubbleTable />
+            {showTableOptionsPopup && <RichTextBubbleTable />}
             <RichTextBubbleImage />
             <RichTextBubbleLink />
             <RichTextBubbleCodeBlock />
 
-            {/* Custom Table Position, Size & Column Options Floating Controls */}
-            {editor && editor.isActive('table') && (
+            {/* Custom Table Position, Size & Column Options Floating Controls (Shown on 2nd Click) */}
+            {editor && editor.isActive('table') && showTableOptionsPopup && (
               <div className="fixed bottom-14 left-1/2 -translate-x-1/2 z-50 bg-[#0A0A0A] border border-[#FF3D00] shadow-2xl p-2 flex flex-wrap items-center gap-3 font-mono text-xs text-[#FAFAFA] rounded-md animate-in fade-in slide-in-from-bottom-2">
                 <span className="text-[#FF3D00] font-bold uppercase text-[10px] tracking-wider px-1">Table Controls:</span>
                 
@@ -1220,6 +1222,25 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
 
                       window.addEventListener('pointermove', onPointerMove);
                       window.addEventListener('pointerup', onPointerUp);
+                    }
+                  }}
+                  onClick={(e) => {
+                    const target = e.target as HTMLElement;
+                    const cell = target.closest('td, th');
+
+                    if (!cell) {
+                      setShowTableOptionsPopup(false);
+                      lastClickedCellRef.current = null;
+                      return;
+                    }
+
+                    if (lastClickedCellRef.current === cell) {
+                      // 2nd Click on the same cell -> Show options popup!
+                      setShowTableOptionsPopup(true);
+                    } else {
+                      // 1st Click on new cell -> Focus for data entry, keep options popup hidden!
+                      lastClickedCellRef.current = cell as HTMLElement;
+                      setShowTableOptionsPopup(false);
                     }
                   }}
                   className={`p-8 ${

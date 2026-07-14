@@ -56,6 +56,10 @@ import {
   PenTool,
   ShieldCheck,
   Settings,
+  MoreHorizontal,
+  ZoomIn,
+  ZoomOut,
+  Crosshair,
 } from 'lucide-react';
 
 import { StoredNote } from '@/lib/notes-storage';
@@ -171,6 +175,10 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
   // Editor View Mode & Native Full Screen Status
   const [isZenMode, setIsZenMode] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'unsaved'>('saved');
+
+  // Canvas Zoom & Center Lock
+  const [canvasZoom, setCanvasZoom] = useState(1.0);
+  const [lockCenter, setLockCenter] = useState(true);
   const [isConverting, setIsConverting] = useState(false);
 
   // Native HTML5 Fullscreen API Toggle
@@ -736,39 +744,46 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
 
       {/* Top Header Control Bar */}
       {!isZenMode && (
-        <header className="min-h-[3.5rem] border-b border-[#262626] bg-[#0A0A0A]/95 px-3 sm:px-6 py-2 sm:py-0 flex items-center justify-between sticky top-0 z-40 font-sans gap-2 overflow-x-auto no-scrollbar">
-          {/* Left Section: Back, Title, Save Status */}
-          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+        <header className="h-14 border-b border-[#262626] bg-[#0A0A0A]/98 backdrop-blur-md px-3 sm:px-5 flex items-center justify-between sticky top-0 z-40 font-sans gap-2 overflow-x-auto no-scrollbar shrink-0">
+          {/* Left Section: Back + Inline Editable Title + Save Badge */}
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
             <button
               onClick={() => router.push('/dashboard')}
-              className="p-1.5 border border-[#262626] hover:border-[#FAFAFA] text-[#737373] hover:text-[#FAFAFA] transition-colors"
+              className="p-2 border border-[#262626] hover:border-[#FAFAFA] text-[#737373] hover:text-[#FAFAFA] transition-colors shrink-0"
               title="Back to Dashboard"
             >
-              <ArrowLeft className="w-4 h-4 stroke-[1.5]" />
+              <ArrowLeft className="w-3.5 h-3.5 stroke-[1.5]" />
             </button>
 
-            <div className="h-4 w-px bg-[#262626]" />
+            <div className="h-5 w-px bg-[#262626] shrink-0" />
 
-            <span className="font-mono text-xs uppercase tracking-wider text-[#FAFAFA] font-bold truncate max-w-[100px] sm:max-w-[200px]">
-              {title || 'Untitled Note'}
-            </span>
-
-            <div className="h-4 w-px bg-[#262626] hidden sm:block" />
+            {/* Inline Editable Title */}
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => {
+                setTitle(e.target.value);
+                setSaveStatus('unsaved');
+              }}
+              placeholder="Untitled Note"
+              className="bg-transparent font-sans font-bold text-sm tracking-tight text-[#FAFAFA] focus:outline-none placeholder:text-[#3a3a3a] min-w-0 flex-1 max-w-[320px] truncate hover:bg-[#1A1A1A]/50 focus:bg-[#1A1A1A]/80 px-2 py-1 transition-colors cursor-text"
+              title="Click to rename note"
+            />
 
             {/* Auto-save Status Badge */}
-            <div className="hidden sm:flex items-center gap-1.5 font-mono text-[11px]">
+            <div className="hidden sm:flex items-center gap-1.5 font-mono text-[10px] shrink-0">
               {saveStatus === 'saving' ? (
                 <span className="flex items-center gap-1 text-[#FF3D00]">
                   <Loader2 className="w-3 h-3 animate-spin" />
-                  <span>Saving...</span>
+                  <span className="hidden md:inline">Saving</span>
                 </span>
               ) : saveStatus === 'saved' ? (
-                <span className="flex items-center gap-1 text-[#737373]">
+                <span className="flex items-center gap-1 text-[#3a3a3a]">
                   <Check className="w-3 h-3 text-[#10b981]" />
-                  <span>Saved</span>
+                  <span className="hidden md:inline text-[#737373]">Saved</span>
                 </span>
               ) : (
-                <span className="text-[#FF3D00]">Unsaved</span>
+                <span className="text-[#FF3D00] text-[10px]">Unsaved</span>
               )}
             </div>
           </div>
@@ -785,94 +800,100 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
                   handleDeactivateStylusMode();
                 }
               }}
-              className={`flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-full border text-[11px] sm:text-xs font-mono uppercase tracking-wider font-bold transition-all duration-200 ${
+              className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 rounded-full border text-[10px] sm:text-[11px] font-mono uppercase tracking-widest font-bold transition-all duration-200 ${
                 isSidebarVisible
-                  ? 'border-[#FF3D00] bg-[#FF3D00]/15 text-[#FF3D00] shadow-md shadow-[#FF3D00]/20'
-                  : 'border-[#262626] bg-[#0F0F0F] text-[#737373] hover:text-[#FAFAFA] hover:border-[#737373]'
+                  ? 'border-[#FF3D00] bg-[#FF3D00]/10 text-[#FF3D00] shadow-lg shadow-[#FF3D00]/15'
+                  : 'border-[#262626] bg-[#0F0F0F] text-[#737373] hover:text-[#FAFAFA] hover:border-[#404040]'
               }`}
               title="Toggle Stylus Sidebar Dock Visibility"
             >
               <span
-                className={`w-2 h-2 rounded-full transition-all ${
-                  isSidebarVisible ? 'bg-[#FF3D00] animate-pulse shadow-sm shadow-[#FF3D00]' : 'bg-[#737373]'
+                className={`w-1.5 h-1.5 rounded-full transition-all ${
+                  isSidebarVisible ? 'bg-[#FF3D00] shadow-sm shadow-[#FF3D00]' : 'bg-[#737373]'
                 }`}
               />
-              <PenTool className="w-3.5 h-3.5" />
-              <span>{isSidebarVisible ? 'Stylus Tools ON' : 'Stylus Tools'}</span>
+              <PenTool className="w-3 h-3" />
+              <span className="hidden sm:inline">{isSidebarVisible ? 'Ink ON' : 'Ink'}</span>
             </button>
           </div>
 
-          {/* Right Section: Compact Icon Toolbar */}
-          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-            {/* Convert to Mind Map CTA */}
+          {/* Right Section: Action Icons */}
+          <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
+            {/* Convert to Mind Map */}
             <button
               onClick={handleConvertToCanvas}
               disabled={isConverting}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-[#FF3D00] hover:bg-[#FAFAFA] text-[#0A0A0A] text-xs font-mono uppercase tracking-wider font-bold transition-colors"
+              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-[#FF3D00] hover:bg-[#FF5722] active:bg-[#E64A19] text-[#0A0A0A] text-[10px] font-mono uppercase tracking-wider font-bold transition-all duration-150"
               title="Convert Note to Visual Mind Map Canvas"
             >
               {isConverting ? (
-                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                <Loader2 className="w-3 h-3 animate-spin" />
               ) : (
-                <Network className="w-3.5 h-3.5 stroke-[2]" />
+                <Network className="w-3 h-3 stroke-[2]" />
               )}
-              <span className="hidden sm:inline">Convert Mind Map</span>
+              <span>Mind Map</span>
             </button>
 
-            {/* Pin Toggle Button */}
+            {/* Pin Toggle */}
             <button
               onClick={() => {
                 const nextPinned = !isPinned;
                 setIsPinned(nextPinned);
                 saveNote({ isPinned: nextPinned });
               }}
-              className={`p-2 border transition-colors ${
-                isPinned ? 'border-[#FF3D00] bg-[#FF3D00]/10 text-[#FF3D00]' : 'border-[#262626] text-[#737373] hover:text-[#FAFAFA]'
+              className={`p-2 border transition-all duration-150 ${
+                isPinned
+                  ? 'border-[#FF3D00] bg-[#FF3D00]/10 text-[#FF3D00]'
+                  : 'border-[#262626] text-[#737373] hover:text-[#FAFAFA] hover:border-[#404040]'
               }`}
               title={isPinned ? 'Unpin Note' : 'Pin Note'}
             >
               <Pin className="w-3.5 h-3.5 stroke-[1.5]" />
             </button>
 
-            {/* Set Reminder Button */}
+            {/* Set Reminder */}
             <button
               onClick={() => setIsReminderOpen(true)}
-              className={`p-2 border transition-colors ${
-                reminderAt ? 'border-[#FF3D00] bg-[#FF3D00]/10 text-[#FF3D00]' : 'border-[#262626] text-[#737373] hover:text-[#FAFAFA]'
+              className={`p-2 border transition-all duration-150 ${
+                reminderAt
+                  ? 'border-[#FF3D00] bg-[#FF3D00]/10 text-[#FF3D00]'
+                  : 'border-[#262626] text-[#737373] hover:text-[#FAFAFA] hover:border-[#404040]'
               }`}
               title={reminderAt ? `Reminder: ${new Date(reminderAt).toLocaleDateString()}` : 'Set Note Reminder'}
             >
               <Bell className="w-3.5 h-3.5 stroke-[1.5]" />
             </button>
 
-            {/* Full Screen Immersion Toggle */}
+            {/* Full Screen */}
             <button
               onClick={toggleFullScreen}
-              className={`p-2 border transition-colors ${
-                isZenMode ? 'border-[#FF3D00] text-[#FF3D00]' : 'border-[#262626] text-[#737373] hover:text-[#FAFAFA]'
+              className={`p-2 border transition-all duration-150 ${
+                isZenMode
+                  ? 'border-[#FF3D00] bg-[#FF3D00]/10 text-[#FF3D00]'
+                  : 'border-[#262626] text-[#737373] hover:text-[#FAFAFA] hover:border-[#404040]'
               }`}
-              title={isZenMode ? 'Exit Full Screen' : 'Full Screen Immersive Focus'}
+              title={isZenMode ? 'Exit Full Screen' : 'Full Screen'}
             >
               {isZenMode ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
             </button>
 
-            {/* Settings & Overflow Dropdown Trigger Button */}
+            {/* ⋯ More Overflow Trigger */}
             <button
               onClick={() => setIsEditorSettingsOpen(!isEditorSettingsOpen)}
-              className={`p-2 border transition-colors editor-settings-trigger ${
+              className={`p-2 border transition-all duration-150 editor-settings-trigger ${
                 isEditorSettingsOpen
                   ? 'border-[#FF3D00] bg-[#1A1A1A] text-[#FF3D00]'
-                  : 'border-[#262626] text-[#737373] hover:text-[#FAFAFA]'
+                  : 'border-[#262626] text-[#737373] hover:text-[#FAFAFA] hover:border-[#404040]'
               }`}
-              title="More Note Settings"
+              title="More Options"
             >
-              <Settings className="w-3.5 h-3.5 stroke-[1.5]" />
+              <MoreHorizontal className="w-3.5 h-3.5 stroke-[1.5]" />
             </button>
           </div>
         </header>
       )}
 
-      {/* Editor Settings Overflow Popover */}
+      {/* Editor Overflow Popover (More Options) */}
       <EditorSettingsPopover
         isOpen={isEditorSettingsOpen}
         onClose={() => setIsEditorSettingsOpen(false)}
@@ -899,32 +920,20 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
 
       {/* Main Workspace */}
       <main
-        className={`flex-1 max-w-5xl w-full mx-auto p-8 flex flex-col space-y-6 transition-all duration-200 ${
-          isSidebarVisible ? 'pl-16' : 'pl-8'
+        className={`flex-1 w-full flex flex-col transition-all duration-200 ${
+          isSidebarVisible ? 'pl-14' : 'pl-0'
         }`}
       >
-        {/* Title Input */}
-        <input
-          type="text"
-          value={title}
-          onChange={(e) => {
-            setTitle(e.target.value);
-            setSaveStatus('unsaved');
-          }}
-          placeholder="Note Title..."
-          className="w-full bg-transparent font-sans font-black text-4xl sm:text-5xl tracking-tighter text-[#FAFAFA] focus:outline-none placeholder:text-[#262626]"
-        />
-
         {/* Tag Manager Bar */}
-        <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-[#262626]">
-          <Tag className="w-3.5 h-3.5 text-[#FF3D00]" />
+        <div className={`flex flex-wrap items-center gap-2 px-6 py-2 border-b border-[#1E1E1E] bg-[#0D0D0D] transition-all duration-200 ${isSidebarVisible ? '' : ''}`}>
+          <Tag className="w-3 h-3 text-[#FF3D00] shrink-0" />
           {tags.map((t) => (
             <span
               key={t}
-              className="inline-flex items-center gap-1 px-2 py-0.5 bg-[#1A1A1A] border border-[#262626] text-[11px] font-mono text-[#FAFAFA]"
+              className="inline-flex items-center gap-1 px-2 py-0.5 bg-[#1A1A1A] border border-[#262626] text-[10px] font-mono text-[#FAFAFA]"
             >
               <span>#{t}</span>
-              <button onClick={() => handleRemoveTag(t)} className="hover:text-[#FF3D00] ml-1">
+              <button onClick={() => handleRemoveTag(t)} className="hover:text-[#FF3D00] ml-0.5 leading-none">
                 ×
               </button>
             </span>
@@ -934,16 +943,32 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
             value={tagInput}
             onChange={(e) => setTagInput(e.target.value)}
             onKeyDown={handleAddTag}
-            placeholder="Add tag + press enter..."
-            className="bg-transparent border-none text-xs font-mono text-[#737373] focus:text-[#FAFAFA] focus:outline-none w-44"
+            placeholder="+ add tag"
+            className="bg-transparent border-none text-[10px] font-mono text-[#737373] focus:text-[#FAFAFA] focus:outline-none w-24"
           />
+
+          {/* Right side: word/char/time stats */}
+          <div className="ml-auto flex items-center gap-4 font-mono text-[10px] text-[#3a3a3a]">
+            <span className="flex items-center gap-1">
+              <FileText className="w-3 h-3 text-[#FF3D00]/60" />
+              <span>{wordCount}w</span>
+            </span>
+            <span>{charCount}ch</span>
+            <span className="flex items-center gap-1">
+              <Clock className="w-3 h-3 text-[#737373]/60" />
+              <span>~{readingTime}m</span>
+            </span>
+            <span className="hidden lg:inline text-[#262626] uppercase tracking-widest text-[9px]">
+              {stylusSettings.isStylusModeActive ? '● Ink' : '● Text'}
+            </span>
+          </div>
         </div>
 
-        {/* Sticky Unified Control Deck (Page Controls + Text Formatting Toolbar) */}
+        {/* Sticky Unified Control Deck — Two-Row Full-Width Toolbar */}
         {editor && (
           <RichTextProvider editor={editor}>
-            <div className="sticky top-14 z-40 bg-[#141414] border-y border-[#262626] px-4 py-2 flex flex-wrap items-center justify-between gap-2 shadow-lg text-[#FAFAFA] font-sans text-xs select-none">
-              {/* Left Group: Page Navigation */}
+            {/* ── Row 1: Page Controls ──────────────────────── */}
+            <div className="sticky top-14 z-40 bg-[#111111] border-b border-[#1E1E1E] px-3 flex items-center gap-0 shadow-sm select-none overflow-x-auto no-scrollbar">
               <PageNavigationBar
                 pages={pages}
                 activePageIndex={activePageIndex}
@@ -957,35 +982,53 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
                   setStylusSettings((prev) => ({ ...prev, stylusOnlyMode: !prev.stylusOnlyMode }))
                 }
               />
+            </div>
 
-              {/* Right Group: Text Formatting & Components Toolbar */}
-              <div onClickCapture={handleDeactivateStylusMode} className="flex flex-wrap items-center gap-1 overflow-visible">
-                <RichTextUndo />
-                <RichTextRedo />
-                <div className="h-4 w-px bg-[#262626] mx-1" />
-                <RichTextHeading />
-                <RichTextBold />
-                <RichTextItalic />
-                <RichTextUnderline />
-                <RichTextStrike />
-                <RichTextColor />
-                <RichTextHighlight />
-                <div className="h-4 w-px bg-[#262626] mx-1" />
-                <RichTextAlign />
-                <RichTextBulletList />
-                <RichTextOrderedList />
-                <RichTextTaskList />
-                <RichTextBlockquote />
-                <RichTextHorizontalRule />
-                <div className="h-4 w-px bg-[#262626] mx-1" />
-                <RichTextTable />
-                <RichTextCodeBlock />
-                <RichTextLink />
-                <RichTextImage />
-                <RichTextEmoji />
-                <RichTextClear />
-                <RichTextSearchAndReplace />
-              </div>
+            {/* ── Row 2: Text Formatting Toolbar ───────────── */}
+            <div
+              onClickCapture={handleDeactivateStylusMode}
+              className="sticky top-[calc(3.5rem+2.25rem)] z-39 bg-[#0F0F0F] border-b border-[#1E1E1E] px-3 py-1 flex items-center gap-1 overflow-x-auto no-scrollbar shadow-md select-none"
+            >
+              {/* HISTORY group */}
+              <span className="text-[8px] font-mono uppercase tracking-widest text-[#3a3a3a] px-1 shrink-0 hidden lg:inline">History</span>
+              <RichTextUndo />
+              <RichTextRedo />
+
+              {/* FORMAT group */}
+              <div className="h-4 w-px bg-[#1E1E1E] mx-1.5 shrink-0" />
+              <span className="text-[8px] font-mono uppercase tracking-widest text-[#3a3a3a] px-1 shrink-0 hidden lg:inline">Format</span>
+              <RichTextHeading />
+              <RichTextBold />
+              <RichTextItalic />
+              <RichTextUnderline />
+              <RichTextStrike />
+              <RichTextColor />
+              <RichTextHighlight />
+
+              {/* LAYOUT group */}
+              <div className="h-4 w-px bg-[#1E1E1E] mx-1.5 shrink-0" />
+              <span className="text-[8px] font-mono uppercase tracking-widest text-[#3a3a3a] px-1 shrink-0 hidden lg:inline">Layout</span>
+              <RichTextAlign />
+              <RichTextBulletList />
+              <RichTextOrderedList />
+              <RichTextTaskList />
+              <RichTextBlockquote />
+              <RichTextHorizontalRule />
+
+              {/* INSERT group */}
+              <div className="h-4 w-px bg-[#1E1E1E] mx-1.5 shrink-0" />
+              <span className="text-[8px] font-mono uppercase tracking-widest text-[#3a3a3a] px-1 shrink-0 hidden lg:inline">Insert</span>
+              <RichTextTable />
+              <RichTextCodeBlock />
+              <RichTextLink />
+              <RichTextImage />
+              <RichTextEmoji />
+
+              {/* TOOLS group */}
+              <div className="h-4 w-px bg-[#1E1E1E] mx-1.5 shrink-0" />
+              <span className="text-[8px] font-mono uppercase tracking-widest text-[#3a3a3a] px-1 shrink-0 hidden lg:inline">Tools</span>
+              <RichTextClear />
+              <RichTextSearchAndReplace />
             </div>
 
             {/* Right-Click Context Menu for Table & Column Options */}
@@ -1177,126 +1220,157 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
             )}
 
             {/* Notebook Paper Workspace Scroll Area */}
-            <div className="py-8 bg-[#050505] min-h-[calc(100vh-140px)] flex justify-center overflow-y-auto">
-              {/* Pure Clean Notebook Paper Canvas Sheet (Fixed A4 Boundaries: 850px x 1100px) */}
-              <div className="border border-[#262626] bg-[#0F0F0F] shadow-2xl relative w-full max-w-[850px] h-[1100px] text-[#FAFAFA] overflow-hidden">
-                {/* Tiptap Core Editor Content (Layered dynamically based on mode & layerOrder) */}
+            <div className="relative flex-1 bg-[#050505] overflow-auto" style={{ minHeight: 'calc(100vh - 160px)' }}>
+              {/* Zoom Transform Wrapper — centers and scales the A4 paper sheet */}
+              <div
+                className={`py-10 flex ${lockCenter ? 'justify-center' : 'justify-start'} px-4 origin-top`}
+                style={{
+                  transform: `scale(${canvasZoom})`,
+                  transformOrigin: 'top center',
+                  minHeight: `${1100 * canvasZoom + 80}px`,
+                }}
+              >
+                {/* Pure Clean Notebook Paper Canvas Sheet (Fixed A4 Boundaries: 850px x 1100px) */}
                 <div
-                  onPointerDown={(e) => {
-                    const target = e.target as HTMLElement;
-                    const table = target.closest('table');
-                    if (!table) return;
-
-                    const rect = table.getBoundingClientRect();
-                    const isNearBorder =
-                      e.clientX <= rect.left + 14 ||
-                      e.clientX >= rect.right - 14 ||
-                      e.clientY <= rect.top + 14 ||
-                      e.clientY >= rect.bottom - 14;
-
-                    if (isNearBorder) {
-                      document
-                        .querySelectorAll('.ProseMirror table')
-                        .forEach((t) => t.classList.remove('table-selected'));
-                      table.classList.add('table-selected');
-
-                      const computedStyle = window.getComputedStyle(table);
-                      const matrix = new DOMMatrixReadOnly(computedStyle.transform);
-                      const startX = matrix.m41;
-                      const startY = matrix.m42;
-
-                      const initialMouseX = e.clientX;
-                      const initialMouseY = e.clientY;
-
-                      const onPointerMove = (moveEvent: PointerEvent) => {
-                        const deltaX = moveEvent.clientX - initialMouseX;
-                        const deltaY = moveEvent.clientY - initialMouseY;
-                        table.style.transform = `translate3d(${startX + deltaX}px, ${startY + deltaY}px, 0)`;
-                      };
-
-                      const onPointerUp = () => {
-                        window.removeEventListener('pointermove', onPointerMove);
-                        window.removeEventListener('pointerup', onPointerUp);
-                      };
-
-                      window.addEventListener('pointermove', onPointerMove);
-                      window.addEventListener('pointerup', onPointerUp);
-                    }
-                  }}
-                  onContextMenu={(e) => {
-                    const target = e.target as HTMLElement;
-                    const table = target.closest('table, td, th');
-                    if (table) {
-                      e.preventDefault();
-                      setContextMenuPos({ x: e.clientX, y: e.clientY });
-                    } else {
-                      setContextMenuPos(null);
-                    }
-                  }}
-                  className={`p-8 ${
-                    !stylusSettings.isStylusModeActive || stylusSettings.layerOrder === 'text_above_ink'
-                      ? 'relative z-30 pointer-events-auto select-text'
-                      : 'relative z-20 pointer-events-none select-none'
-                  }`}
+                  className="border border-[#262626] bg-[#0F0F0F] shadow-2xl relative text-[#FAFAFA] overflow-hidden shrink-0"
+                  style={{ width: '850px', height: '1100px' }}
                 >
-                  <EditorContent editor={editor} />
-                </div>
+                  {/* Tiptap Core Editor Content (Layered dynamically based on mode & layerOrder) */}
+                  <div
+                    onPointerDown={(e) => {
+                      const target = e.target as HTMLElement;
+                      const table = target.closest('table');
+                      if (!table) return;
 
-                {/* Native Freehand Stylus Overlay Canvas Container (Ignore pointers when in Text Mode) */}
-                <div
-                  className={`absolute inset-0 ${
-                    stylusSettings.isStylusModeActive && stylusSettings.layerOrder === 'ink_above_text'
-                      ? 'z-30 pointer-events-auto'
-                      : stylusSettings.isStylusModeActive
-                      ? 'z-20 pointer-events-auto'
-                      : 'z-10 pointer-events-none'
-                  }`}
-                >
-                  <NativeStylusCanvas
-                    isActive={stylusSettings.isStylusModeActive}
-                    activeTool={activeTool}
-                    activePenSubtype={activePenSubtype}
-                    activeColor={activeColor}
-                    strokeWidth={strokeWidth}
-                    lineType={lineType}
-                    settings={stylusSettings}
-                    strokes={strokes}
-                    onStrokesChange={handleStrokesChange}
-                    paperTemplate={pages[activePageIndex]?.paperTemplate || 'blank'}
-                  />
+                      const rect = table.getBoundingClientRect();
+                      const isNearBorder =
+                        e.clientX <= rect.left + 14 ||
+                        e.clientX >= rect.right - 14 ||
+                        e.clientY <= rect.top + 14 ||
+                        e.clientY >= rect.bottom - 14;
+
+                      if (isNearBorder) {
+                        document
+                          .querySelectorAll('.ProseMirror table')
+                          .forEach((t) => t.classList.remove('table-selected'));
+                        table.classList.add('table-selected');
+
+                        const computedStyle = window.getComputedStyle(table);
+                        const matrix = new DOMMatrixReadOnly(computedStyle.transform);
+                        const startX = matrix.m41;
+                        const startY = matrix.m42;
+
+                        const initialMouseX = e.clientX;
+                        const initialMouseY = e.clientY;
+
+                        const onPointerMove = (moveEvent: PointerEvent) => {
+                          const deltaX = moveEvent.clientX - initialMouseX;
+                          const deltaY = moveEvent.clientY - initialMouseY;
+                          table.style.transform = `translate3d(${startX + deltaX}px, ${startY + deltaY}px, 0)`;
+                        };
+
+                        const onPointerUp = () => {
+                          window.removeEventListener('pointermove', onPointerMove);
+                          window.removeEventListener('pointerup', onPointerUp);
+                        };
+
+                        window.addEventListener('pointermove', onPointerMove);
+                        window.addEventListener('pointerup', onPointerUp);
+                      }
+                    }}
+                    onContextMenu={(e) => {
+                      const target = e.target as HTMLElement;
+                      const table = target.closest('table, td, th');
+                      if (table) {
+                        e.preventDefault();
+                        setContextMenuPos({ x: e.clientX, y: e.clientY });
+                      } else {
+                        setContextMenuPos(null);
+                      }
+                    }}
+                    className={`p-8 ${
+                      !stylusSettings.isStylusModeActive || stylusSettings.layerOrder === 'text_above_ink'
+                        ? 'relative z-30 pointer-events-auto select-text'
+                        : 'relative z-20 pointer-events-none select-none'
+                    }`}
+                  >
+                    <EditorContent editor={editor} />
+                  </div>
+
+                  {/* Native Freehand Stylus Overlay Canvas Container (Ignore pointers when in Text Mode) */}
+                  <div
+                    className={`absolute inset-0 ${
+                      stylusSettings.isStylusModeActive && stylusSettings.layerOrder === 'ink_above_text'
+                        ? 'z-30 pointer-events-auto'
+                        : stylusSettings.isStylusModeActive
+                        ? 'z-20 pointer-events-auto'
+                        : 'z-10 pointer-events-none'
+                    }`}
+                  >
+                    <NativeStylusCanvas
+                      isActive={stylusSettings.isStylusModeActive}
+                      activeTool={activeTool}
+                      activePenSubtype={activePenSubtype}
+                      activeColor={activeColor}
+                      strokeWidth={strokeWidth}
+                      lineType={lineType}
+                      settings={stylusSettings}
+                      strokes={strokes}
+                      onStrokesChange={handleStrokesChange}
+                      paperTemplate={pages[activePageIndex]?.paperTemplate || 'blank'}
+                    />
+                  </div>
                 </div>
+              </div>
+
+              {/* Floating Zoom Controls Pill */}
+              <div className="fixed bottom-6 right-6 z-50 flex items-center gap-0 bg-[#0A0A0A]/95 backdrop-blur-md border border-[#262626] shadow-2xl">
+                {/* Zoom Out */}
+                <button
+                  onClick={() => setCanvasZoom((z) => Math.max(0.4, parseFloat((z - 0.1).toFixed(1))))}
+                  className="p-2.5 text-[#737373] hover:text-[#FAFAFA] hover:bg-[#1A1A1A] transition-all border-r border-[#262626]"
+                  title="Zoom Out"
+                  disabled={canvasZoom <= 0.4}
+                >
+                  <ZoomOut className="w-3.5 h-3.5" />
+                </button>
+
+                {/* Zoom Level — click to reset */}
+                <button
+                  onClick={() => setCanvasZoom(1.0)}
+                  className="px-3 py-2 font-mono text-[11px] text-[#FAFAFA] hover:text-[#FF3D00] hover:bg-[#1A1A1A] transition-all min-w-[52px] text-center border-r border-[#262626]"
+                  title="Reset zoom to 100%"
+                >
+                  {Math.round(canvasZoom * 100)}%
+                </button>
+
+                {/* Zoom In */}
+                <button
+                  onClick={() => setCanvasZoom((z) => Math.min(2.0, parseFloat((z + 0.1).toFixed(1))))}
+                  className="p-2.5 text-[#737373] hover:text-[#FAFAFA] hover:bg-[#1A1A1A] transition-all border-r border-[#262626]"
+                  title="Zoom In"
+                  disabled={canvasZoom >= 2.0}
+                >
+                  <ZoomIn className="w-3.5 h-3.5" />
+                </button>
+
+                {/* Lock Center Toggle */}
+                <button
+                  onClick={() => setLockCenter((prev) => !prev)}
+                  className={`p-2.5 transition-all ${
+                    lockCenter
+                      ? 'text-[#FF3D00] bg-[#FF3D00]/10 hover:bg-[#FF3D00]/20'
+                      : 'text-[#737373] hover:text-[#FAFAFA] hover:bg-[#1A1A1A]'
+                  }`}
+                  title={lockCenter ? 'Center Lock ON — click to disable' : 'Lock canvas to center'}
+                >
+                  <Crosshair className="w-3.5 h-3.5" />
+                </button>
               </div>
             </div>
           </RichTextProvider>
         )}
       </main>
-
-      {/* Telemetry Status Footer */}
-      {!isZenMode && (
-        <footer
-          className={`h-10 border-t border-[#262626] bg-[#0F0F0F] px-8 flex items-center justify-between font-mono text-[11px] text-[#737373] fixed bottom-0 left-0 right-0 z-30 transition-all duration-200 ${
-            isSidebarVisible ? 'pl-20' : 'pl-8'
-          }`}
-        >
-          <div className="flex items-center gap-6">
-            <span className="flex items-center gap-1.5">
-              <FileText className="w-3.5 h-3.5 text-[#FF3D00]" />
-              <span>{wordCount} Words</span>
-            </span>
-            <span>{charCount} Characters</span>
-            <span className="flex items-center gap-1.5">
-              <Clock className="w-3.5 h-3.5" />
-              <span>~{readingTime} Min Read</span>
-            </span>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <span className="uppercase tracking-widest text-[10px]">
-              {stylusSettings.isStylusModeActive ? 'Stylus Mode (Active)' : 'Normal Text Editor Mode'}
-            </span>
-          </div>
-        </footer>
-      )}
 
       {/* Hardware Button & Gesture Settings Drawer */}
       <StylusSettingsModal

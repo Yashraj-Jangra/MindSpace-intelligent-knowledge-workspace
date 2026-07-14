@@ -408,9 +408,6 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
   const [isReminderOpen, setIsReminderOpen] = useState(false);
   const [isStylusSettingsOpen, setIsStylusSettingsOpen] = useState(false);
   const [isEditorSettingsOpen, setIsEditorSettingsOpen] = useState(false);
-  const [isColumnOptionsOpen, setIsColumnOptionsOpen] = useState(false);
-  const [contextMenuPos, setContextMenuPos] = useState<{ x: number; y: number } | null>(null);
-  const [tableRotation, setTableRotation] = useState<number>(0);
 
   // Configure Extensions from reactjs-tiptap-editor
   const extensions = useMemo(() => {

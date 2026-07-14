@@ -1181,6 +1181,47 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
               <div className="border border-[#262626] bg-[#0F0F0F] shadow-2xl relative w-full max-w-[850px] h-[1100px] text-[#FAFAFA] overflow-hidden">
                 {/* Tiptap Core Editor Content (Layered dynamically based on mode & layerOrder) */}
                 <div
+                  onPointerDown={(e) => {
+                    const target = e.target as HTMLElement;
+                    const table = target.closest('table');
+                    if (!table) return;
+
+                    const rect = table.getBoundingClientRect();
+                    const isNearBorder =
+                      e.clientX <= rect.left + 14 ||
+                      e.clientX >= rect.right - 14 ||
+                      e.clientY <= rect.top + 14 ||
+                      e.clientY >= rect.bottom - 14;
+
+                    if (isNearBorder) {
+                      document
+                        .querySelectorAll('.ProseMirror table')
+                        .forEach((t) => t.classList.remove('table-selected'));
+                      table.classList.add('table-selected');
+
+                      const computedStyle = window.getComputedStyle(table);
+                      const matrix = new DOMMatrixReadOnly(computedStyle.transform);
+                      const startX = matrix.m41;
+                      const startY = matrix.m42;
+
+                      const initialMouseX = e.clientX;
+                      const initialMouseY = e.clientY;
+
+                      const onPointerMove = (moveEvent: PointerEvent) => {
+                        const deltaX = moveEvent.clientX - initialMouseX;
+                        const deltaY = moveEvent.clientY - initialMouseY;
+                        table.style.transform = `translate3d(${startX + deltaX}px, ${startY + deltaY}px, 0)`;
+                      };
+
+                      const onPointerUp = () => {
+                        window.removeEventListener('pointermove', onPointerMove);
+                        window.removeEventListener('pointerup', onPointerUp);
+                      };
+
+                      window.addEventListener('pointermove', onPointerMove);
+                      window.addEventListener('pointerup', onPointerUp);
+                    }
+                  }}
                   className={`p-8 ${
                     !stylusSettings.isStylusModeActive || stylusSettings.layerOrder === 'text_above_ink'
                       ? 'relative z-30 pointer-events-auto select-text'

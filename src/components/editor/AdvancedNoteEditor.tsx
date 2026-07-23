@@ -2,7 +2,7 @@ import { common, createLowlight } from 'lowlight';
 
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { GripVertical, RotateCw, RotateCcw, Plus, Minus, Move } from 'lucide-react';
+
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 
@@ -22,7 +22,7 @@ import { Highlight, RichTextHighlight } from 'reactjs-tiptap-editor/highlight';
 import { TextAlign, RichTextAlign } from 'reactjs-tiptap-editor/textalign';
 import { Link, RichTextLink } from 'reactjs-tiptap-editor/link';
 import { Image, RichTextImage } from 'reactjs-tiptap-editor/image';
-import { Table, RichTextTable } from 'reactjs-tiptap-editor/table';
+
 import { Emoji, RichTextEmoji } from 'reactjs-tiptap-editor/emoji';
 import { History, RichTextUndo, RichTextRedo } from 'reactjs-tiptap-editor/history';
 import { Clear, RichTextClear } from 'reactjs-tiptap-editor/clear';
@@ -32,77 +32,15 @@ import { SlashCommand } from 'reactjs-tiptap-editor/slashcommand';
 
 import {
   RichTextBubbleText,
-  RichTextBubbleTable,
   RichTextBubbleImage,
   RichTextBubbleLink,
   RichTextBubbleCodeBlock,
 } from 'reactjs-tiptap-editor/bubble';
 
-import { TableContextMenu } from './table/TableContextMenu';
-import { ResizableTableWrapper } from './table/ResizableTableWrapper';
-import TableCell from '@tiptap/extension-table-cell';
-import TableHeader from '@tiptap/extension-table-header';
-import TableRow from '@tiptap/extension-table-row';
+import { CanvasTableExtension } from './table/CanvasTableExtension';
+import { InsertTableModal } from './table/InsertTableModal';
 
-const CustomTableCell = TableCell.extend({
-  addAttributes() {
-    return {
-      ...this.parent?.(),
-      backgroundColor: {
-        default: null,
-        parseHTML: (element) => element.style.backgroundColor || element.getAttribute('data-bg-color') || null,
-        renderHTML: (attributes) => {
-          if (!attributes.backgroundColor) return {};
-          return {
-            style: `background-color: ${attributes.backgroundColor}`,
-            'data-bg-color': attributes.backgroundColor,
-          };
-        },
-      },
-      textAlign: {
-        default: null,
-        parseHTML: (element) => element.style.textAlign || element.getAttribute('data-align') || null,
-        renderHTML: (attributes) => {
-          if (!attributes.textAlign) return {};
-          return {
-            style: `text-align: ${attributes.textAlign}`,
-            'data-align': attributes.textAlign,
-          };
-        },
-      },
-    };
-  },
-});
 
-const CustomTableHeader = TableHeader.extend({
-  addAttributes() {
-    return {
-      ...this.parent?.(),
-      backgroundColor: {
-        default: null,
-        parseHTML: (element) => element.style.backgroundColor || element.getAttribute('data-bg-color') || null,
-        renderHTML: (attributes) => {
-          if (!attributes.backgroundColor) return {};
-          return {
-            style: `background-color: ${attributes.backgroundColor}`,
-            'data-bg-color': attributes.backgroundColor,
-          };
-        },
-      },
-      textAlign: {
-        default: null,
-        parseHTML: (element) => element.style.textAlign || element.getAttribute('data-align') || null,
-        renderHTML: (attributes) => {
-          if (!attributes.textAlign) return {};
-          return {
-            style: `text-align: ${attributes.textAlign}`,
-            'data-align': attributes.textAlign,
-          };
-        },
-      },
-    };
-  },
-});
 
 import {
   ArrowLeft,
@@ -244,8 +182,7 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
   const [canvasZoom, setCanvasZoom] = useState(1.0);
   const [lockCenter, setLockCenter] = useState(true);
   const [isConverting, setIsConverting] = useState(false);
-  const [contextMenuPos, setContextMenuPos] = useState<{ x: number; y: number } | null>(null);
-  const [targetCell, setTargetCell] = useState<HTMLElement | null>(null);
+  const [isInsertTableOpen, setIsInsertTableOpen] = useState(false);
 
 
 
@@ -281,11 +218,7 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
     };
   }, []);
 
-  useEffect(() => {
-    const handleClickOutside = () => setContextMenuPos(null);
-    window.addEventListener('click', handleClickOutside);
-    return () => window.removeEventListener('click', handleClickOutside);
-  }, []);
+
 
   // Modals & Popovers state
   const [isReminderOpen, setIsReminderOpen] = useState(false);
@@ -339,10 +272,7 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
           return data.url;
         },
       }),
-      Table.configure({ resizable: true }),
-      TableRow,
-      CustomTableHeader,
-      CustomTableCell,
+      CanvasTableExtension,
       HorizontalRule,
       Clear,
       SlashCommand,
@@ -375,124 +305,7 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
     }
   }, [editor, stylusSettings.isStylusModeActive]);
 
-  // Live Table Control Decorators (Freeform Drag Top Grip & Bottom-Right Corner Handle)
-  useEffect(() => {
-    if (!editor) return;
 
-    const updateTableDecorations = () => {
-      const tables = document.querySelectorAll('.ProseMirror table');
-      tables.forEach((tableEl) => {
-        const table = tableEl as HTMLElement;
-        if (table.dataset.decorated === 'true') return;
-        table.dataset.decorated = 'true';
-
-        table.style.position = 'relative';
-
-        // 1. Top Drag Grip Bar
-        const topGrip = document.createElement('div');
-        topGrip.className =
-          'table-top-drag-grip absolute -top-7 left-0 right-0 h-6 bg-[#0A0A0A] border border-[#FF3D00] text-[#FAFAFA] text-[10px] font-mono flex items-center justify-between px-2 cursor-grab active:cursor-grabbing select-none z-[30] opacity-80 hover:opacity-100 transition-opacity';
-        topGrip.innerHTML = `
-          <div class="flex items-center gap-1">
-            <span class="text-[#FF3D00] font-bold">:: DRAG TABLE</span>
-          </div>
-          <button type="button" class="reset-table-pos text-[9px] text-[#737373] hover:text-[#FF3D00]">RESET</button>
-        `;
-
-        table.appendChild(topGrip);
-
-        let isDragging = false;
-        let startX = 0;
-        let startY = 0;
-        let initialTranslateX = 0;
-        let initialTranslateY = 0;
-
-        const onPointerDownGrip = (e: PointerEvent) => {
-          if ((e.target as HTMLElement).classList.contains('reset-table-pos')) {
-            table.style.transform = 'translate3d(0px, 0px, 0px)';
-            return;
-          }
-          e.preventDefault();
-          e.stopPropagation();
-          isDragging = true;
-          startX = e.clientX;
-          startY = e.clientY;
-
-          const matrix = new DOMMatrixReadOnly(window.getComputedStyle(table).transform);
-          initialTranslateX = matrix.m41;
-          initialTranslateY = matrix.m42;
-
-          const onPointerMove = (moveEv: PointerEvent) => {
-            if (!isDragging) return;
-            const dx = moveEv.clientX - startX;
-            const dy = moveEv.clientY - startY;
-            table.style.transform = `translate3d(${initialTranslateX + dx}px, ${initialTranslateY + dy}px, 0px)`;
-          };
-
-          const onPointerUp = () => {
-            isDragging = false;
-            window.removeEventListener('pointermove', onPointerMove);
-            window.removeEventListener('pointerup', onPointerUp);
-          };
-
-          window.addEventListener('pointermove', onPointerMove);
-          window.addEventListener('pointerup', onPointerUp);
-        };
-
-        topGrip.addEventListener('pointerdown', onPointerDownGrip);
-
-        // 2. Bottom-Right Corner Resize Handle
-        const resizer = document.createElement('div');
-        resizer.className =
-          'table-corner-resizer absolute -bottom-3 -right-3 w-6 h-6 bg-[#0A0A0A] border-2 border-[#FF3D00] text-[#FF3D00] flex items-center justify-center cursor-nwse-resize select-none z-[30] shadow-lg hover:scale-110 transition-transform';
-        resizer.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>`;
-
-        table.appendChild(resizer);
-
-        let isResizing = false;
-        let initialW = 0;
-        let initialH = 0;
-        let resizeStartX = 0;
-        let resizeStartY = 0;
-
-        const onPointerDownResizer = (e: PointerEvent) => {
-          e.preventDefault();
-          e.stopPropagation();
-          isResizing = true;
-          resizeStartX = e.clientX;
-          resizeStartY = e.clientY;
-          initialW = table.offsetWidth;
-          initialH = table.offsetHeight;
-
-          const onPointerMove = (moveEv: PointerEvent) => {
-            if (!isResizing) return;
-            const dw = moveEv.clientX - resizeStartX;
-            const dh = moveEv.clientY - resizeStartY;
-
-            const newW = Math.max(200, initialW + dw);
-            const newH = Math.max(100, initialH + dh);
-
-            table.style.width = `${newW}px`;
-            table.style.height = `${newH}px`;
-          };
-
-          const onPointerUp = () => {
-            isResizing = false;
-            window.removeEventListener('pointermove', onPointerMove);
-            window.removeEventListener('pointerup', onPointerUp);
-          };
-
-          window.addEventListener('pointermove', onPointerMove);
-          window.addEventListener('pointerup', onPointerUp);
-        };
-
-        resizer.addEventListener('pointerdown', onPointerDownResizer);
-      });
-    };
-
-    const timer = setTimeout(updateTableDecorations, 150);
-    return () => clearTimeout(timer);
-  }, [editor, content]);
 
   // Undo / Redo Stacks for Vector Strokes
   const handleStrokesChange = (nextStrokes: VectorStroke[]) => {
@@ -1205,7 +1018,22 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
               {/* INSERT group */}
               <div className="h-4 w-px bg-[#1E1E1E] mx-1.5 shrink-0" />
               <span className="text-[8px] font-mono uppercase tracking-widest text-[#3a3a3a] px-1 shrink-0 hidden lg:inline">Insert</span>
-              <RichTextTable />
+              {/* Insert Table Button — opens our custom modal */}
+              <button
+                id="insert-canvas-table-btn"
+                onClick={() => setIsInsertTableOpen(true)}
+                className="inline-flex items-center gap-1 px-2 py-1 text-[10px] font-mono text-[#737373] hover:text-[#FF3D00] hover:bg-[#1A1A1A] transition-colors border border-transparent hover:border-[#262626] uppercase tracking-wider"
+                title="Insert Table"
+              >
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="square">
+                  <rect x="3" y="3" width="18" height="18"/>
+                  <line x1="3" y1="9" x2="21" y2="9"/>
+                  <line x1="3" y1="15" x2="21" y2="15"/>
+                  <line x1="9" y1="3" x2="9" y2="21"/>
+                  <line x1="15" y1="3" x2="15" y2="21"/>
+                </svg>
+                Table
+              </button>
               <RichTextCodeBlock />
               <RichTextLink />
               <RichTextImage />
@@ -1218,18 +1046,14 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
               <RichTextSearchAndReplace />
             </div>
 
-            {/* Scope-Based Right-Click Context Menu for Table & Column Controls */}
-            {contextMenuPos && editor && editor.isActive('table') && (
-              <TableContextMenu
-                editor={editor}
-                position={contextMenuPos}
-                targetCell={targetCell}
-                onClose={() => {
-                  setContextMenuPos(null);
-                  setTargetCell(null);
-                }}
-              />
-            )}
+            {/* Insert Table Modal */}
+            <InsertTableModal
+              isOpen={isInsertTableOpen}
+              onClose={() => setIsInsertTableOpen(false)}
+              onInsert={(r, c) => {
+                editor?.commands.insertCanvasTable(r, c);
+              }}
+            />
 
             {/* Notebook Paper Workspace Scroll Area */}
             <div className="note-editor-canvas-area relative flex-1 bg-[#050505] overflow-auto" style={{ minHeight: 'calc(100vh - 160px)' }}>
@@ -1249,19 +1073,6 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
                 >
                   {/* Tiptap Core Editor Content (Layered dynamically based on mode & layerOrder) */}
                   <div
-                    onContextMenu={(e) => {
-                      const target = e.target as HTMLElement;
-                      const table = target.closest('table');
-                      const cell = target.closest('td, th') as HTMLElement;
-                      if (table) {
-                        e.preventDefault();
-                        setTargetCell(cell || null);
-                        setContextMenuPos({ x: e.clientX, y: e.clientY });
-                      } else {
-                        setContextMenuPos(null);
-                        setTargetCell(null);
-                      }
-                    }}
                     className={`p-8 ${
                       !stylusSettings.isStylusModeActive || stylusSettings.layerOrder === 'text_above_ink'
                         ? 'relative z-30 pointer-events-auto select-text'

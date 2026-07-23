@@ -2273,3 +2273,63 @@ html.light button[class*="bg-\[#1A1A1A\]"] {
   border-color: #D0D0D0 !important;
   color: #0A0A0A !important;
 }
+
+/* ── Canvas Table ─────────────────────────────────────── */
+
+/* Prevent border-radius reset from affecting color inputs */
+.canvas-table-root input[type="color"] {
+  border-radius: 0 !important;
+  cursor: pointer;
+}
+
+/* Contenteditable cell focus ring */
+.canvas-table-cell:focus {
+  outline: 1px solid #FF3D00 !important;
+  outline-offset: -1px;
+  z-index: 1;
+  position: relative;
+}
+
+/* Drag bar cursor */
+.canvas-table-drag-bar {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* NodeViewWrapper block display */
+.canvas-table-node-wrapper {
+  display: block !important;
+}
+
+/* Range slider */
+.canvas-table-root input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 3px;
+  background: #262626;
+  outline: none;
+  border-radius: 0 !important;
+}
+
+.canvas-table-root input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 10px;
+  height: 10px;
+  background: #FF3D00;
+  cursor: pointer;
+  border-radius: 0 !important;
+}
+
+.canvas-table-root input[type="range"]::-moz-range-thumb {
+  width: 10px;
+  height: 10px;
+  background: #FF3D00;
+  cursor: pointer;
+  border-radius: 0 !important;
+  border: none;
+}
+
+/* Color swatch reset */
+.canvas-table-root input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+.canvas-table-root input[type="color"]::-webkit-color-swatch { border: none; }

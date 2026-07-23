@@ -4,22 +4,22 @@
     "userId": "default_user",
     "canvasId": null,
     "title": "Test 2",
-    "content": "<p style=\"text-align: left;\"></p><table style=\"border: 1px solid rgb(0, 0, 0); border-collapse: collapse; width: 100%; min-width: 445px;\"><colgroup><col style=\"width: 82px;\"><col style=\"width: 89px;\"><col style=\"width: 88px;\"><col style=\"min-width: 25px;\"><col style=\"min-width: 25px;\"><col style=\"width: 79px;\"><col style=\"width: 57px;\"></colgroup><tbody><tr><td colspan=\"1\" rowspan=\"1\" colwidth=\"82\"><p></p></td><td colspan=\"1\" rowspan=\"1\" colwidth=\"89\"><p></p></td><td colspan=\"1\" rowspan=\"1\" colwidth=\"88\"><p></p></td><td colspan=\"1\" rowspan=\"1\"><p></p></td><td colspan=\"1\" rowspan=\"1\"><p></p></td><td colspan=\"1\" rowspan=\"1\" colwidth=\"79\"><p></p></td><td colspan=\"1\" rowspan=\"1\" colwidth=\"57\"><p></p></td></tr><tr><td colspan=\"1\" rowspan=\"1\" colwidth=\"82\"><p></p></td><td colspan=\"1\" rowspan=\"1\" colwidth=\"89\"><p></p></td><td colspan=\"1\" rowspan=\"1\" colwidth=\"88\"><p></p></td><td colspan=\"1\" rowspan=\"1\"><p></p></td><td colspan=\"1\" rowspan=\"1\"><p></p></td><td colspan=\"1\" rowspan=\"1\" colwidth=\"79\"><p></p></td><td colspan=\"1\" rowspan=\"1\" colwidth=\"57\"><p></p></td></tr><tr><td colspan=\"1\" rowspan=\"1\" colwidth=\"82\"><p></p></td><td colspan=\"1\" rowspan=\"1\" colwidth=\"89\"><p></p></td><td colspan=\"1\" rowspan=\"1\" colwidth=\"88\"><p></p></td><td colspan=\"1\" rowspan=\"1\"><p></p></td><td colspan=\"1\" rowspan=\"1\"><p></p></td><td colspan=\"1\" rowspan=\"1\" colwidth=\"79\"><p></p></td><td colspan=\"1\" rowspan=\"1\" colwidth=\"57\"><p></p></td></tr><tr><td colspan=\"1\" rowspan=\"1\" colwidth=\"82\"><p></p></td><td colspan=\"1\" rowspan=\"1\" colwidth=\"89\"><p></p></td><td colspan=\"1\" rowspan=\"1\" colwidth=\"88\"><p></p></td><td colspan=\"1\" rowspan=\"1\"><p></p></td><td colspan=\"1\" rowspan=\"1\"><p></p></td><td colspan=\"1\" rowspan=\"1\" colwidth=\"79\"><p></p></td><td colspan=\"1\" rowspan=\"1\" colwidth=\"57\"><p></p></td></tr></tbody></table><p></p>",
+    "content": "<p style=\"text-align: left;\"></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p style=\"text-align: right;\">jef mvdfb</p><p></p><p style=\"text-align: right;\"></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p>",
     "tags": [],
     "priority": "MEDIUM",
     "isPinned": false,
     "isArchived": false,
     "reminderAt": null,
     "createdAt": "2026-07-23T15:27:39.790Z",
-    "updatedAt": "2026-07-23T17:11:53.522Z",
+    "updatedAt": "2026-07-23T19:16:23.238Z",
     "pages": [
       {
         "id": "p-1784821859621-kjsy",
         "pageNumber": 1,
-        "content": "<p style=\"text-align: left;\"></p><table style=\"border: 1px solid rgb(0, 0, 0); border-collapse: collapse; width: 100%; min-width: 445px;\"><colgroup><col style=\"width: 82px;\"><col style=\"width: 89px;\"><col style=\"width: 88px;\"><col style=\"min-width: 25px;\"><col style=\"min-width: 25px;\"><col style=\"width: 79px;\"><col style=\"width: 57px;\"></colgroup><tbody><tr><td colspan=\"1\" rowspan=\"1\" colwidth=\"82\"><p></p></td><td colspan=\"1\" rowspan=\"1\" colwidth=\"89\"><p></p></td><td colspan=\"1\" rowspan=\"1\" colwidth=\"88\"><p></p></td><td colspan=\"1\" rowspan=\"1\"><p></p></td><td colspan=\"1\" rowspan=\"1\"><p></p></td><td colspan=\"1\" rowspan=\"1\" colwidth=\"79\"><p></p></td><td colspan=\"1\" rowspan=\"1\" colwidth=\"57\"><p></p></td></tr><tr><td colspan=\"1\" rowspan=\"1\" colwidth=\"82\"><p></p></td><td colspan=\"1\" rowspan=\"1\" colwidth=\"89\"><p></p></td><td colspan=\"1\" rowspan=\"1\" colwidth=\"88\"><p></p></td><td colspan=\"1\" rowspan=\"1\"><p></p></td><td colspan=\"1\" rowspan=\"1\"><p></p></td><td colspan=\"1\" rowspan=\"1\" colwidth=\"79\"><p></p></td><td colspan=\"1\" rowspan=\"1\" colwidth=\"57\"><p></p></td></tr><tr><td colspan=\"1\" rowspan=\"1\" colwidth=\"82\"><p></p></td><td colspan=\"1\" rowspan=\"1\" colwidth=\"89\"><p></p></td><td colspan=\"1\" rowspan=\"1\" colwidth=\"88\"><p></p></td><td colspan=\"1\" rowspan=\"1\"><p></p></td><td colspan=\"1\" rowspan=\"1\"><p></p></td><td colspan=\"1\" rowspan=\"1\" colwidth=\"79\"><p></p></td><td colspan=\"1\" rowspan=\"1\" colwidth=\"57\"><p></p></td></tr><tr><td colspan=\"1\" rowspan=\"1\" colwidth=\"82\"><p></p></td><td colspan=\"1\" rowspan=\"1\" colwidth=\"89\"><p></p></td><td colspan=\"1\" rowspan=\"1\" colwidth=\"88\"><p></p></td><td colspan=\"1\" rowspan=\"1\"><p></p></td><td colspan=\"1\" rowspan=\"1\"><p></p></td><td colspan=\"1\" rowspan=\"1\" colwidth=\"79\"><p></p></td><td colspan=\"1\" rowspan=\"1\" colwidth=\"57\"><p></p></td></tr></tbody></table><p></p>",
+        "content": "<p style=\"text-align: left;\"></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p style=\"text-align: right;\">jef mvdfb</p><p></p><p style=\"text-align: right;\"></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p>",
         "strokes": [
           {
-            "id": "stroke-1784825355461-acdzs",
+            "id": "stroke-1784829964491-68f1d",
             "tool": "pen",
             "penSubtype": "ballpoint",
             "highlighterSubtype": "flat",
@@ -31,26 +31,132 @@
             "pencilDensity": 0.85,
             "points": [
               {
-                "x": 433.4000244140625,
-                "y": 237.20005798339844,
+                "x": 306.20001220703125,
+                "y": 141.00001525878906,
                 "pressure": 0.5,
                 "tiltX": 0,
                 "tiltY": 0,
-                "timeStamp": 42156.60000000149
+                "timeStamp": 3758.800000000745
               }
             ],
-            "createdAt": 1784825355461,
+            "createdAt": 1784829964491,
             "controlPoints": [
               {
-                "id": "stroke-1784825355461-acdzs-start",
-                "x": 433.4000244140625,
-                "y": 237.20005798339844,
+                "id": "stroke-1784829964491-68f1d-start",
+                "x": 306.20001220703125,
+                "y": 141.00001525878906,
                 "type": "endpoint"
               },
               {
-                "id": "stroke-1784825355461-acdzs-end",
-                "x": 433.4000244140625,
-                "y": 237.20005798339844,
+                "id": "stroke-1784829964491-68f1d-end",
+                "x": 306.20001220703125,
+                "y": 141.00001525878906,
+                "type": "endpoint"
+              }
+            ]
+          },
+          {
+            "id": "stroke-1784829965822-hg6tj",
+            "tool": "pen",
+            "penSubtype": "ballpoint",
+            "highlighterSubtype": "flat",
+            "isStraightLine": false,
+            "color": "#FF3D00",
+            "width": 3,
+            "lineType": "solid",
+            "smoothing": "mild",
+            "pencilDensity": 0.85,
+            "points": [
+              {
+                "x": 288.5999755859375,
+                "y": 153.00001525878906,
+                "pressure": 0.5,
+                "tiltX": 0,
+                "tiltY": 0,
+                "timeStamp": 4926.699999999255
+              },
+              {
+                "x": 289.4000244140625,
+                "y": 153.00001525878906,
+                "pressure": 0.5,
+                "tiltX": 0,
+                "tiltY": 0,
+                "timeStamp": 4928.5
+              }
+            ],
+            "createdAt": 1784829965822,
+            "controlPoints": [
+              {
+                "id": "stroke-1784829965822-hg6tj-start",
+                "x": 288.5999755859375,
+                "y": 153.00001525878906,
+                "type": "endpoint"
+              },
+              {
+                "id": "stroke-1784829965822-hg6tj-end",
+                "x": 289.4000244140625,
+                "y": 153.00001525878906,
+                "type": "endpoint"
+              }
+            ]
+          },
+          {
+            "id": "stroke-1784831620748-87km2",
+            "tool": "pen",
+            "penSubtype": "ballpoint",
+            "highlighterSubtype": "flat",
+            "isStraightLine": false,
+            "color": "#FF3D00",
+            "width": 3,
+            "lineType": "solid",
+            "smoothing": "mild",
+            "pencilDensity": 0.85,
+            "points": [
+              {
+                "x": 311.79998779296875,
+                "y": 161.00001525878906,
+                "pressure": 0.5,
+                "tiltX": 0,
+                "tiltY": 0,
+                "timeStamp": 32954.699999999255
+              },
+              {
+                "x": 311.79998779296875,
+                "y": 161.00001525878906,
+                "pressure": 0.5,
+                "tiltX": 0,
+                "tiltY": 0,
+                "timeStamp": 32972.199999999255
+              },
+              {
+                "x": 311.79998779296875,
+                "y": 161.00001525878906,
+                "pressure": 0.5,
+                "tiltX": 0,
+                "tiltY": 0,
+                "timeStamp": 32986
+              },
+              {
+                "x": 311.79998779296875,
+                "y": 161.00001525878906,
+                "pressure": 0.5,
+                "tiltX": 0,
+                "tiltY": 0,
+                "timeStamp": 33117.099999997765
+              }
+            ],
+            "createdAt": 1784831620748,
+            "controlPoints": [
+              {
+                "id": "stroke-1784831620748-87km2-start",
+                "x": 311.79998779296875,
+                "y": 161.00001525878906,
+                "type": "endpoint"
+              },
+              {
+                "id": "stroke-1784831620748-87km2-end",
+                "x": 311.79998779296875,
+                "y": 161.00001525878906,
                 "type": "endpoint"
               }
             ]
@@ -73,7 +179,7 @@
         "paperTemplate": "blank"
       }
     ],
-    "drawingData": "[{\"id\":\"stroke-1784825355461-acdzs\",\"tool\":\"pen\",\"penSubtype\":\"ballpoint\",\"highlighterSubtype\":\"flat\",\"isStraightLine\":false,\"color\":\"#FF3D00\",\"width\":3,\"lineType\":\"solid\",\"smoothing\":\"mild\",\"pencilDensity\":0.85,\"points\":[{\"x\":433.4000244140625,\"y\":237.20005798339844,\"pressure\":0.5,\"tiltX\":0,\"tiltY\":0,\"timeStamp\":42156.60000000149}],\"createdAt\":1784825355461,\"controlPoints\":[{\"id\":\"stroke-1784825355461-acdzs-start\",\"x\":433.4000244140625,\"y\":237.20005798339844,\"type\":\"endpoint\"},{\"id\":\"stroke-1784825355461-acdzs-end\",\"x\":433.4000244140625,\"y\":237.20005798339844,\"type\":\"endpoint\"}]}]"
+    "drawingData": "[{\"id\":\"stroke-1784829964491-68f1d\",\"tool\":\"pen\",\"penSubtype\":\"ballpoint\",\"highlighterSubtype\":\"flat\",\"isStraightLine\":false,\"color\":\"#FF3D00\",\"width\":3,\"lineType\":\"solid\",\"smoothing\":\"mild\",\"pencilDensity\":0.85,\"points\":[{\"x\":306.20001220703125,\"y\":141.00001525878906,\"pressure\":0.5,\"tiltX\":0,\"tiltY\":0,\"timeStamp\":3758.800000000745}],\"createdAt\":1784829964491,\"controlPoints\":[{\"id\":\"stroke-1784829964491-68f1d-start\",\"x\":306.20001220703125,\"y\":141.00001525878906,\"type\":\"endpoint\"},{\"id\":\"stroke-1784829964491-68f1d-end\",\"x\":306.20001220703125,\"y\":141.00001525878906,\"type\":\"endpoint\"}]},{\"id\":\"stroke-1784829965822-hg6tj\",\"tool\":\"pen\",\"penSubtype\":\"ballpoint\",\"highlighterSubtype\":\"flat\",\"isStraightLine\":false,\"color\":\"#FF3D00\",\"width\":3,\"lineType\":\"solid\",\"smoothing\":\"mild\",\"pencilDensity\":0.85,\"points\":[{\"x\":288.5999755859375,\"y\":153.00001525878906,\"pressure\":0.5,\"tiltX\":0,\"tiltY\":0,\"timeStamp\":4926.699999999255},{\"x\":289.4000244140625,\"y\":153.00001525878906,\"pressure\":0.5,\"tiltX\":0,\"tiltY\":0,\"timeStamp\":4928.5}],\"createdAt\":1784829965822,\"controlPoints\":[{\"id\":\"stroke-1784829965822-hg6tj-start\",\"x\":288.5999755859375,\"y\":153.00001525878906,\"type\":\"endpoint\"},{\"id\":\"stroke-1784829965822-hg6tj-end\",\"x\":289.4000244140625,\"y\":153.00001525878906,\"type\":\"endpoint\"}]},{\"id\":\"stroke-1784831620748-87km2\",\"tool\":\"pen\",\"penSubtype\":\"ballpoint\",\"highlighterSubtype\":\"flat\",\"isStraightLine\":false,\"color\":\"#FF3D00\",\"width\":3,\"lineType\":\"solid\",\"smoothing\":\"mild\",\"pencilDensity\":0.85,\"points\":[{\"x\":311.79998779296875,\"y\":161.00001525878906,\"pressure\":0.5,\"tiltX\":0,\"tiltY\":0,\"timeStamp\":32954.699999999255},{\"x\":311.79998779296875,\"y\":161.00001525878906,\"pressure\":0.5,\"tiltX\":0,\"tiltY\":0,\"timeStamp\":32972.199999999255},{\"x\":311.79998779296875,\"y\":161.00001525878906,\"pressure\":0.5,\"tiltX\":0,\"tiltY\":0,\"timeStamp\":32986},{\"x\":311.79998779296875,\"y\":161.00001525878906,\"pressure\":0.5,\"tiltX\":0,\"tiltY\":0,\"timeStamp\":33117.099999997765}],\"createdAt\":1784831620748,\"controlPoints\":[{\"id\":\"stroke-1784831620748-87km2-start\",\"x\":311.79998779296875,\"y\":161.00001525878906,\"type\":\"endpoint\"},{\"id\":\"stroke-1784831620748-87km2-end\",\"x\":311.79998779296875,\"y\":161.00001525878906,\"type\":\"endpoint\"}]}]"
   },
   {
     "id": "note_862iec8q",

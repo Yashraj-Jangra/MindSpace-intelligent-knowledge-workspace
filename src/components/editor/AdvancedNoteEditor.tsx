@@ -247,124 +247,7 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
   const [contextMenuPos, setContextMenuPos] = useState<{ x: number; y: number } | null>(null);
   const [targetCell, setTargetCell] = useState<HTMLElement | null>(null);
 
-  // Live Table Control Decorators (Freeform Drag Top Grip & Bottom-Right Corner Handle)
-  useEffect(() => {
-    if (!editor) return;
 
-    const updateTableDecorations = () => {
-      const tables = document.querySelectorAll('.ProseMirror table');
-      tables.forEach((tableEl) => {
-        const table = tableEl as HTMLElement;
-        if (table.dataset.decorated === 'true') return;
-        table.dataset.decorated = 'true';
-
-        table.style.position = 'relative';
-
-        // 1. Top Drag Grip Bar
-        const topGrip = document.createElement('div');
-        topGrip.className =
-          'table-top-drag-grip absolute -top-7 left-0 right-0 h-6 bg-[#0A0A0A] border border-[#FF3D00] text-[#FAFAFA] text-[10px] font-mono flex items-center justify-between px-2 cursor-grab active:cursor-grabbing select-none z-[30] opacity-80 hover:opacity-100 transition-opacity';
-        topGrip.innerHTML = `
-          <div class="flex items-center gap-1">
-            <span class="text-[#FF3D00] font-bold">:: DRAG TABLE</span>
-          </div>
-          <button type="button" class="reset-table-pos text-[9px] text-[#737373] hover:text-[#FF3D00]">RESET</button>
-        `;
-
-        table.appendChild(topGrip);
-
-        let isDragging = false;
-        let startX = 0;
-        let startY = 0;
-        let initialTranslateX = 0;
-        let initialTranslateY = 0;
-
-        const onPointerDownGrip = (e: PointerEvent) => {
-          if ((e.target as HTMLElement).classList.contains('reset-table-pos')) {
-            table.style.transform = 'translate3d(0px, 0px, 0px)';
-            return;
-          }
-          e.preventDefault();
-          e.stopPropagation();
-          isDragging = true;
-          startX = e.clientX;
-          startY = e.clientY;
-
-          const matrix = new DOMMatrixReadOnly(window.getComputedStyle(table).transform);
-          initialTranslateX = matrix.m41;
-          initialTranslateY = matrix.m42;
-
-          const onPointerMove = (moveEv: PointerEvent) => {
-            if (!isDragging) return;
-            const dx = moveEv.clientX - startX;
-            const dy = moveEv.clientY - startY;
-            table.style.transform = `translate3d(${initialTranslateX + dx}px, ${initialTranslateY + dy}px, 0px)`;
-          };
-
-          const onPointerUp = () => {
-            isDragging = false;
-            window.removeEventListener('pointermove', onPointerMove);
-            window.removeEventListener('pointerup', onPointerUp);
-          };
-
-          window.addEventListener('pointermove', onPointerMove);
-          window.addEventListener('pointerup', onPointerUp);
-        };
-
-        topGrip.addEventListener('pointerdown', onPointerDownGrip);
-
-        // 2. Bottom-Right Corner Resize Handle
-        const resizer = document.createElement('div');
-        resizer.className =
-          'table-corner-resizer absolute -bottom-3 -right-3 w-6 h-6 bg-[#0A0A0A] border-2 border-[#FF3D00] text-[#FF3D00] flex items-center justify-center cursor-nwse-resize select-none z-[30] shadow-lg hover:scale-110 transition-transform';
-        resizer.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>`;
-
-        table.appendChild(resizer);
-
-        let isResizing = false;
-        let initialW = 0;
-        let initialH = 0;
-        let resizeStartX = 0;
-        let resizeStartY = 0;
-
-        const onPointerDownResizer = (e: PointerEvent) => {
-          e.preventDefault();
-          e.stopPropagation();
-          isResizing = true;
-          resizeStartX = e.clientX;
-          resizeStartY = e.clientY;
-          initialW = table.offsetWidth;
-          initialH = table.offsetHeight;
-
-          const onPointerMove = (moveEv: PointerEvent) => {
-            if (!isResizing) return;
-            const dw = moveEv.clientX - resizeStartX;
-            const dh = moveEv.clientY - resizeStartY;
-
-            const newW = Math.max(200, initialW + dw);
-            const newH = Math.max(100, initialH + dh);
-
-            table.style.width = `${newW}px`;
-            table.style.height = `${newH}px`;
-          };
-
-          const onPointerUp = () => {
-            isResizing = false;
-            window.removeEventListener('pointermove', onPointerMove);
-            window.removeEventListener('pointerup', onPointerUp);
-          };
-
-          window.addEventListener('pointermove', onPointerMove);
-          window.addEventListener('pointerup', onPointerUp);
-        };
-
-        resizer.addEventListener('pointerdown', onPointerDownResizer);
-      });
-    };
-
-    const timer = setTimeout(updateTableDecorations, 150);
-    return () => clearTimeout(timer);
-  }, [editor, content]);
 
   // Native HTML5 Fullscreen API Toggle
   const toggleFullScreen = async () => {
@@ -491,6 +374,125 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
       editor.setEditable(!stylusSettings.isStylusModeActive);
     }
   }, [editor, stylusSettings.isStylusModeActive]);
+
+  // Live Table Control Decorators (Freeform Drag Top Grip & Bottom-Right Corner Handle)
+  useEffect(() => {
+    if (!editor) return;
+
+    const updateTableDecorations = () => {
+      const tables = document.querySelectorAll('.ProseMirror table');
+      tables.forEach((tableEl) => {
+        const table = tableEl as HTMLElement;
+        if (table.dataset.decorated === 'true') return;
+        table.dataset.decorated = 'true';
+
+        table.style.position = 'relative';
+
+        // 1. Top Drag Grip Bar
+        const topGrip = document.createElement('div');
+        topGrip.className =
+          'table-top-drag-grip absolute -top-7 left-0 right-0 h-6 bg-[#0A0A0A] border border-[#FF3D00] text-[#FAFAFA] text-[10px] font-mono flex items-center justify-between px-2 cursor-grab active:cursor-grabbing select-none z-[30] opacity-80 hover:opacity-100 transition-opacity';
+        topGrip.innerHTML = `
+          <div class="flex items-center gap-1">
+            <span class="text-[#FF3D00] font-bold">:: DRAG TABLE</span>
+          </div>
+          <button type="button" class="reset-table-pos text-[9px] text-[#737373] hover:text-[#FF3D00]">RESET</button>
+        `;
+
+        table.appendChild(topGrip);
+
+        let isDragging = false;
+        let startX = 0;
+        let startY = 0;
+        let initialTranslateX = 0;
+        let initialTranslateY = 0;
+
+        const onPointerDownGrip = (e: PointerEvent) => {
+          if ((e.target as HTMLElement).classList.contains('reset-table-pos')) {
+            table.style.transform = 'translate3d(0px, 0px, 0px)';
+            return;
+          }
+          e.preventDefault();
+          e.stopPropagation();
+          isDragging = true;
+          startX = e.clientX;
+          startY = e.clientY;
+
+          const matrix = new DOMMatrixReadOnly(window.getComputedStyle(table).transform);
+          initialTranslateX = matrix.m41;
+          initialTranslateY = matrix.m42;
+
+          const onPointerMove = (moveEv: PointerEvent) => {
+            if (!isDragging) return;
+            const dx = moveEv.clientX - startX;
+            const dy = moveEv.clientY - startY;
+            table.style.transform = `translate3d(${initialTranslateX + dx}px, ${initialTranslateY + dy}px, 0px)`;
+          };
+
+          const onPointerUp = () => {
+            isDragging = false;
+            window.removeEventListener('pointermove', onPointerMove);
+            window.removeEventListener('pointerup', onPointerUp);
+          };
+
+          window.addEventListener('pointermove', onPointerMove);
+          window.addEventListener('pointerup', onPointerUp);
+        };
+
+        topGrip.addEventListener('pointerdown', onPointerDownGrip);
+
+        // 2. Bottom-Right Corner Resize Handle
+        const resizer = document.createElement('div');
+        resizer.className =
+          'table-corner-resizer absolute -bottom-3 -right-3 w-6 h-6 bg-[#0A0A0A] border-2 border-[#FF3D00] text-[#FF3D00] flex items-center justify-center cursor-nwse-resize select-none z-[30] shadow-lg hover:scale-110 transition-transform';
+        resizer.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>`;
+
+        table.appendChild(resizer);
+
+        let isResizing = false;
+        let initialW = 0;
+        let initialH = 0;
+        let resizeStartX = 0;
+        let resizeStartY = 0;
+
+        const onPointerDownResizer = (e: PointerEvent) => {
+          e.preventDefault();
+          e.stopPropagation();
+          isResizing = true;
+          resizeStartX = e.clientX;
+          resizeStartY = e.clientY;
+          initialW = table.offsetWidth;
+          initialH = table.offsetHeight;
+
+          const onPointerMove = (moveEv: PointerEvent) => {
+            if (!isResizing) return;
+            const dw = moveEv.clientX - resizeStartX;
+            const dh = moveEv.clientY - resizeStartY;
+
+            const newW = Math.max(200, initialW + dw);
+            const newH = Math.max(100, initialH + dh);
+
+            table.style.width = `${newW}px`;
+            table.style.height = `${newH}px`;
+          };
+
+          const onPointerUp = () => {
+            isResizing = false;
+            window.removeEventListener('pointermove', onPointerMove);
+            window.removeEventListener('pointerup', onPointerUp);
+          };
+
+          window.addEventListener('pointermove', onPointerMove);
+          window.addEventListener('pointerup', onPointerUp);
+        };
+
+        resizer.addEventListener('pointerdown', onPointerDownResizer);
+      });
+    };
+
+    const timer = setTimeout(updateTableDecorations, 150);
+    return () => clearTimeout(timer);
+  }, [editor, content]);
 
   // Undo / Redo Stacks for Vector Strokes
   const handleStrokesChange = (nextStrokes: VectorStroke[]) => {

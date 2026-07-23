@@ -47,21 +47,30 @@ import {
   Check,
   Loader2,
   Bell,
-  Pin,
+  Sparkles,
+  Share2,
   Trash2,
   Tag,
-  Maximize2,
-  Minimize2,
-  FileText,
-  Clock,
-  Network,
   PenTool,
-  ShieldCheck,
-  Settings,
-  MoreHorizontal,
+  Settings2,
+  Undo2,
+  Redo2,
   ZoomIn,
   ZoomOut,
   Crosshair,
+  FileText,
+  MousePointer,
+  Highlighter,
+  Eraser,
+  Table,
+  Network,
+  Pin,
+  Maximize2,
+  Minimize2,
+  MoreHorizontal,
+  Clock,
+  ShieldCheck,
+  Settings,
 } from 'lucide-react';
 
 import { StoredNote } from '@/lib/notes-storage';
@@ -1018,21 +1027,15 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
               {/* INSERT group */}
               <div className="h-4 w-px bg-[#1E1E1E] mx-1.5 shrink-0" />
               <span className="text-[8px] font-mono uppercase tracking-widest text-[#3a3a3a] px-1 shrink-0 hidden lg:inline">Insert</span>
-              {/* Insert Table Button — opens our custom modal */}
+              {/* Insert Table Button — opens custom modal */}
               <button
                 id="insert-canvas-table-btn"
                 onClick={() => setIsInsertTableOpen(true)}
-                className="inline-flex items-center gap-1 px-2 py-1 text-[10px] font-mono text-[#737373] hover:text-[#FF3D00] hover:bg-[#1A1A1A] transition-colors border border-transparent hover:border-[#262626] uppercase tracking-wider"
+                className="p-1 text-[#737373] hover:text-[#FF3D00] hover:bg-[#1A1A1A] transition-colors rounded"
                 title="Insert Table"
+                type="button"
               >
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="square">
-                  <rect x="3" y="3" width="18" height="18"/>
-                  <line x1="3" y1="9" x2="21" y2="9"/>
-                  <line x1="3" y1="15" x2="21" y2="15"/>
-                  <line x1="9" y1="3" x2="9" y2="21"/>
-                  <line x1="15" y1="3" x2="15" y2="21"/>
-                </svg>
-                Table
+                <Table className="w-4 h-4" strokeWidth={1.5} />
               </button>
               <RichTextCodeBlock />
               <RichTextLink />

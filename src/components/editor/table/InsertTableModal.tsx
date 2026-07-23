@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Grid, X } from 'lucide-react';
+import { Table, X } from 'lucide-react';
 
 interface InsertTableModalProps {
   isOpen: boolean;
@@ -12,7 +12,6 @@ interface InsertTableModalProps {
 export function InsertTableModal({ isOpen, onClose, onInsert }: InsertTableModalProps) {
   const [rows, setRows] = useState(3);
   const [cols, setCols] = useState(3);
-  // Visual preview hover state
   const [hoverRow, setHoverRow] = useState(rows);
   const [hoverCol, setHoverCol] = useState(cols);
 
@@ -28,7 +27,6 @@ export function InsertTableModal({ isOpen, onClose, onInsert }: InsertTableModal
     }
   }, [isOpen]);
 
-  // Close on Escape
   useEffect(() => {
     if (!isOpen) return;
     const handler = (e: KeyboardEvent) => {
@@ -37,12 +35,12 @@ export function InsertTableModal({ isOpen, onClose, onInsert }: InsertTableModal
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, rows, cols]);
 
-  const handleInsert = () => {
-    const r = Math.max(1, Math.min(20, rows));
-    const c = Math.max(1, Math.min(20, cols));
+  const handleInsert = (customRows?: number, customCols?: number) => {
+    const r = Math.max(1, Math.min(20, customRows ?? rows));
+    const c = Math.max(1, Math.min(20, customCols ?? cols));
     onInsert(r, c);
     onClose();
   };
@@ -56,62 +54,67 @@ export function InsertTableModal({ isOpen, onClose, onInsert }: InsertTableModal
     <>
       {/* Backdrop */}
       <div
-        className="fixed inset-0 z-[60] bg-black/70 backdrop-blur-sm"
+        className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm"
         onClick={onClose}
       />
 
-      {/* Modal */}
+      {/* Modal Container */}
       <div
-        className="fixed z-[70] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 bg-[#0F0F0F] border border-[#FF3D00] shadow-2xl font-mono select-none"
+        className="fixed z-[70] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 bg-[#0F0F0F] dark:bg-[#0F0F0F] light:bg-white border border-[#FF3D00] shadow-2xl font-mono select-none"
+        style={{
+          backgroundColor: 'var(--ct-bg-panel, #0F0F0F)',
+        }}
         onPointerDown={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-[#262626]">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-[#262626] dark:border-[#262626] light:border-gray-200">
           <div className="flex items-center gap-2">
-            <Grid className="w-3.5 h-3.5 text-[#FF3D00]" strokeWidth={1.5} />
-            <span className="text-[11px] font-bold uppercase tracking-widest text-[#FAFAFA]">
+            <Table className="w-4 h-4 text-[#FF3D00]" strokeWidth={1.5} />
+            <span className="text-[11px] font-bold uppercase tracking-widest text-[#FAFAFA] dark:text-[#FAFAFA] light:text-gray-900">
               Insert Table
             </span>
           </div>
           <button
             onClick={onClose}
-            className="text-[#737373] hover:text-[#FAFAFA] transition-colors p-0.5"
+            className="text-[#737373] hover:text-[#FF3D00] transition-colors p-0.5"
           >
             <X className="w-3.5 h-3.5" />
           </button>
         </div>
 
-        {/* Grid Preview */}
+        {/* Grid Interactive Preview */}
         <div className="px-4 pt-4 pb-2">
-          <div className="text-[9px] text-[#737373] uppercase tracking-wider mb-2">
-            {hoverRow} × {hoverCol} — hover to select
+          <div className="text-[10px] text-[#737373] uppercase tracking-wider mb-2 flex justify-between items-center">
+            <span>Grid Selection</span>
+            <span className="text-[#FF3D00] font-bold">{hoverRow} × {hoverCol}</span>
           </div>
           <div
-            className="grid gap-0.5"
+            className="grid gap-0.5 p-1 bg-[#141414] dark:bg-[#141414] light:bg-gray-100 border border-[#262626]"
             style={{ gridTemplateColumns: `repeat(${PREVIEW_COLS}, 1fr)` }}
-            onMouseLeave={() => { setHoverRow(rows); setHoverCol(cols); }}
+            onMouseLeave={() => {
+              setHoverRow(rows);
+              setHoverCol(cols);
+            }}
           >
             {Array.from({ length: PREVIEW_ROWS }, (_, r) =>
               Array.from({ length: PREVIEW_COLS }, (_, c) => {
                 const active = r < hoverRow && c < hoverCol;
-                const selected = r < rows && c < cols;
                 return (
                   <div
                     key={`${r}-${c}`}
                     className="w-full aspect-square transition-colors duration-75 cursor-pointer"
                     style={{
-                      backgroundColor: active ? '#FF3D00' : selected ? '#FF3D00/20' : '#1A1A1A',
+                      backgroundColor: active ? '#FF3D00' : 'transparent',
                       border: '1px solid',
                       borderColor: active ? '#FF3D00' : '#262626',
-                      opacity: active ? 1 : selected ? 0.4 : 1,
+                      opacity: active ? 0.9 : 0.4,
                     }}
                     onMouseEnter={() => {
                       setHoverRow(r + 1);
                       setHoverCol(c + 1);
                     }}
                     onClick={() => {
-                      setRows(r + 1);
-                      setCols(c + 1);
+                      handleInsert(r + 1, c + 1);
                     }}
                   />
                 );
@@ -120,8 +123,8 @@ export function InsertTableModal({ isOpen, onClose, onInsert }: InsertTableModal
           </div>
         </div>
 
-        {/* Number inputs */}
-        <div className="flex gap-3 px-4 pb-4 pt-2">
+        {/* Manual Dimension Inputs */}
+        <div className="flex gap-3 px-4 pb-4 pt-2 items-center">
           <div className="flex-1">
             <label className="text-[9px] text-[#737373] uppercase tracking-wider block mb-1">Rows</label>
             <input
@@ -135,12 +138,12 @@ export function InsertTableModal({ isOpen, onClose, onInsert }: InsertTableModal
                 setRows(v);
                 setHoverRow(v);
               }}
-              className="w-full bg-[#1A1A1A] border border-[#262626] focus:border-[#FF3D00] text-[#FAFAFA] text-sm px-3 py-2 outline-none text-center font-mono transition-colors"
+              className="w-full bg-[#1A1A1A] dark:bg-[#1A1A1A] light:bg-gray-50 border border-[#262626] focus:border-[#FF3D00] text-[#FAFAFA] dark:text-[#FAFAFA] light:text-gray-900 text-sm px-3 py-1.5 outline-none text-center font-mono transition-colors"
             />
           </div>
-          <div className="flex items-end pb-2 text-[#737373] text-sm">×</div>
+          <div className="pt-4 text-[#737373] text-sm">×</div>
           <div className="flex-1">
-            <label className="text-[9px] text-[#737373] uppercase tracking-wider block mb-1">Columns</label>
+            <label className="text-[9px] text-[#737373] uppercase tracking-wider block mb-1">Cols</label>
             <input
               type="number"
               min={1}
@@ -151,16 +154,16 @@ export function InsertTableModal({ isOpen, onClose, onInsert }: InsertTableModal
                 setCols(v);
                 setHoverCol(v);
               }}
-              className="w-full bg-[#1A1A1A] border border-[#262626] focus:border-[#FF3D00] text-[#FAFAFA] text-sm px-3 py-2 outline-none text-center font-mono transition-colors"
+              className="w-full bg-[#1A1A1A] dark:bg-[#1A1A1A] light:bg-gray-50 border border-[#262626] focus:border-[#FF3D00] text-[#FAFAFA] dark:text-[#FAFAFA] light:text-gray-900 text-sm px-3 py-1.5 outline-none text-center font-mono transition-colors"
             />
           </div>
         </div>
 
-        {/* Insert Button */}
+        {/* Action Button */}
         <div className="px-4 pb-4">
           <button
-            onClick={handleInsert}
-            className="w-full py-2.5 bg-[#FF3D00] hover:bg-[#FF5722] active:bg-[#E64A19] text-[#0A0A0A] text-[11px] font-bold uppercase tracking-widest transition-colors"
+            onClick={() => handleInsert()}
+            className="w-full py-2 bg-[#FF3D00] hover:bg-[#FF5722] active:bg-[#E64A19] text-[#0A0A0A] text-[11px] font-bold uppercase tracking-widest transition-colors"
           >
             Insert {rows} × {cols} Table
           </button>

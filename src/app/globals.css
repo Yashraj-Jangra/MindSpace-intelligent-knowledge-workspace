@@ -2276,6 +2276,22 @@ html.light button[class*="bg-\[#1A1A1A\]"] {
 
 /* ── Canvas Table ─────────────────────────────────────── */
 
+.canvas-table-root {
+  --ct-bg-drag: #111111;
+  --ct-bg-panel: #0A0A0A;
+  --ct-bg-add-row: #0F0F0F;
+  --ct-text-muted: #737373;
+  --ct-text-dim: #525252;
+}
+
+html.light .canvas-table-root {
+  --ct-bg-drag: #F4F4F5;
+  --ct-bg-panel: #FFFFFF;
+  --ct-bg-add-row: #FAFAFA;
+  --ct-text-muted: #71717A;
+  --ct-text-dim: #A1A1AA;
+}
+
 /* Prevent border-radius reset from affecting color inputs */
 .canvas-table-root input[type="color"] {
   border-radius: 0 !important;
@@ -2333,3 +2349,4 @@ html.light button[class*="bg-\[#1A1A1A\]"] {
 /* Color swatch reset */
 .canvas-table-root input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
 .canvas-table-root input[type="color"]::-webkit-color-swatch { border: none; }
+

@@ -1,6 +1,16 @@
 # MindSpace - AI-Powered Visual Note-Taking & Mind-Mapping Platform
 
 ## Work Completed
+- [x] **Table System Full Rebuild** (Session 2026-07-24):
+  - Removed the broken dual-system (dead `ResizableTableWrapper.tsx` + imperative `useEffect` DOM decorator in `AdvancedNoteEditor.tsx`) that caused conflicting drag/resize handles, and the `TableContextMenu.tsx` which mutated DOM directly (bypassing TipTap state, so changes weren't persisted).
+  - Dropped `reactjs-tiptap-editor/table`, `@tiptap/extension-table-cell`, `@tiptap/extension-table-header`, `@tiptap/extension-table-row` from the editor extensions array.
+  - Built `CanvasTableExtension.ts`: custom TipTap `Node` with `atom: true` and `ReactNodeViewRenderer`, storing full table state (cellData, theme, position, width) as JSON attrs — persists on save/undo/redo.
+  - Built `CanvasTable.tsx`: React NodeView component with drag (pointer capture on top grip bar), resize (pointer capture on bottom-right handle), insert/delete rows & columns (hover gutter controls), contenteditable cells with Tab navigation, and an inline theme panel (header/cell/border colors + border width slider).
+  - Built `InsertTableModal.tsx`: rows × cols picker with visual 8×10 grid preview and number inputs — replaces the old `RichTextTable` toolbar button.
+  - Wired new button in editor toolbar; wired `InsertTableModal` at root level.
+  - All state persists via `updateAttributes` → TipTap attrs → HTML serialization.
+  - Build: `✓ Compiled successfully in 24.1s` — zero errors.
+
 - [x] Pivoted MindSpace into a **Classic Notes-First Product Architecture**.
 - [x] Upgraded core stack to **Next.js 16.2.11 (Turbopack)** with full Next.js 16 async params compatibility.
 - [x] Configured Google OAuth Client credentials (`GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`) and Better-Auth environment keys in `.env.local` and `.env`.

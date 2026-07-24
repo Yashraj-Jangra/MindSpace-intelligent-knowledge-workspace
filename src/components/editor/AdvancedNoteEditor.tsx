@@ -48,6 +48,7 @@ import {
   Check,
   Loader2,
   Bell,
+  Timer,
   Sparkles,
   Share2,
   Trash2,
@@ -1143,7 +1144,7 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
                   }`}
                 title={reminderAt ? `Reminder: ${new Date(reminderAt).toLocaleDateString()}` : 'Set Note Reminder'}
               >
-                <Bell className="w-3.5 h-3.5 stroke-[1.5]" />
+                <Timer className="w-3.5 h-3.5 stroke-[1.5]" />
               </button>
 
               {/* Full Screen */}

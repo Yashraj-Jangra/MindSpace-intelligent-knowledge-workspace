@@ -2,6 +2,7 @@
 
 ## Work Completed
 - [x] **Canvas Table & Stylus Canvas Polish** (Session 2026-07-24 v2):
+  - **Toolbar Table Button 1:1 Styling:** Updated Insert Table button to use exact `reactjs-tiptap-editor` CSS class tree (`richtext-inline-flex`, `hover:richtext-bg-accent`, `hover:richtext-text-accent-foreground`, `richtext-size-8`, `richtext-size-4`), title (`"Table"`), and disabled states, making its hover style, dimensions, and tooltips 100% identical to adjacent elements (`RichTextCodeBlock`, `RichTextLink`, `RichTextImage`, `RichTextEmoji`).
   - **Lasso Eraser Visual Area Fix:** Fixed bug where the selected area was invisible during lasso erasing. The freehand lasso polygon path (vermillion dashed outline + translucent fill) now renders live while drawing with `activeTool === 'eraser'` and `settings.eraserMode === 'lasso'`.
   - **Stylus Mode Lock & Toolbar Uniformity:** Table button now locks/disables when switching to Stylus Mode (`disabled={!editor.isEditable || stylusSettings.isStylusModeActive}`), matching all formatting toolbar items.
   - **RangeError Fix:** Fixed `RangeError: Content hole not allowed in a leaf node spec` occurring during `editor.getHTML()` by removing content hole `0` from `renderHTML` in `CanvasTableExtension.ts` (`atom: true` leaf node).
@@ -9,7 +10,7 @@
   - **Border clipping fix:** Removed explicit `width` from root container (`display: inline-block`), ensuring content box is not squeezed by `border-box` and the rightmost column border remains fully visible.
   - **Edge-proximity floating `+` buttons:** Floating `+ Row` and `+ Col` buttons appear smoothly only when hovering within 36px of the bottom or right table edges, positioned `-16px` outside the table.
   - **Rich context menu:** Right-clicking any cell opens a full menu with options to insert/delete rows & columns, clear cells/rows/cols, or delete the entire table.
-  - **Build:** TypeScript type check — zero errors. Committed up to `974e2ee`.
+  - **Build:** TypeScript type check — zero errors. Committed up to `1193916`.
 
 
 - [x] Pivoted MindSpace into a **Classic Notes-First Product Architecture**.

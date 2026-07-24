@@ -2,6 +2,7 @@
 
 ## Work Completed
 - [x] **Canvas Table Full Overhaul** (Session 2026-07-24 v2):
+  - **Stylus Mode Lock & Toolbar Uniformity:** Table button now locks/disables when switching to Stylus Mode (`disabled={!editor.isEditable || stylusSettings.isStylusModeActive}`), matching all other formatting toolbar items. Hover styles updated to `text-[#737373] hover:text-[#FAFAFA] hover:bg-[#1E1E1E]` for 100% visual consistency with adjacent icons (`RichTextCodeBlock`, `RichTextLink`, `RichTextImage`).
   - **RangeError Fix:** Fixed `RangeError: Content hole not allowed in a leaf node spec` occurring during `editor.getHTML()` by removing content hole `0` from `renderHTML` in `CanvasTableExtension.ts` (`atom: true` leaf node).
   - **Resize fix (core bug):** Switched ALL drag/resize operations to `window.addEventListener` + `useRef` pattern. Fixed corner resize drift by capturing frozen initial column widths (`initColWidths`) at drag start.
   - **Border clipping fix:** Removed explicit `width` from root container (`display: inline-block`), ensuring content box is not squeezed by `border-box` and the rightmost column border remains fully visible.
@@ -10,7 +11,7 @@
   - **Clean selection styling:** Removed the red box-shadow ring on selection for a sleek, minimal aesthetic.
   - **Light theme:** CSS variables (`--ct-bg-drag`, `--ct-bg-panel`, `--ct-bg-add-row`) correctly themed for `html.light` context.
   - **InsertTableModal:** Live grid hover syncs with row/col manual input fields; auto-closes after table insertion.
-  - **Build:** TypeScript type check — zero errors. Committed up to `46e2d88`.
+  - **Build:** TypeScript type check — zero errors. Committed up to `98bf0c0`.
 
 
 - [x] Pivoted MindSpace into a **Classic Notes-First Product Architecture**.

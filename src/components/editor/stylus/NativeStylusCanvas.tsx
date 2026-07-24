@@ -66,17 +66,9 @@ export function NativeStylusCanvas({
   const lastMovePointRef = useRef<{ x: number; y: number } | null>(null);
   const hasConvertedShapeRef = useRef(false);
 
-  // Double-click / double-tap suppression refs (prevent annotation on quick taps)
-  const lastPointerDownTimeRef = useRef<number>(0);
-  const lastPointerDownPosRef = useRef<{ x: number; y: number } | null>(null);
-
-  // Detect if we're on a touch-capable device (tablet/phone) at mount time.
-  // On real tablets: navigator.maxTouchPoints > 0.
-  // On desktop: maxTouchPoints === 0, so mouse is treated like a pen.
-  const isTouchDeviceRef = useRef<boolean>(false);
-  useEffect(() => {
-    isTouchDeviceRef.current = typeof navigator !== 'undefined' && navigator.maxTouchPoints > 0;
-  }, []);
+  // Touch scroll tracking ref — used when stylusOnlyMode is ON to manually scroll
+  // the .note-editor-canvas-area container from touch delta instead of drawing.
+  const touchScrollRef = useRef<{ startY: number; startScrollTop: number } | null>(null);
 
   // Multi-element Selection & Transform Handle State
   const [selectedStrokeIds, setSelectedStrokeIds] = useState<string[]>([]);
@@ -356,44 +348,6 @@ export function NativeStylusCanvas({
     StylusHaptics.trigger('eraserScrub', settings);
   };
 
-  /**
-   * Unified pointer input gate.
-   * Returns true if this pointer event should be IGNORED (let browser handle it for scrolling etc).
-   *
-   * Rules:
-   *   - Double-tap/double-click within 300ms and 20px → ignore (suppress annotation).
-   *   - Palm rejection: non-primary touch → always ignore.
-   *   - On touch devices (tablets): touch pointerType → always ignore (finger = scroll).
-   *   - On desktop (maxTouchPoints === 0): mouse = draw (treated as pen), touch = irrelevant.
-   *   - Stylus pen (pointerType === 'pen') always draws on both desktop and tablet.
-   */
-  const shouldIgnorePointerEvent = useCallback(
-    (e: React.PointerEvent<HTMLCanvasElement>, x: number, y: number): boolean => {
-      // Double-tap / double-click guard (within 300ms AND within 20px)
-      const now = performance.now();
-      const lastTime = lastPointerDownTimeRef.current;
-      const lastPos = lastPointerDownPosRef.current;
-      if (lastTime > 0 && now - lastTime < 300) {
-        if (!lastPos || Math.hypot(x - lastPos.x, y - lastPos.y) < 20) {
-          // This is a double-click/double-tap — suppress annotation entirely
-          return true;
-        }
-      }
-
-      // Palm rejection: secondary touch contacts (palm resting on screen)
-      if (e.isPrimary === false) return true;
-
-      // On touch-capable devices (tablets), finger touches should NEVER draw.
-      // Only the active stylus pen (pointerType === 'pen') may annotate.
-      if (isTouchDeviceRef.current && e.pointerType === 'touch') return true;
-
-      // On desktop (maxTouchPoints === 0), mouse events draw as a pen substitute.
-      // This branch always returns false (allow drawing).
-
-      return false;
-    },
-    []
-  );
 
   // Helper: commits the current in-progress stroke to the strokes array and stops the RAF loop.
   // Used both in handlePointerUp and handlePointerLeave (for abrupt off-canvas lifts).
@@ -451,6 +405,9 @@ export function NativeStylusCanvas({
   const handlePointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
     if (!isActive) return;
 
+    // Palm rejection: always block non-primary touch contacts (palm resting on screen).
+    if (e.isPrimary === false) return;
+
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -458,14 +415,19 @@ export function NativeStylusCanvas({
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
 
-    // Unified input gate: block touch-on-tablet, double-clicks, and palm contacts
-    if (shouldIgnorePointerEvent(e, x, y)) return;
+    // Stylus-only mode: finger touch scrolls the scroll container instead of drawing.
+    // We record the start position and manually drive scrollTop in handlePointerMove.
+    if (settings.stylusOnlyMode && e.pointerType === 'touch') {
+      const scrollContainer = canvas.closest('.note-editor-canvas-area') as HTMLElement | null;
+      touchScrollRef.current = {
+        startY: e.clientY,
+        startScrollTop: scrollContainer?.scrollTop ?? 0,
+      };
+      return;
+    }
 
-    // Record this pointer-down time and position for future double-click detection
-    lastPointerDownTimeRef.current = performance.now();
-    lastPointerDownPosRef.current = { x, y };
-
-    // Prevent browser default scroll/pan behavior for drawing pointer types
+    // Block the browser from treating this pointer as a pan/scroll gesture.
+    // Required for both pen (always draws) and touch (when stylusOnlyMode is false, touch draws too).
     e.preventDefault();
 
     try {
@@ -491,7 +453,6 @@ export function NativeStylusCanvas({
         const groupBbox = getGroupBoundingBox(selectedStrokes);
 
         if (groupBbox) {
-          // Check corner resize handles (tl, tr, br, bl)
           const handles = [
             { id: 'handle-tl', x: groupBbox.minX - 6, y: groupBbox.minY - 6 },
             { id: 'handle-tr', x: groupBbox.maxX + 6, y: groupBbox.minY - 6 },
@@ -507,7 +468,6 @@ export function NativeStylusCanvas({
             return;
           }
 
-          // Check if clicking inside bounding box for drag move translation
           if (x >= groupBbox.minX && x <= groupBbox.maxX && y >= groupBbox.minY && y <= groupBbox.maxY) {
             setActiveHandleId('handle-move');
             setDragOffset({ x, y });
@@ -516,7 +476,6 @@ export function NativeStylusCanvas({
         }
       }
 
-      // Start new Lasso Selection
       if (settings.lassoSelectionMode === 'freehand') {
         lassoPointsRef.current = [{ x, y }];
       } else {
@@ -593,14 +552,25 @@ export function NativeStylusCanvas({
     animFrameIdRef.current = requestAnimationFrame(loop);
   };
 
+
   // Pointer Move
   const handlePointerMove = (e: React.PointerEvent<HTMLCanvasElement>) => {
     if (!isActive) return;
 
-    // On tablets: finger touches must never affect the canvas — let them scroll
-    if (isTouchDeviceRef.current && e.pointerType === 'touch') return;
-    // Palm rejection: secondary touch contacts
+    // Palm rejection: block non-primary contacts
     if (e.isPrimary === false) return;
+
+    // Stylus-only mode: finger touch manually scrolls the scroll container
+    if (settings.stylusOnlyMode && e.pointerType === 'touch') {
+      if (touchScrollRef.current) {
+        const scrollContainer = canvasRef.current?.closest('.note-editor-canvas-area') as HTMLElement | null;
+        if (scrollContainer) {
+          const deltaY = touchScrollRef.current.startY - e.clientY;
+          scrollContainer.scrollTop = touchScrollRef.current.startScrollTop + deltaY;
+        }
+      }
+      return;
+    }
 
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -766,9 +736,14 @@ export function NativeStylusCanvas({
   const handlePointerUp = (e: React.PointerEvent<HTMLCanvasElement>) => {
     if (!isActive) return;
 
-    // On tablets: finger touches must never affect the canvas
-    if (isTouchDeviceRef.current && e.pointerType === 'touch') return;
+    // Palm rejection
     if (e.isPrimary === false) return;
+
+    // Stylus-only mode: clear touch scroll tracking on finger lift
+    if (settings.stylusOnlyMode && e.pointerType === 'touch') {
+      touchScrollRef.current = null;
+      return;
+    }
 
     const canvas = canvasRef.current;
     if (canvas) {
@@ -848,8 +823,10 @@ export function NativeStylusCanvas({
         onPointerUp={handlePointerUp}
         onPointerCancel={(e) => {
           // Pointer cancel fires when OS seizes control (incoming call, multitasking).
-          // Commit any in-progress stroke so strokes are never lost.
-          if (isTouchDeviceRef.current && e.pointerType === 'touch') return;
+          if (settings.stylusOnlyMode && e.pointerType === 'touch') {
+            touchScrollRef.current = null;
+            return;
+          }
           commitCurrentStroke();
           setEraserCursorPos(null);
           lassoPointsRef.current = [];
@@ -859,9 +836,10 @@ export function NativeStylusCanvas({
         onPointerLeave={(e) => {
           // Commit in-progress stroke if the stylus leaves the canvas boundary
           // (e.g. stylus lifted near edge, OS interrupted, or rapid off-canvas movement).
-          if (!(isTouchDeviceRef.current && e.pointerType === 'touch')) {
+          if (!(settings.stylusOnlyMode && e.pointerType === 'touch')) {
             commitCurrentStroke();
           }
+          touchScrollRef.current = null;
           setEraserCursorPos(null);
           lassoPointsRef.current = [];
           setBoxStart(null);
@@ -877,11 +855,10 @@ export function NativeStylusCanvas({
           isActive ? (activeTool === 'select' ? 'cursor-grab' : activeTool === 'eraser' ? 'cursor-none' : 'cursor-crosshair') : 'pointer-events-none'
         }`}
         style={{
-          // pan-y: Allows vertical finger scroll on tablets while letting pen events draw.
-          // Using 'none' would block all native scroll — that was the root cause of the scroll bug.
-          // On touch devices: pan-y lets 1-finger vertical scroll pass to the scroll container.
-          // Pen/stylus events are NOT affected by touchAction and always reach pointer handlers.
-          touchAction: isActive ? 'pan-y' : 'auto',
+          // touchAction: 'none' — hands full pointer control to JS.
+          // Prevents the browser from treating pen strokes as pan/scroll gestures.
+          // Touch scrolling (when stylusOnlyMode is true) is handled manually in JS.
+          touchAction: isActive ? 'none' : 'auto',
           pointerEvents: isActive ? 'auto' : 'none',
         }}
       />

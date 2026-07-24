@@ -151,16 +151,10 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
   const [activeColor, setActiveColor] = useState<string>('#FF3D00');
   const [strokeWidth, setStrokeWidth] = useState<number>(3);
   const [lineType, setLineType] = useState<LineType>('solid');
-  const [stylusSettings, setStylusSettings] = useState<StylusSettings>(() => {
-    // Auto-detect touch-capable devices (tablets, iPads, Android tablets).
-    // On tablets: stylusOnlyMode defaults to TRUE so finger = scroll, pen = draw.
-    // On desktop (maxTouchPoints === 0): stylusOnlyMode = false so mouse can draw.
-    const isTablet = typeof navigator !== 'undefined' && navigator.maxTouchPoints > 0;
-    return {
-      ...DEFAULT_STYLUS_SETTINGS,
-      isStylusModeActive: true,
-      stylusOnlyMode: isTablet, // Tablets: finger scrolls, pen draws. Desktop: mouse draws.
-    };
+  const [stylusSettings, setStylusSettings] = useState<StylusSettings>({
+    ...DEFAULT_STYLUS_SETTINGS,
+    isStylusModeActive: true,
+    stylusOnlyMode: false,
   });
   const [strokes, setStrokes] = useState<VectorStroke[]>(initialPages[0]?.strokes || []);
   const [undoStack, setUndoStack] = useState<VectorStroke[][]>([]);

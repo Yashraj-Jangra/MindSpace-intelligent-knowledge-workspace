@@ -2,16 +2,14 @@
 
 ## Work Completed
 - [x] **Canvas Table Full Overhaul** (Session 2026-07-24 v2):
-  - **Resize fix (core bug):** Switched ALL drag/resize operations to `window.addEventListener` + `useRef` pattern, eliminating stale closure bugs that caused vertical resize to not work. Corner resize now correctly tracks both width and height simultaneously from stable initial capture values.
-  - **Column resize full-height:** Moved col-resize handles OUT of individual cells — now rendered as absolutely-positioned overlays spanning the full grid height (one per column boundary), so the entire column line highlights on hover — not just the first cell.
-  - **Row resize handle:** Unchanged approach but now guaranteed full-width across the row and triggers a visible orange line highlight identical to the column handle UX.
-  - **Add Col + Add Row footer:** Replaced single "+Row" bar with a split footer — left half "+ Row", right half "+ Col", separated by a vertical border line.
-  - **Inline row/col controls:** Replaced the overflow-clipped `-left-6`/`-top-6` absolute popups with compact inline control chips that render inside the row (left edge) and first-row cell (top edge), staying within table bounds.
-  - **Theme panel with live preview:** Added a 2-row mini table swatch at the top of the theme panel that updates live as colors/borders are changed.
-  - **Light theme:** CSS variables (`--ct-bg-drag`, `--ct-bg-panel`, `--ct-bg-add-row`) correctly themed for `html.light` context. Range slider track, border colors, all match light UI.
-  - **InsertTableModal:** Grid hover now live-syncs to manual row/col number inputs. Insert button has always-visible accent styling (not invisible when not hovered). Modal fully themed for both dark and light mode via runtime `document.documentElement.classList` detection.
-  - **Backward compat:** `parseRowHeights` now coerces old `null` values (previous format used `null` for "auto height") to 36px default, so saved tables from v1 load correctly.
-  - **Build:** TypeScript type check — zero errors. Committed as `81858af`.
+  - **Resize fix (core bug):** Switched ALL drag/resize operations to `window.addEventListener` + `useRef` pattern. Fixed corner resize drift by capturing frozen initial column widths (`initColWidths`) at drag start.
+  - **Border clipping fix:** Removed explicit `width` from root container (`display: inline-block`), ensuring content box is not squeezed by `border-box` and the rightmost column border remains fully visible.
+  - **Edge-proximity floating `+` buttons:** Floating `+ Row` and `+ Col` buttons appear smoothly only when hovering within 36px of the bottom or right table edges, positioned `-16px` outside the table.
+  - **Rich context menu:** Right-clicking any cell opens a full menu with options to insert/delete rows & columns, clear cells/rows/cols, or delete the entire table.
+  - **Clean selection styling:** Removed the red box-shadow ring on selection for a sleek, minimal aesthetic.
+  - **Light theme:** CSS variables (`--ct-bg-drag`, `--ct-bg-panel`, `--ct-bg-add-row`) correctly themed for `html.light` context.
+  - **InsertTableModal:** Live grid hover syncs with row/col manual input fields; auto-closes after table insertion.
+  - **Build:** TypeScript type check — zero errors. Committed up to `4c93f29`.
 
 
 - [x] Pivoted MindSpace into a **Classic Notes-First Product Architecture**.

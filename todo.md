@@ -2,7 +2,7 @@
 
 ## Work Completed
 - [x] **Canvas Table & Stylus Canvas Polish** (Session 2026-07-24 v2):
-  - **Toolbar Table Button 1:1 Styling:** Wrapped Insert Table button with `@radix-ui/react-tooltip` (`Tooltip.Root`, `Tooltip.Trigger`, `Tooltip.Portal`, `Tooltip.Content`) using exact `reactjs-tiptap-editor` tooltip classes (`richtext-tooltip`), `richtext-h-[32px] richtext-w-[32px]` button box height, and uppercase `"TABLE"` label. This replaces native OS `title="Table"` tooltips and makes the hover card, tooltip animation, and 32x32px button height 100% identical to `<RichTextCodeBlock />` (`"CODE BLOCK"`).
+  - **Top-Left Back Button Grid Alignment:** Aligned the Back to Dashboard button slot with the exact `w-12` (48px) width of the vertical left sidebar. Created a dedicated `w-12 h-14 border-r border-[#262626] bg-[#0F0F0F]` top-left container so its right border line forms a single continuous vertical line at `x = 48px` down the left edge of the screen, perfectly aligning the back button with both the top bar and sidebar.
   - **Lasso Eraser Visual Area Fix:** Fixed bug where the selected area was invisible during lasso erasing. The freehand lasso polygon path (vermillion dashed outline + translucent fill) now renders live while drawing with `activeTool === 'eraser'` and `settings.eraserMode === 'lasso'`.
   - **Stylus Mode Lock & Toolbar Uniformity:** Table button now locks/disables when switching to Stylus Mode (`disabled={!editor.isEditable || stylusSettings.isStylusModeActive}`), matching all formatting toolbar items.
   - **RangeError Fix:** Fixed `RangeError: Content hole not allowed in a leaf node spec` occurring during `editor.getHTML()` by removing content hole `0` from `renderHTML` in `CanvasTableExtension.ts` (`atom: true` leaf node).

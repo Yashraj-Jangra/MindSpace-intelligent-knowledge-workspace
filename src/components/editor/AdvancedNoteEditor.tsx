@@ -130,14 +130,14 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
   const initialPages: NotePageData[] = initialNote.pages && initialNote.pages.length > 0
     ? initialNote.pages
     : [
-        {
-          id: 'p-1',
-          pageNumber: 1,
-          content: initialNote.content || '<p></p>',
-          strokes: [],
-          paperTemplate: 'blank',
-        },
-      ];
+      {
+        id: 'p-1',
+        pageNumber: 1,
+        content: initialNote.content || '<p></p>',
+        strokes: [],
+        paperTemplate: 'blank',
+      },
+    ];
 
   const [pages, setPages] = useState<NotePageData[]>(initialPages);
   const [activePageIndex, setActivePageIndex] = useState<number>(0);
@@ -323,10 +323,27 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
       const row2 = document.querySelector('.note-editor-toolbar-row2');
       if (!row2) return;
 
+      const rawTaskList = editor.isActive('taskList');
+      const rawBulletList = editor.isActive('bulletList');
+      const rawOrderedList = editor.isActive('orderedList');
+
+      // Enforce strict single-active priority: only ONE list type can be active at any given moment
+      let taskListActive = false;
+      let bulletListActive = false;
+      let orderedListActive = false;
+
+      if (rawTaskList) {
+        taskListActive = true;
+      } else if (rawBulletList) {
+        bulletListActive = true;
+      } else if (rawOrderedList) {
+        orderedListActive = true;
+      }
+
       const activeStates: Record<string, boolean> = {
-        taskList: editor.isActive('taskList'),
-        bulletList: editor.isActive('bulletList'),
-        orderedList: editor.isActive('orderedList'),
+        taskList: taskListActive,
+        bulletList: bulletListActive,
+        orderedList: orderedListActive,
         blockquote: editor.isActive('blockquote'),
         codeBlock: editor.isActive('codeBlock'),
         bold: editor.isActive('bold'),
@@ -345,6 +362,21 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
         const svgHTML = svg ? svg.outerHTML : btn.innerHTML;
         const ariaLabel = (btn.getAttribute('aria-label') || btn.getAttribute('title') || btn.textContent || '').toLowerCase();
         const btnId = btn.id;
+
+        // Horizontal Rule and Text Alignment buttons must NEVER maintain an active red state color
+        if (
+          svgHTML.includes('lucide-minus') ||
+          svgHTML.includes('lucide-align') ||
+          ariaLabel.includes('align') ||
+          ariaLabel.includes('horizontal') ||
+          ariaLabel.includes('divider') ||
+          ariaLabel.includes('rule')
+        ) {
+          if (btn.getAttribute('data-state') !== 'off') {
+            btn.setAttribute('data-state', 'off');
+          }
+          return;
+        }
 
         let isActive = false;
         let matched = false;
@@ -733,9 +765,8 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
 
   return (
     <div
-      className={`note-editor-root min-h-screen w-full bg-[#0A0A0A] text-[#FAFAFA] flex flex-col font-sans select-text ${
-        isZenMode ? 'fixed inset-0 z-[90] overflow-y-auto bg-[#0A0A0A]' : ''
-      }`}
+      className={`note-editor-root min-h-screen w-full bg-[#0A0A0A] text-[#FAFAFA] flex flex-col font-sans select-text ${isZenMode ? 'fixed inset-0 z-[90] overflow-y-auto bg-[#0A0A0A]' : ''
+        }`}
     >
       {/* Vertical Stylus Sidebar Dock */}
       <VerticalStylusSidebar
@@ -905,110 +936,104 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
               </div>
             </div>
 
-          {/* Center Section: Stylus Tools Master Visibility Toggle */}
-          <div className="flex items-center justify-center shrink-0">
-            <button
-              onClick={() => {
-                const nextVisible = !isSidebarVisible;
-                setIsSidebarVisible(nextVisible);
-                if (nextVisible) {
-                  handleActivateStylusMode();
-                } else {
-                  handleDeactivateStylusMode();
-                }
-              }}
-              className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 rounded-full border text-[10px] sm:text-[11px] font-mono uppercase tracking-widest font-bold transition-all duration-200 ${
-                isSidebarVisible
-                  ? 'border-[#FF3D00] bg-[#FF3D00]/10 text-[#FF3D00] shadow-lg shadow-[#FF3D00]/15'
-                  : 'border-[#262626] bg-[#0F0F0F] text-[#737373] hover:text-[#FAFAFA] hover:border-[#404040]'
-              }`}
-              title="Toggle Stylus Sidebar Dock Visibility"
-            >
-              <span
-                className={`w-1.5 h-1.5 rounded-full transition-all ${
-                  isSidebarVisible ? 'bg-[#FF3D00] shadow-sm shadow-[#FF3D00]' : 'bg-[#737373]'
-                }`}
-              />
-              <PenTool className="w-3 h-3" />
-              <span className="hidden sm:inline">{isSidebarVisible ? 'Ink ON' : 'Ink'}</span>
-            </button>
+            {/* Center Section: Stylus Tools Master Visibility Toggle */}
+            <div className="flex items-center justify-center shrink-0">
+              <button
+                onClick={() => {
+                  const nextVisible = !isSidebarVisible;
+                  setIsSidebarVisible(nextVisible);
+                  if (nextVisible) {
+                    handleActivateStylusMode();
+                  } else {
+                    handleDeactivateStylusMode();
+                  }
+                }}
+                className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 rounded-full border text-[10px] sm:text-[11px] font-mono uppercase tracking-widest font-bold transition-all duration-200 ${isSidebarVisible
+                    ? 'border-[#FF3D00] bg-[#FF3D00]/10 text-[#FF3D00] shadow-lg shadow-[#FF3D00]/15'
+                    : 'border-[#262626] bg-[#0F0F0F] text-[#737373] hover:text-[#FAFAFA] hover:border-[#404040]'
+                  }`}
+                title="Toggle Stylus Sidebar Dock Visibility"
+              >
+                <span
+                  className={`w-1.5 h-1.5 rounded-full transition-all ${isSidebarVisible ? 'bg-[#FF3D00] shadow-sm shadow-[#FF3D00]' : 'bg-[#737373]'
+                    }`}
+                />
+                <PenTool className="w-3 h-3" />
+                <span className="hidden sm:inline">{isSidebarVisible ? 'Ink ON' : 'Ink'}</span>
+              </button>
+            </div>
+
+            {/* Right Section: Action Icons */}
+            <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
+              {/* Convert to Mind Map */}
+              <button
+                onClick={handleConvertToCanvas}
+                disabled={isConverting}
+                className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-[#FF3D00] hover:bg-[#FF5722] active:bg-[#E64A19] text-[#0A0A0A] text-[10px] font-mono uppercase tracking-wider font-bold transition-all duration-150"
+                title="Convert Note to Visual Mind Map Canvas"
+              >
+                {isConverting ? (
+                  <Loader2 className="w-3 h-3 animate-spin" />
+                ) : (
+                  <Network className="w-3 h-3 stroke-[2]" />
+                )}
+                <span>Mind Map</span>
+              </button>
+
+              {/* Pin Toggle */}
+              <button
+                onClick={() => {
+                  const nextPinned = !isPinned;
+                  setIsPinned(nextPinned);
+                  saveNote({ isPinned: nextPinned });
+                }}
+                className={`p-2 border transition-all duration-150 ${isPinned
+                    ? 'border-[#FF3D00] bg-[#FF3D00]/10 text-[#FF3D00]'
+                    : 'border-[#262626] text-[#737373] hover:text-[#FAFAFA] hover:border-[#404040]'
+                  }`}
+                title={isPinned ? 'Unpin Note' : 'Pin Note'}
+              >
+                <Pin className="w-3.5 h-3.5 stroke-[1.5]" />
+              </button>
+
+              {/* Set Reminder */}
+              <button
+                onClick={() => setIsReminderOpen(true)}
+                className={`p-2 border transition-all duration-150 ${reminderAt
+                    ? 'border-[#FF3D00] bg-[#FF3D00]/10 text-[#FF3D00]'
+                    : 'border-[#262626] text-[#737373] hover:text-[#FAFAFA] hover:border-[#404040]'
+                  }`}
+                title={reminderAt ? `Reminder: ${new Date(reminderAt).toLocaleDateString()}` : 'Set Note Reminder'}
+              >
+                <Bell className="w-3.5 h-3.5 stroke-[1.5]" />
+              </button>
+
+              {/* Full Screen */}
+              <button
+                onClick={toggleFullScreen}
+                className={`p-2 border transition-all duration-150 ${isZenMode
+                    ? 'border-[#FF3D00] bg-[#FF3D00]/10 text-[#FF3D00]'
+                    : 'border-[#262626] text-[#737373] hover:text-[#FAFAFA] hover:border-[#404040]'
+                  }`}
+                title={isZenMode ? 'Exit Full Screen' : 'Full Screen'}
+              >
+                {isZenMode ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
+              </button>
+
+              {/* ⋯ More Overflow Trigger */}
+              <button
+                onClick={() => setIsEditorSettingsOpen(!isEditorSettingsOpen)}
+                className={`p-2 border transition-all duration-150 editor-settings-trigger ${isEditorSettingsOpen
+                    ? 'border-[#FF3D00] bg-[#1A1A1A] text-[#FF3D00]'
+                    : 'border-[#262626] text-[#737373] hover:text-[#FAFAFA] hover:border-[#404040]'
+                  }`}
+                title="More Options"
+              >
+                <MoreHorizontal className="w-3.5 h-3.5 stroke-[1.5]" />
+              </button>
+            </div>
           </div>
-
-          {/* Right Section: Action Icons */}
-          <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
-            {/* Convert to Mind Map */}
-            <button
-              onClick={handleConvertToCanvas}
-              disabled={isConverting}
-              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-[#FF3D00] hover:bg-[#FF5722] active:bg-[#E64A19] text-[#0A0A0A] text-[10px] font-mono uppercase tracking-wider font-bold transition-all duration-150"
-              title="Convert Note to Visual Mind Map Canvas"
-            >
-              {isConverting ? (
-                <Loader2 className="w-3 h-3 animate-spin" />
-              ) : (
-                <Network className="w-3 h-3 stroke-[2]" />
-              )}
-              <span>Mind Map</span>
-            </button>
-
-            {/* Pin Toggle */}
-            <button
-              onClick={() => {
-                const nextPinned = !isPinned;
-                setIsPinned(nextPinned);
-                saveNote({ isPinned: nextPinned });
-              }}
-              className={`p-2 border transition-all duration-150 ${
-                isPinned
-                  ? 'border-[#FF3D00] bg-[#FF3D00]/10 text-[#FF3D00]'
-                  : 'border-[#262626] text-[#737373] hover:text-[#FAFAFA] hover:border-[#404040]'
-              }`}
-              title={isPinned ? 'Unpin Note' : 'Pin Note'}
-            >
-              <Pin className="w-3.5 h-3.5 stroke-[1.5]" />
-            </button>
-
-            {/* Set Reminder */}
-            <button
-              onClick={() => setIsReminderOpen(true)}
-              className={`p-2 border transition-all duration-150 ${
-                reminderAt
-                  ? 'border-[#FF3D00] bg-[#FF3D00]/10 text-[#FF3D00]'
-                  : 'border-[#262626] text-[#737373] hover:text-[#FAFAFA] hover:border-[#404040]'
-              }`}
-              title={reminderAt ? `Reminder: ${new Date(reminderAt).toLocaleDateString()}` : 'Set Note Reminder'}
-            >
-              <Bell className="w-3.5 h-3.5 stroke-[1.5]" />
-            </button>
-
-            {/* Full Screen */}
-            <button
-              onClick={toggleFullScreen}
-              className={`p-2 border transition-all duration-150 ${
-                isZenMode
-                  ? 'border-[#FF3D00] bg-[#FF3D00]/10 text-[#FF3D00]'
-                  : 'border-[#262626] text-[#737373] hover:text-[#FAFAFA] hover:border-[#404040]'
-              }`}
-              title={isZenMode ? 'Exit Full Screen' : 'Full Screen'}
-            >
-              {isZenMode ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
-            </button>
-
-            {/* ⋯ More Overflow Trigger */}
-            <button
-              onClick={() => setIsEditorSettingsOpen(!isEditorSettingsOpen)}
-              className={`p-2 border transition-all duration-150 editor-settings-trigger ${
-                isEditorSettingsOpen
-                  ? 'border-[#FF3D00] bg-[#1A1A1A] text-[#FF3D00]'
-                  : 'border-[#262626] text-[#737373] hover:text-[#FAFAFA] hover:border-[#404040]'
-              }`}
-              title="More Options"
-            >
-              <MoreHorizontal className="w-3.5 h-3.5 stroke-[1.5]" />
-            </button>
-          </div>
-        </div>
-      </header>
+        </header>
       )}
 
       {/* Editor Overflow Popover (More Options) */}
@@ -1038,9 +1063,8 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
 
       {/* Main Workspace */}
       <main
-        className={`note-editor-main flex-1 w-full flex flex-col transition-all duration-200 ${
-          isSidebarVisible ? 'pl-14' : 'pl-0'
-        }`}
+        className={`note-editor-main flex-1 w-full flex flex-col transition-all duration-200 ${isSidebarVisible ? 'pl-14' : 'pl-0'
+          }`}
       >
         {/* Tag Manager Bar */}
         <div className={`note-editor-tagbar flex flex-wrap items-center gap-2 px-6 py-2 border-b border-[#1E1E1E] bg-[#0D0D0D] transition-all duration-200`}>
@@ -1203,24 +1227,22 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
                 >
                   {/* Tiptap Core Editor Content (Layered dynamically based on mode & layerOrder) */}
                   <div
-                    className={`p-8 ${
-                      !stylusSettings.isStylusModeActive || stylusSettings.layerOrder === 'text_above_ink'
+                    className={`p-8 ${!stylusSettings.isStylusModeActive || stylusSettings.layerOrder === 'text_above_ink'
                         ? 'relative z-30 pointer-events-auto select-text'
                         : 'relative z-20 pointer-events-none select-none'
-                    }`}
+                      }`}
                   >
                     <EditorContent editor={editor} />
                   </div>
 
                   {/* Native Freehand Stylus Overlay Canvas Container (Ignore pointers when in Text Mode) */}
                   <div
-                    className={`absolute inset-0 ${
-                      stylusSettings.isStylusModeActive && stylusSettings.layerOrder === 'ink_above_text'
+                    className={`absolute inset-0 ${stylusSettings.isStylusModeActive && stylusSettings.layerOrder === 'ink_above_text'
                         ? 'z-30 pointer-events-auto'
                         : stylusSettings.isStylusModeActive
-                        ? 'z-20 pointer-events-auto'
-                        : 'z-10 pointer-events-none'
-                    }`}
+                          ? 'z-20 pointer-events-auto'
+                          : 'z-10 pointer-events-none'
+                      }`}
                   >
                     <NativeStylusCanvas
                       isActive={stylusSettings.isStylusModeActive}
@@ -1272,11 +1294,10 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
                 {/* Lock Center Toggle */}
                 <button
                   onClick={() => setLockCenter((prev) => !prev)}
-                  className={`p-2.5 transition-all ${
-                    lockCenter
+                  className={`p-2.5 transition-all ${lockCenter
                       ? 'text-[#FF3D00] bg-[#FF3D00]/10 hover:bg-[#FF3D00]/20'
                       : 'text-[#737373] hover:text-[#FAFAFA] hover:bg-[#1A1A1A]'
-                  }`}
+                    }`}
                   title={lockCenter ? 'Center Lock ON — click to disable' : 'Lock canvas to center'}
                 >
                   <Crosshair className="w-3.5 h-3.5" />

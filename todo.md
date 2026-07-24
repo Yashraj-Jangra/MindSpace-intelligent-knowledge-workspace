@@ -1,6 +1,12 @@
 # MindSpace - AI-Powered Visual Note-Taking & Mind-Mapping Platform
 
 ## Work Completed
+- [x] **Account Settings & Integrations Drawer** (Session 2026-07-25 v8):
+  - **Account & Integrations Slide Drawer**: Added a slide-over settings panel accessible by clicking the user badge in the header. The panel includes tabs for user profiles, webhook management, Discord pairings, and SMTP setups.
+  - **REST API Credentials & CLI Integration**: Displays user IDs and provides clear documentation with copying options for curl CLI node injection commands.
+  - **Outbound Webhooks Management (CRUD)**: Enabled registering, viewing, and deleting outbound webhooks directly from the UI, introducing a `DELETE` endpoint in `/api/webhooks`.
+  - **Discord Bot Pairing**: Integrates with the local database to generate 6-digit pairing codes and configure channel-specific Discord webhook alert URLs.
+  - **SMTP Configurations API**: Built a custom SMTP setting upsert endpoint (`/api/auth/smtp`) and added settings form inputs inside the SMTP panel tab.
 - [x] **Secure Account & Session Management Restoration** (Session 2026-07-25 v7):
   - **WSL Database Port Shift**: Shifted PostgreSQL to port `5433` and MinIO to ports `9008`/`9009` to resolve port conflicts with existing background containers in WSL (such as `vaultr_postgres` and `portainer`). Successfully launched the containers and synced the database schema.
   - **AuthContext & API Session Strictness**: Removed all `DEFAULT_DEV_USER` and `default_user` mock fallbacks. Setting/validating cookie sessions now yields authentic results, properly falling back to `null` and locking unauthenticated states.

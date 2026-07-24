@@ -754,49 +754,52 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
 
       {/* Top Header Control Bar */}
       {!isZenMode && (
-        <header className="note-editor-header h-14 border-b border-[#262626] bg-[#0A0A0A]/98 backdrop-blur-md px-3 sm:px-5 flex items-center justify-between sticky top-0 z-[40] font-sans gap-2 overflow-x-auto no-scrollbar shrink-0">
-          {/* Left Section: Back + Inline Editable Title + Save Badge */}
-          <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+        <header className="note-editor-header h-14 border-b border-[#262626] bg-[#0A0A0A]/98 backdrop-blur-md flex items-center justify-between sticky top-0 z-[40] font-sans overflow-x-auto no-scrollbar shrink-0">
+          {/* Back Button Box — 100% aligned with left sidebar width (w-12 / 48px) */}
+          <div className="w-12 h-14 shrink-0 flex items-center justify-center border-r border-[#262626] bg-[#0F0F0F]">
             <button
               onClick={() => router.push('/dashboard')}
-              className="p-2 border border-[#262626] hover:border-[#FAFAFA] text-[#737373] hover:text-[#FAFAFA] transition-colors shrink-0"
+              className="p-2 text-[#737373] hover:text-[#FAFAFA] hover:bg-[#1E1E1E] rounded-md transition-colors flex items-center justify-center"
               title="Back to Dashboard"
             >
-              <ArrowLeft className="w-3.5 h-3.5 stroke-[1.5]" />
+              <ArrowLeft className="w-4 h-4 stroke-[1.5]" />
             </button>
-
-            <div className="h-5 w-px bg-[#262626] shrink-0" />
-
-            {/* Inline Editable Title */}
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => {
-                setTitle(e.target.value);
-                setSaveStatus('unsaved');
-              }}
-              placeholder="Untitled Note"
-              className="bg-transparent font-sans font-bold text-sm tracking-tight text-[#FAFAFA] focus:outline-none placeholder:text-[#3a3a3a] min-w-0 flex-1 max-w-[320px] truncate hover:bg-[#1A1A1A]/50 focus:bg-[#1A1A1A]/80 px-2 py-1 transition-colors cursor-text"
-              title="Click to rename note"
-            />
-
-            {/* Auto-save Status Badge */}
-            <div className="hidden sm:flex items-center gap-1.5 font-mono text-[10px] shrink-0">
-              {saveStatus === 'saving' ? (
-                <span className="flex items-center gap-1 text-[#FF3D00]">
-                  <Loader2 className="w-3 h-3 animate-spin" />
-                  <span className="hidden md:inline">Saving</span>
-                </span>
-              ) : saveStatus === 'saved' ? (
-                <span className="flex items-center gap-1 text-[#3a3a3a]">
-                  <Check className="w-3 h-3 text-[#10b981]" />
-                  <span className="hidden md:inline text-[#737373]">Saved</span>
-                </span>
-              ) : (
-                <span className="text-[#FF3D00] text-[10px]">Unsaved</span>
-              )}
-            </div>
           </div>
+
+          {/* Right Header Controls Container */}
+          <div className="flex items-center justify-between flex-1 min-w-0 px-3 sm:px-4 h-full gap-2">
+            {/* Left Section: Inline Editable Title + Save Badge */}
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+              {/* Inline Editable Title */}
+              <input
+                type="text"
+                value={title}
+                onChange={(e) => {
+                  setTitle(e.target.value);
+                  setSaveStatus('unsaved');
+                }}
+                placeholder="Untitled Note"
+                className="bg-transparent font-sans font-bold text-sm tracking-tight text-[#FAFAFA] focus:outline-none placeholder:text-[#3a3a3a] min-w-0 flex-1 max-w-[320px] truncate hover:bg-[#1A1A1A]/50 focus:bg-[#1A1A1A]/80 px-2 py-1 transition-colors cursor-text"
+                title="Click to rename note"
+              />
+
+              {/* Auto-save Status Badge */}
+              <div className="hidden sm:flex items-center gap-1.5 font-mono text-[10px] shrink-0">
+                {saveStatus === 'saving' ? (
+                  <span className="flex items-center gap-1 text-[#FF3D00]">
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                    <span className="hidden md:inline">Saving</span>
+                  </span>
+                ) : saveStatus === 'saved' ? (
+                  <span className="flex items-center gap-1 text-[#737373]">
+                    <Check className="w-3 h-3 text-[#10b981]" />
+                    <span className="hidden md:inline text-[#737373]">Saved</span>
+                  </span>
+                ) : (
+                  <span className="text-[#FF3D00] text-[10px]">Unsaved</span>
+                )}
+              </div>
+            </div>
 
           {/* Center Section: Stylus Tools Master Visibility Toggle */}
           <div className="flex items-center justify-center shrink-0">
@@ -900,7 +903,8 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
               <MoreHorizontal className="w-3.5 h-3.5 stroke-[1.5]" />
             </button>
           </div>
-        </header>
+        </div>
+      </header>
       )}
 
       {/* Editor Overflow Popover (More Options) */}

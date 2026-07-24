@@ -62,7 +62,9 @@ function parseRowHeights(raw: string | null, rows: number): number[] {
 
 type DragKind =
   | { kind: 'table'; startX: number; startY: number; initPosX: number; initPosY: number }
-  | { kind: 'corner'; startX: number; startY: number; initW: number; initH: number }
+  // initColWidths is captured at drag-start so we ALWAYS scale from the frozen snapshot,
+  // never from stateRef.colWidths which changes mid-drag and causes compounding drift.
+  | { kind: 'corner'; startX: number; startY: number; initW: number; initColWidths: number[] }
   | { kind: 'col'; colIdx: number; startX: number; initW: number }
   | { kind: 'row'; rowIdx: number; startY: number; initH: number };
 
@@ -224,15 +226,11 @@ export function CanvasTable({ node, updateAttributes, deleteNode, selected }: No
 
       if (drag.kind === 'corner') {
         const dw = e.clientX - drag.startX;
-        const dh = e.clientY - drag.startY;
         const nextW = Math.max(200, drag.initW + dw);
-        const nextH = Math.max(80, drag.initH + dh);
-        // Scale col widths proportionally (use initW, not live width, to avoid drift)
+        // Always scale from frozen initColWidths — never from live stateRef (which changes mid-drag)
         const ratio = nextW / drag.initW;
-        const s = stateRef.current;
-        setColWidths(s.colWidths.map(cw => Math.max(40, Math.round(cw * ratio))));
+        setColWidths(drag.initColWidths.map(cw => Math.max(40, Math.round(cw * ratio))));
         setWidth(nextW);
-        setTableHeight(nextH);
         return;
       }
 
@@ -277,15 +275,12 @@ export function CanvasTable({ node, updateAttributes, deleteNode, selected }: No
 
       if (drag.kind === 'corner') {
         const dw = e.clientX - drag.startX;
-        const dh = e.clientY - drag.startY;
         const nextW = Math.max(200, drag.initW + dw);
-        const nextH = Math.max(80, drag.initH + dh);
         const ratio = nextW / drag.initW;
-        const newColWidths = s.colWidths.map(cw => Math.max(40, Math.round(cw * ratio)));
+        const newColWidths = drag.initColWidths.map(cw => Math.max(40, Math.round(cw * ratio)));
         setColWidths(newColWidths);
         setWidth(nextW);
-        setTableHeight(nextH);
-        flushAttrs(s.cells, s.theme, s.posX, s.posY, nextW, nextH, newColWidths, s.rowHeights);
+        flushAttrs(s.cells, s.theme, s.posX, s.posY, nextW, null, newColWidths, s.rowHeights);
         return;
       }
 
@@ -330,8 +325,8 @@ export function CanvasTable({ node, updateAttributes, deleteNode, selected }: No
   const startCornerResize = (e: React.PointerEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    const measuredH = rootRef.current?.offsetHeight ?? tableHeight ?? 150;
-    setActiveDrag({ kind: 'corner', startX: e.clientX, startY: e.clientY, initW: width, initH: measuredH });
+    // Capture frozen col widths at drag start — used throughout the drag to avoid scaling drift
+    setActiveDrag({ kind: 'corner', startX: e.clientX, startY: e.clientY, initW: width, initColWidths: [...colWidths] });
   };
 
   const startColResize = (colIdx: number, e: React.PointerEvent) => {
@@ -453,7 +448,6 @@ export function CanvasTable({ node, updateAttributes, deleteNode, selected }: No
           border: bdr,
           boxShadow: selected ? '0 0 0 2px #FF3D00' : undefined,
           cursor: isDragging ? 'grabbing' : undefined,
-          overflow: 'hidden', // clip corners cleanly
         }}
       >
         {/* ── Drag Bar ─────────────────────────────────────────────────── */}
@@ -584,9 +578,7 @@ export function CanvasTable({ node, updateAttributes, deleteNode, selected }: No
           ref={gridRef}
           style={{
             position: 'relative',
-            overflowX: totalColWidth > width ? 'auto' : 'hidden',
-            overflowY: tableHeight ? 'auto' : 'visible',
-            height: tableHeight ? `${tableHeight}px` : undefined,
+            overflow: 'visible', // No scroll — table grows naturally with content
             backgroundColor: theme.cellBg,
           }}
         >

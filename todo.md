@@ -1,6 +1,12 @@
 # MindSpace - AI-Powered Visual Note-Taking & Mind-Mapping Platform
 
 ## Work Completed
+- [x] **Reactive Toolbar Active State Tracking** (Session 2026-07-24 v3):
+  - **Dynamic Active State Synchronization:** Subscribed `AdvancedNoteEditor` directly to TipTap editor events (`selectionUpdate`, `transaction`, `update`, `focus`, `blur`).
+  - **Real-Time Tool Highlight Fix:** Every tool button (Checklist/TaskList, Bullet List, Ordered List, Bold, Italic, Underline, Strikethrough, Highlight, Blockquote, Code Block, Heading, Link, Table) now updates its `data-state` (`"on"` / `"off"`) in real time based on `editor.isActive(...)` under the cursor.
+  - **List & Tool Switching Cases Covered:** Turning off a checklist (e.g. by pressing Enter or Backspace or clicking Checklist again) immediately turns off the red highlight; switching from checklist to bullet list turns off checklist and highlights bullet list; moving cursor across text with mixed formatting accurately highlights all active tools simultaneously.
+  - **Build:** `npx tsc --noEmit` verified with 0 compilation errors.
+
 - [x] **Canvas Table & Stylus Canvas Polish** (Session 2026-07-24 v2):
   - **Top-Left Back Button Grid Alignment:** Aligned the Back to Dashboard button slot with the exact `w-12` (48px) width of the vertical left sidebar. Created a dedicated `w-12 h-14 border-r border-[#262626] bg-[#0F0F0F]` top-left container so its right border line forms a single continuous vertical line at `x = 48px` down the left edge of the screen, perfectly aligning the back button with both the top bar and sidebar.
   - **Lasso Eraser Visual Area Fix:** Fixed bug where the selected area was invisible during lasso erasing. The freehand lasso polygon path (vermillion dashed outline + translucent fill) now renders live while drawing with `activeTool === 'eraser'` and `settings.eraserMode === 'lasso'`.

@@ -315,6 +315,110 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
     }
   }, [editor, stylusSettings.isStylusModeActive]);
 
+  // Synchronize Text Formatting Toolbar buttons' active state dynamically with actual TipTap editor state
+  useEffect(() => {
+    if (!editor || editor.isDestroyed) return;
+
+    const updateToolbarActiveStates = () => {
+      const row2 = document.querySelector('.note-editor-toolbar-row2');
+      if (!row2) return;
+
+      const activeStates: Record<string, boolean> = {
+        taskList: editor.isActive('taskList'),
+        bulletList: editor.isActive('bulletList'),
+        orderedList: editor.isActive('orderedList'),
+        blockquote: editor.isActive('blockquote'),
+        codeBlock: editor.isActive('codeBlock'),
+        bold: editor.isActive('bold'),
+        italic: editor.isActive('italic'),
+        underline: editor.isActive('underline'),
+        strike: editor.isActive('strike'),
+        highlight: editor.isActive('highlight'),
+        heading: editor.isActive('heading'),
+        link: editor.isActive('link'),
+        table: editor.isActive('canvasTable') || editor.isActive('table'),
+      };
+
+      const buttons = row2.querySelectorAll('button');
+      buttons.forEach((btn) => {
+        const svg = btn.querySelector('svg');
+        const svgHTML = svg ? svg.outerHTML : btn.innerHTML;
+        const ariaLabel = (btn.getAttribute('aria-label') || btn.getAttribute('title') || btn.textContent || '').toLowerCase();
+        const btnId = btn.id;
+
+        let isActive = false;
+        let matched = false;
+
+        if (btnId === 'insert-canvas-table-btn' || svgHTML.includes('lucide-table') || ariaLabel.includes('table')) {
+          isActive = activeStates.table;
+          matched = true;
+        } else if (svgHTML.includes('lucide-list-todo') || ariaLabel.includes('task') || ariaLabel.includes('todo') || ariaLabel.includes('checklist')) {
+          isActive = activeStates.taskList;
+          matched = true;
+        } else if (svgHTML.includes('lucide-list-ordered') || ariaLabel.includes('ordered') || ariaLabel.includes('numbered')) {
+          isActive = activeStates.orderedList;
+          matched = true;
+        } else if ((svgHTML.includes('lucide-list') && !svgHTML.includes('lucide-list-todo') && !svgHTML.includes('lucide-list-ordered')) || ariaLabel.includes('bullet')) {
+          isActive = activeStates.bulletList;
+          matched = true;
+        } else if (svgHTML.includes('lucide-quote') || ariaLabel.includes('quote') || ariaLabel.includes('blockquote')) {
+          isActive = activeStates.blockquote;
+          matched = true;
+        } else if (svgHTML.includes('lucide-code-xml') || svgHTML.includes('lucide-code') || ariaLabel.includes('code block') || ariaLabel.includes('codeblock')) {
+          isActive = activeStates.codeBlock;
+          matched = true;
+        } else if (svgHTML.includes('lucide-bold') || ariaLabel.includes('bold')) {
+          isActive = activeStates.bold;
+          matched = true;
+        } else if (svgHTML.includes('lucide-italic') || ariaLabel.includes('italic')) {
+          isActive = activeStates.italic;
+          matched = true;
+        } else if (svgHTML.includes('lucide-underline') || ariaLabel.includes('underline')) {
+          isActive = activeStates.underline;
+          matched = true;
+        } else if (svgHTML.includes('lucide-strikethrough') || ariaLabel.includes('strike')) {
+          isActive = activeStates.strike;
+          matched = true;
+        } else if (svgHTML.includes('lucide-highlighter') || ariaLabel.includes('highlight')) {
+          isActive = activeStates.highlight;
+          matched = true;
+        } else if (svgHTML.includes('lucide-heading') || ariaLabel.includes('heading')) {
+          isActive = activeStates.heading;
+          matched = true;
+        } else if (svgHTML.includes('lucide-link') || ariaLabel.includes('link')) {
+          isActive = activeStates.link;
+          matched = true;
+        }
+
+        if (matched) {
+          const nextState = isActive ? 'on' : 'off';
+          if (btn.getAttribute('data-state') !== nextState) {
+            btn.setAttribute('data-state', nextState);
+          }
+        }
+      });
+    };
+
+    // Run initial sync
+    updateToolbarActiveStates();
+
+    // Subscribe to TipTap events for real-time reactive sync
+    editor.on('selectionUpdate', updateToolbarActiveStates);
+    editor.on('transaction', updateToolbarActiveStates);
+    editor.on('update', updateToolbarActiveStates);
+    editor.on('focus', updateToolbarActiveStates);
+    editor.on('blur', updateToolbarActiveStates);
+
+    return () => {
+      editor.off('selectionUpdate', updateToolbarActiveStates);
+      editor.off('transaction', updateToolbarActiveStates);
+      editor.off('update', updateToolbarActiveStates);
+      editor.off('focus', updateToolbarActiveStates);
+      editor.off('blur', updateToolbarActiveStates);
+    };
+  }, [editor]);
+
+
 
 
   // Undo / Redo Stacks for Vector Strokes

@@ -1,12 +1,11 @@
 # MindSpace - AI-Powered Visual Note-Taking & Mind-Mapping Platform
 
 ## Work Completed
-- [x] **Reactive Toolbar Active State Tracking & Action Button Fix** (Session 2026-07-24 v3):
-  - **Root Cause Fix (MutationObserver):** Discovered that `reactjs-tiptap-editor`'s `useToggleActive(undefined)` hook defaults to a toggle switch behavior on click when `isActive` is undefined, causing buttons like Horizontal Rule (`RichTextHorizontalRule`) to toggle `data-state="on"` when clicked. Attached a `MutationObserver` on the toolbar container that catches attribute changes and synchronously neutralizes `data-state="on"` on all action buttons (Horizontal Rule, Alignment, Clear, Undo, Redo, Search, Table Insert), keeping them permanently in normal non-active state (`data-state="off"`).
-  - **Dynamic Active State Synchronization:** Subscribed `AdvancedNoteEditor` directly to TipTap editor events (`selectionUpdate`, `transaction`, `update`, `focus`, `blur`).
-  - **Real-Time Tool Highlight Fix:** Every tool button (Checklist/TaskList, Bullet List, Ordered List, Bold, Italic, Underline, Strikethrough, Highlight, Blockquote, Code Block, Heading, Link, Table) now updates its `data-state` (`"on"` / `"off"`) in real time based on `editor.isActive(...)` under the cursor.
-  - **Mutually Exclusive List Types:** Enforced strict single-active priority between `taskList`, `bulletList`, and `orderedList` (only 1 list type can be active at a time).
-  - **List & Tool Switching Cases Covered:** Turning off a checklist (e.g. by pressing Enter or Backspace or clicking Checklist again) immediately turns off the red highlight; switching from checklist to bullet list turns off checklist and highlights bullet list; moving cursor across text with mixed formatting accurately highlights all active tools simultaneously.
+- [x] **Toolbar Active State Architecture & Root Cause Fix** (Session 2026-07-24 v3):
+  - **Root Cause Discovered & Fixed:** Analyzed `reactjs-tiptap-editor` library internals and identified the exact root cause:
+    1. `HorizontalRule` extension omitted `isActive` in its `button` options, causing `useToggleActive(undefined)` to default to a toggle switch behavior that flipped `dataState` to `'on'` on every click and transaction.
+    2. `Clear` (Eraser) extension defined `isActive: () => editor.can().clearNodes()`, which returned `true` whenever text existed in the note, keeping the Eraser button perpetually highlighted red.
+  - **Clean Native Extension Architecture:** Removed all manual DOM manipulation and MutationObserver code. Extended `HorizontalRule`, `Clear`, and `TextAlign` natively in TipTap (`.extend()`) with `isActive: () => false` in their `addOptions().button` componentProps. Action buttons now remain in the normal inactive state natively via React without any hacky DOM observers.
   - **Build:** `npx tsc --noEmit` verified with 0 compilation errors.
 
 - [x] **Canvas Table & Stylus Canvas Polish** (Session 2026-07-24 v2):

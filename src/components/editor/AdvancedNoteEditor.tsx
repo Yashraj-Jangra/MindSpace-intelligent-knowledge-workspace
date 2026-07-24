@@ -268,7 +268,43 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
       TaskList,
       Color,
       Highlight,
-      TextAlign.configure({ types: ['heading', 'paragraph'] }),
+      TextAlign.extend({
+        addOptions() {
+          const parentOptions = this.parent?.() || ({} as any);
+          return {
+            types: ['heading', 'paragraph'],
+            alignments: ['left', 'center', 'right', 'justify'],
+            defaultAlignment: null,
+            ...parentOptions,
+            button: ({ editor: t, extension: n, t: x }: any) => {
+              const A = n.options?.alignments || ['left', 'center', 'right', 'justify'];
+              const l: any = {
+                left: n.options?.shortcutKeys?.[0] ?? ['mod', 'Shift', 'L'],
+                center: n.options?.shortcutKeys?.[1] ?? ['mod', 'Shift', 'E'],
+                right: n.options?.shortcutKeys?.[2] ?? ['mod', 'Shift', 'R'],
+                justify: n.options?.shortcutKeys?.[3] ?? ['mod', 'Shift', 'J'],
+              };
+              const m: any = { left: 'AlignLeft', center: 'AlignCenter', right: 'AlignRight', justify: 'AlignJustify' };
+              const c = A.map((o: string) => ({
+                title: x(`editor.textalign.${o}.tooltip`),
+                icon: m[o],
+                shortcutKeys: l[o],
+                isActive: () => t.isActive({ textAlign: o }) || false,
+                action: () => (t.commands as any)?.setTextAlign?.(o),
+                disabled: !(t.can as any)().setTextAlign?.(o),
+              }));
+              return {
+                componentProps: {
+                  icon: 'AlignJustify',
+                  tooltip: x('editor.textalign.tooltip'),
+                  items: c,
+                  isActive: () => false, // Keep dropdown trigger button inactive
+                },
+              };
+            },
+          };
+        },
+      }),
       Link,
       Image.configure({
         upload: async (file: File) => {
@@ -283,8 +319,47 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
         },
       }),
       CanvasTableExtension,
-      HorizontalRule,
-      Clear,
+      HorizontalRule.extend({
+        addOptions() {
+          const parentOptions = this.parent?.() || ({} as any);
+          return {
+            HTMLAttributes: {},
+            nextNodeType: 'paragraph',
+            ...parentOptions,
+            button: ({ editor: n, t: r, extension: s }: any) => ({
+              componentProps: {
+                action: () => n.commands.setHorizontalRule(),
+                disabled: !n.can().setHorizontalRule(),
+                icon: 'Minus',
+                shortcutKeys: s?.options?.shortcutKeys ?? ['mod', 'alt', 'S'],
+                tooltip: r('editor.horizontalrule.tooltip'),
+                isActive: () => false, // Action button is never active
+              },
+            }),
+          };
+        },
+      }),
+      Clear.extend({
+        addOptions() {
+          const parentOptions = this.parent?.() || ({} as any);
+          return {
+            divider: false,
+            spacer: false,
+            toolbar: true,
+            shortcutKeys: [],
+            ...parentOptions,
+            button: ({ editor: t, t: n }: any) => ({
+              componentProps: {
+                action: () => t.chain().focus().clearNodes().unsetAllMarks().run(),
+                disabled: false,
+                icon: 'Eraser',
+                tooltip: n('editor.clear.tooltip'),
+                isActive: () => false, // Action button is never active
+              },
+            }),
+          };
+        },
+      }),
       SlashCommand,
       SearchAndReplace,
       Emoji,
@@ -314,181 +389,6 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
       editor.setEditable(!stylusSettings.isStylusModeActive);
     }
   }, [editor, stylusSettings.isStylusModeActive]);
-
-  // Synchronize Text Formatting Toolbar buttons' active state dynamically with actual TipTap editor state
-  useEffect(() => {
-    if (!editor || editor.isDestroyed) return;
-
-    const row2 = document.querySelector('.note-editor-toolbar-row2');
-    if (!row2) return;
-
-    const isActionContainerOrButton = (btn: HTMLElement): boolean => {
-      const svg = btn.querySelector('svg');
-      const svgHTML = svg ? svg.outerHTML : btn.innerHTML;
-      const ariaLabel = (btn.getAttribute('aria-label') || btn.getAttribute('title') || btn.textContent || '').toLowerCase();
-      const btnId = btn.id;
-
-      return (
-        btnId === 'insert-canvas-table-btn' ||
-        svgHTML.includes('lucide-minus') ||
-        svgHTML.includes('lucide-align') ||
-        svgHTML.includes('lucide-eraser') ||
-        svgHTML.includes('lucide-undo') ||
-        svgHTML.includes('lucide-redo') ||
-        svgHTML.includes('lucide-replace') ||
-        ariaLabel.includes('align') ||
-        ariaLabel.includes('horizontal') ||
-        ariaLabel.includes('divider') ||
-        ariaLabel.includes('rule') ||
-        ariaLabel.includes('clear') ||
-        ariaLabel.includes('undo') ||
-        ariaLabel.includes('redo') ||
-        ariaLabel.includes('search') ||
-        ariaLabel.includes('replace')
-      );
-    };
-
-    // MutationObserver to immediately neutralize useToggleActive's internal toggle state on Action buttons
-    const observer = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        if (mutation.type === 'attributes' && mutation.attributeName === 'data-state') {
-          const target = mutation.target as HTMLElement;
-          if (target && target.getAttribute('data-state') === 'on') {
-            const btn = target.tagName === 'BUTTON' ? target : target.closest('button');
-            if (btn && isActionContainerOrButton(btn)) {
-              target.setAttribute('data-state', 'off');
-            }
-          }
-        }
-      });
-    });
-
-    observer.observe(row2, {
-      attributes: true,
-      attributeFilter: ['data-state'],
-      subtree: true,
-    });
-
-    const updateToolbarActiveStates = () => {
-      const rawTaskList = editor.isActive('taskList');
-      const rawBulletList = editor.isActive('bulletList');
-      const rawOrderedList = editor.isActive('orderedList');
-
-      // Enforce strict single-active priority: ONLY ONE list type can be active at any given moment
-      let taskListActive = false;
-      let bulletListActive = false;
-      let orderedListActive = false;
-
-      if (rawTaskList) {
-        taskListActive = true;
-      } else if (rawBulletList) {
-        bulletListActive = true;
-      } else if (rawOrderedList) {
-        orderedListActive = true;
-      }
-
-      const activeStates: Record<string, boolean> = {
-        taskList: taskListActive,
-        bulletList: bulletListActive,
-        orderedList: orderedListActive,
-        blockquote: editor.isActive('blockquote'),
-        codeBlock: editor.isActive('codeBlock'),
-        bold: editor.isActive('bold'),
-        italic: editor.isActive('italic'),
-        underline: editor.isActive('underline'),
-        strike: editor.isActive('strike'),
-        highlight: editor.isActive('highlight'),
-        heading: editor.isActive('heading'),
-        link: editor.isActive('link'),
-        table: editor.isActive('canvasTable') || editor.isActive('table'),
-      };
-
-      const buttons = row2.querySelectorAll('button');
-      buttons.forEach((btn) => {
-        const svg = btn.querySelector('svg');
-        const svgHTML = svg ? svg.outerHTML : btn.innerHTML;
-        const ariaLabel = (btn.getAttribute('aria-label') || btn.getAttribute('title') || btn.textContent || '').toLowerCase();
-
-        // Category A One-Shot Actions (Horizontal Rule, Alignment, Clear, Undo, Redo, Search) MUST NEVER maintain an active red state color
-        if (isActionContainerOrButton(btn)) {
-          if (btn.getAttribute('data-state') !== 'off') {
-            btn.setAttribute('data-state', 'off');
-          }
-          return;
-        }
-
-        let isActive = false;
-        let matched = false;
-
-        if (btn.id === 'insert-canvas-table-btn' || svgHTML.includes('lucide-table') || ariaLabel.includes('table')) {
-          isActive = activeStates.table;
-          matched = true;
-        } else if (svgHTML.includes('lucide-list-todo') || ariaLabel.includes('task') || ariaLabel.includes('todo') || ariaLabel.includes('checklist')) {
-          isActive = activeStates.taskList;
-          matched = true;
-        } else if (svgHTML.includes('lucide-list-ordered') || ariaLabel.includes('ordered') || ariaLabel.includes('numbered')) {
-          isActive = activeStates.orderedList;
-          matched = true;
-        } else if ((svgHTML.includes('lucide-list') && !svgHTML.includes('lucide-list-todo') && !svgHTML.includes('lucide-list-ordered')) || ariaLabel.includes('bullet')) {
-          isActive = activeStates.bulletList;
-          matched = true;
-        } else if (svgHTML.includes('lucide-quote') || ariaLabel.includes('quote') || ariaLabel.includes('blockquote')) {
-          isActive = activeStates.blockquote;
-          matched = true;
-        } else if (svgHTML.includes('lucide-code-xml') || svgHTML.includes('lucide-code') || ariaLabel.includes('code block') || ariaLabel.includes('codeblock')) {
-          isActive = activeStates.codeBlock;
-          matched = true;
-        } else if (svgHTML.includes('lucide-bold') || ariaLabel.includes('bold')) {
-          isActive = activeStates.bold;
-          matched = true;
-        } else if (svgHTML.includes('lucide-italic') || ariaLabel.includes('italic')) {
-          isActive = activeStates.italic;
-          matched = true;
-        } else if (svgHTML.includes('lucide-underline') || ariaLabel.includes('underline')) {
-          isActive = activeStates.underline;
-          matched = true;
-        } else if (svgHTML.includes('lucide-strikethrough') || ariaLabel.includes('strike')) {
-          isActive = activeStates.strike;
-          matched = true;
-        } else if (svgHTML.includes('lucide-highlighter') || ariaLabel.includes('highlight')) {
-          isActive = activeStates.highlight;
-          matched = true;
-        } else if (svgHTML.includes('lucide-heading') || ariaLabel.includes('heading')) {
-          isActive = activeStates.heading;
-          matched = true;
-        } else if (svgHTML.includes('lucide-link') || ariaLabel.includes('link')) {
-          isActive = activeStates.link;
-          matched = true;
-        }
-
-        if (matched) {
-          const nextState = isActive ? 'on' : 'off';
-          if (btn.getAttribute('data-state') !== nextState) {
-            btn.setAttribute('data-state', nextState);
-          }
-        }
-      });
-    };
-
-    // Run initial sync
-    updateToolbarActiveStates();
-
-    // Subscribe to TipTap events for real-time reactive sync
-    editor.on('selectionUpdate', updateToolbarActiveStates);
-    editor.on('transaction', updateToolbarActiveStates);
-    editor.on('update', updateToolbarActiveStates);
-    editor.on('focus', updateToolbarActiveStates);
-    editor.on('blur', updateToolbarActiveStates);
-
-    return () => {
-      observer.disconnect();
-      editor.off('selectionUpdate', updateToolbarActiveStates);
-      editor.off('transaction', updateToolbarActiveStates);
-      editor.off('update', updateToolbarActiveStates);
-      editor.off('focus', updateToolbarActiveStates);
-      editor.off('blur', updateToolbarActiveStates);
-    };
-  }, [editor]);
 
 
 

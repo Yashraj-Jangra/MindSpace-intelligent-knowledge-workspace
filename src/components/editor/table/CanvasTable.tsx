@@ -230,7 +230,9 @@ export function CanvasTable({ node, updateAttributes, deleteNode }: NodeViewProp
   const [rowHeights, setRowHeights] = useState<number[]>(() => parseRowHeights(attrs.rowHeights, initRows));
   const [isThemeOpen, setIsThemeOpen] = useState(false);
   const [activeDrag, setActiveDrag] = useState<DragKind | null>(null);
-  const [isTableHovered, setIsTableHovered] = useState(false);
+  // Show the floating + button only when hovering within 36px of that specific edge
+  const [showRowBtn, setShowRowBtn] = useState(false);
+  const [showColBtn, setShowColBtn] = useState(false);
   const [ctxMenu, setCtxMenu] = useState<CtxMenu | null>(null);
 
   // ── Refs ───────────────────────────────────────────────────────────────
@@ -517,8 +519,17 @@ export function CanvasTable({ node, updateAttributes, deleteNode }: NodeViewProp
           border: bdr,
           cursor: isDragging ? 'grabbing' : undefined,
         }}
-        onMouseEnter={() => setIsTableHovered(true)}
-        onMouseLeave={() => setIsTableHovered(false)}
+        onMouseMove={e => {
+          if (activeDrag) { setShowRowBtn(false); setShowColBtn(false); return; }
+          const rect = rootRef.current?.getBoundingClientRect();
+          if (!rect) return;
+          const EDGE = 36; // px from edge to trigger visibility
+          const x = e.clientX - rect.left;
+          const y = e.clientY - rect.top;
+          setShowRowBtn(y > rect.height - EDGE);
+          setShowColBtn(x > rect.width - EDGE);
+        }}
+        onMouseLeave={() => { setShowRowBtn(false); setShowColBtn(false); }}
       >
         {/* ── Drag Bar ──────────────────────────────────────────────── */}
         <div
@@ -748,46 +759,40 @@ export function CanvasTable({ node, updateAttributes, deleteNode }: NodeViewProp
           }}
         />
 
-        {/* ── Floating + Row button (below table, centered) ─────────── */}
+        {/* ── Floating + Row button — shows when hovering near bottom edge ── */}
         <div
           onPointerDown={e => e.stopPropagation()}
           style={{
             position: 'absolute',
-            bottom: -22,
+            bottom: -16,
             left: '50%',
             transform: 'translateX(-50%)',
-            opacity: isTableHovered && !activeDrag ? 1 : 0,
-            transition: 'opacity 150ms',
-            pointerEvents: isTableHovered && !activeDrag ? 'auto' : 'none',
+            opacity: showRowBtn && !activeDrag ? 1 : 0,
+            transition: 'opacity 120ms',
+            pointerEvents: showRowBtn && !activeDrag ? 'auto' : 'none',
+            zIndex: 40,
           }}
         >
-          <button
-            onClick={() => insertRow(cells.length - 1)}
-            title="Add row"
-            className="ct-float-btn"
-          >
+          <button onClick={() => insertRow(cells.length - 1)} title="Add row" className="ct-float-btn">
             <Plus style={{ width: 10, height: 10 }} strokeWidth={2.5} />
           </button>
         </div>
 
-        {/* ── Floating + Col button (right of table, centered) ─────────── */}
+        {/* ── Floating + Col button — shows when hovering near right edge ── */}
         <div
           onPointerDown={e => e.stopPropagation()}
           style={{
             position: 'absolute',
-            right: -22,
+            right: -16,
             top: '50%',
             transform: 'translateY(-50%)',
-            opacity: isTableHovered && !activeDrag ? 1 : 0,
-            transition: 'opacity 150ms',
-            pointerEvents: isTableHovered && !activeDrag ? 'auto' : 'none',
+            opacity: showColBtn && !activeDrag ? 1 : 0,
+            transition: 'opacity 120ms',
+            pointerEvents: showColBtn && !activeDrag ? 'auto' : 'none',
+            zIndex: 40,
           }}
         >
-          <button
-            onClick={() => insertCol(numCols - 1)}
-            title="Add column"
-            className="ct-float-btn"
-          >
+          <button onClick={() => insertCol(numCols - 1)} title="Add column" className="ct-float-btn">
             <Plus style={{ width: 10, height: 10 }} strokeWidth={2.5} />
           </button>
         </div>

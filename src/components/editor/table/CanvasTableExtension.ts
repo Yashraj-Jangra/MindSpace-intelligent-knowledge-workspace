@@ -127,7 +127,7 @@ export const CanvasTableExtension = Node.create({
   },
 
   renderHTML({ HTMLAttributes }) {
-    return ['div', mergeAttributes(HTMLAttributes, { 'data-canvas-table': '' }), 0];
+    return ['div', mergeAttributes(HTMLAttributes, { 'data-canvas-table': '' })];
   },
 
   addNodeView() {

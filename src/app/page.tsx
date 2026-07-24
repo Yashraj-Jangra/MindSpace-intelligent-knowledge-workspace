@@ -25,6 +25,13 @@ export default function Home() {
   const [canvasId, setCanvasId] = useState<string | null>(null);
   const [title, setTitle] = useState('Untitled MindSpace Map');
   const [isGenerating, setIsGenerating] = useState(false);
+  
+  // Modals & Panels
+  const [isOutlineOpen, setIsOutlineOpen] = useState(false);
+  const [isDocUploadOpen, setIsDocUploadOpen] = useState(false);
+  const [reminderTarget, setReminderTarget] = useState<{ id: string; label: string } | null>(null);
+  const [toasts, setToasts] = useState<ToastMessage[]>([]);
+  const [isAccountOpen, setIsAccountOpen] = useState(false);
 
   // Redirect to login if unauthenticated after loading finishes
   useEffect(() => {
@@ -42,13 +49,6 @@ export default function Home() {
   }
 
   if (!user) return null;
-
-  // Modals & Panels
-  const [isOutlineOpen, setIsOutlineOpen] = useState(false);
-  const [isDocUploadOpen, setIsDocUploadOpen] = useState(false);
-  const [reminderTarget, setReminderTarget] = useState<{ id: string; label: string } | null>(null);
-  const [toasts, setToasts] = useState<ToastMessage[]>([]);
-  const [isAccountOpen, setIsAccountOpen] = useState(false);
 
   // Initial Demo Graph on mount
   useEffect(() => {

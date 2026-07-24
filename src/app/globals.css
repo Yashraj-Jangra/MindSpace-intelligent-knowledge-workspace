@@ -186,6 +186,40 @@ body {
   padding-left: 0;
 }
 
+/* ── Floating + Row / + Col buttons (appear outside table on hover) ── */
+.ct-float-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  background: var(--ct-bg-drag, #111);
+  border: 1px solid #333;
+  cursor: pointer;
+  color: var(--ct-text-muted, #737373);
+  border-radius: 50%;
+  transition: color 100ms, background-color 100ms, border-color 100ms;
+  padding: 0;
+}
+
+.ct-float-btn:hover {
+  color: #FF3D00;
+  border-color: rgba(255, 61, 0, 0.6);
+  background: rgba(255, 61, 0, 0.1);
+}
+
+html.light .ct-float-btn {
+  background: #F4F4F5;
+  border-color: #D4D4D8;
+  color: #71717A;
+}
+
+html.light .ct-float-btn:hover {
+  color: #FF3D00;
+  border-color: rgba(255, 61, 0, 0.5);
+  background: rgba(255, 61, 0, 0.08);
+}
+
 .ProseMirror ul[data-type="taskList"] li {
   display: flex;
   align-items: flex-start;

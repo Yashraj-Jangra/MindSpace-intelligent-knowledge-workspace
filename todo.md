@@ -2,7 +2,7 @@
 
 ## Work Completed
 - [x] **Account Settings & Integrations Drawer** (Session 2026-07-25 v8):
-  - **Rules of Hooks Violation Fix**: Fixed React rendering error by moving all `useState` modal/panel declarations above the `isLoading` and `!user` early return redirects, guaranteeing uniform hook execution order.
+  - **Rules of Hooks Violation Fix**: Grouped all React hooks (`useState`, `useEffect`, and `useCallback`) together at the very top level of the component preceding any early returns or redirects. This fully eliminates runtime hook-count mismatches during loading cycles.
   - **Account & Integrations Slide Drawer**: Added a slide-over settings panel accessible by clicking the user badge in the header. The panel includes tabs for user profiles, webhook management, Discord pairings, and SMTP setups.
   - **REST API Credentials & CLI Integration**: Displays user IDs and provides clear documentation with copying options for curl CLI node injection commands.
   - **Outbound Webhooks Management (CRUD)**: Enabled registering, viewing, and deleting outbound webhooks directly from the UI, introducing a `DELETE` endpoint in `/api/webhooks`.

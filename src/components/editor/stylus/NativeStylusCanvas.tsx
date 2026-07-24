@@ -161,40 +161,42 @@ export function NativeStylusCanvas({
     }
 
     // 5. Draw Lasso Selection Overlay (Freehand Loop or Rectangular Box Frame)
-    if (activeTool === 'select') {
-      if (settings.lassoSelectionMode === 'freehand' && lassoPointsRef.current.length > 1) {
-        const pts = lassoPointsRef.current;
-        ctx.save();
-        ctx.scale(dpr, dpr);
-        ctx.beginPath();
-        ctx.strokeStyle = '#FF3D00';
-        ctx.lineWidth = 1.8;
-        ctx.setLineDash([6, 4]);
-        ctx.fillStyle = '#FF3D0022';
-        ctx.moveTo(pts[0].x, pts[0].y);
-        for (let i = 1; i < pts.length; i++) {
-          ctx.lineTo(pts[i].x, pts[i].y);
-        }
-        ctx.closePath();
-        ctx.fill();
-        ctx.stroke();
-        ctx.restore();
-      } else if (settings.lassoSelectionMode === 'box' && boxStart && boxCurrent) {
-        const minX = Math.min(boxStart.x, boxCurrent.x);
-        const minY = Math.min(boxStart.y, boxCurrent.y);
-        const width = Math.abs(boxCurrent.x - boxStart.x);
-        const height = Math.abs(boxCurrent.y - boxStart.y);
+    const isFreehandLassoActive =
+      (activeTool === 'select' && settings.lassoSelectionMode === 'freehand') ||
+      (activeTool === 'eraser' && settings.eraserMode === 'lasso');
 
-        ctx.save();
-        ctx.scale(dpr, dpr);
-        ctx.strokeStyle = '#FF3D00';
-        ctx.lineWidth = 1.5;
-        ctx.setLineDash([6, 4]);
-        ctx.fillStyle = '#FF3D0022';
-        ctx.fillRect(minX, minY, width, height);
-        ctx.strokeRect(minX, minY, width, height);
-        ctx.restore();
+    if (isFreehandLassoActive && lassoPointsRef.current.length > 1) {
+      const pts = lassoPointsRef.current;
+      ctx.save();
+      ctx.scale(dpr, dpr);
+      ctx.beginPath();
+      ctx.strokeStyle = '#FF3D00';
+      ctx.lineWidth = 1.8;
+      ctx.setLineDash([6, 4]);
+      ctx.fillStyle = activeTool === 'eraser' ? 'rgba(255, 61, 0, 0.2)' : '#FF3D0022';
+      ctx.moveTo(pts[0].x, pts[0].y);
+      for (let i = 1; i < pts.length; i++) {
+        ctx.lineTo(pts[i].x, pts[i].y);
       }
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      ctx.restore();
+    } else if (activeTool === 'select' && settings.lassoSelectionMode === 'box' && boxStart && boxCurrent) {
+      const minX = Math.min(boxStart.x, boxCurrent.x);
+      const minY = Math.min(boxStart.y, boxCurrent.y);
+      const width = Math.abs(boxCurrent.x - boxStart.x);
+      const height = Math.abs(boxCurrent.y - boxStart.y);
+
+      ctx.save();
+      ctx.scale(dpr, dpr);
+      ctx.strokeStyle = '#FF3D00';
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([6, 4]);
+      ctx.fillStyle = '#FF3D0022';
+      ctx.fillRect(minX, minY, width, height);
+      ctx.strokeRect(minX, minY, width, height);
+      ctx.restore();
     }
 
     // 6. Draw visible translucent eraser ring or precision lasso pointer cursor overlay

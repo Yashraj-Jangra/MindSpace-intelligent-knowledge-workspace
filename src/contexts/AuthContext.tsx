@@ -10,6 +10,7 @@ interface AuthContextType {
   register: (name: string, email: string, pass: string) => Promise<{ success: boolean; error?: string }>;
   loginWithGoogle: () => void;
   logout: () => Promise<void>;
+  checkSession: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -48,17 +49,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
       });
-
       const data = await res.json();
-
-      if (!res.ok || data.error) {
-        return { success: false, error: data.error || 'Login failed' };
+      if (res.ok && data.success) {
+        await checkSession();
+        return { success: true };
       }
-
-      setUser(data.user);
-      return { success: true };
+      return { success: false, error: data.error || 'Login failed' };
     } catch (err) {
-      return { success: false, error: (err as Error).message };
+      return { success: false, error: 'Network error occurred during login.' };
     }
   };
 
@@ -69,17 +67,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, email, password }),
       });
-
       const data = await res.json();
-
-      if (!res.ok || data.error) {
-        return { success: false, error: data.error || 'Registration failed' };
+      if (res.ok && data.success) {
+        await checkSession();
+        return { success: true };
       }
-
-      setUser(data.user);
-      return { success: true };
+      return { success: false, error: data.error || 'Registration failed' };
     } catch (err) {
-      return { success: false, error: (err as Error).message };
+      return { success: false, error: 'Network error occurred during registration.' };
     }
   };
 
@@ -89,11 +84,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = async () => {
     try {
-      await fetch('/api/auth/logout', { method: 'POST' });
-      setUser(null);
-      window.location.href = '/login';
+      const res = await fetch('/api/auth/logout', { method: 'POST' });
+      if (res.ok) {
+        setUser(null);
+      }
     } catch (err) {
-      console.error(err);
+      console.error('Logout error:', err);
     }
   };
 
@@ -106,6 +102,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         register,
         loginWithGoogle,
         logout,
+        checkSession,
       }}
     >
       {children}

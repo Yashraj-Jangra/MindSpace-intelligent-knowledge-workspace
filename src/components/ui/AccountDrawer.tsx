@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { X, User, Shield, Terminal, Webhook, MessageSquare, Mail, Key, Trash2, Plus, Check, Loader2 } from 'lucide-react';
+import { X, User, Shield, Terminal, Webhook, MessageSquare, Key, Trash2, Plus, Check, Loader2, Database, Info } from 'lucide-react';
 import { SessionUser } from '@/lib/session';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface AccountDrawerProps {
   isOpen: boolean;
@@ -19,8 +20,34 @@ interface WebhookItem {
 }
 
 export function AccountDrawer({ isOpen, onClose, user }: AccountDrawerProps) {
-  const [activeTab, setActiveTab] = useState<'profile' | 'webhooks' | 'discord' | 'smtp'>('profile');
+  const { checkSession } = useAuth();
+  const [activeTab, setActiveTab] = useState<'profile' | 'info' | 'security' | 'quota' | 'webhooks' | 'discord'>('profile');
   const [copiedText, setCopiedText] = useState(false);
+
+  // Edit Info Tab State
+  const [editName, setEditName] = useState(user.name || '');
+  const [editEmail, setEditEmail] = useState(user.email || '');
+  const [infoError, setInfoError] = useState('');
+  const [infoSuccess, setInfoSuccess] = useState('');
+  const [isInfoLoading, setIsInfoLoading] = useState(false);
+
+  // Password Tab State
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [securityError, setSecurityError] = useState('');
+  const [securitySuccess, setSecuritySuccess] = useState('');
+  const [isSecurityLoading, setIsSecurityLoading] = useState(false);
+
+  // Usage & Quota State
+  const [usageStats, setUsageStats] = useState({
+    canvasCount: 0,
+    noteCount: 0,
+    nodeCount: 0,
+    storageUsed: 0,
+    storageLimit: 100.0,
+  });
+  const [isUsageLoading, setIsUsageLoading] = useState(false);
 
   // Webhooks Tab State
   const [webhooks, setWebhooks] = useState<WebhookItem[]>([]);
@@ -39,15 +66,11 @@ export function AccountDrawer({ isOpen, onClose, user }: AccountDrawerProps) {
   const [discordWebhookUrl, setDiscordWebhookUrl] = useState('');
   const [dcSuccess, setDcSuccess] = useState('');
 
-  // SMTP Tab State
-  const [smtpHost, setSmtpHost] = useState('');
-  const [smtpPort, setSmtpPort] = useState('587');
-  const [smtpUser, setSmtpUser] = useState('');
-  const [smtpPass, setSmtpPass] = useState('');
-  const [smtpFrom, setSmtpFrom] = useState('');
-  const [isSmtpLoading, setIsSmtpLoading] = useState(false);
-  const [smtpError, setSmtpError] = useState('');
-  const [smtpSuccess, setSmtpSuccess] = useState('');
+  // Update Edit Info inputs when user session shifts
+  useEffect(() => {
+    setEditName(user.name || '');
+    setEditEmail(user.email || '');
+  }, [user]);
 
   // Copy API snippet helper
   const copyApiSnippet = () => {
@@ -61,6 +84,83 @@ export function AccountDrawer({ isOpen, onClose, user }: AccountDrawerProps) {
     navigator.clipboard.writeText(snippet);
     setCopiedText(true);
     setTimeout(() => setCopiedText(false), 2000);
+  };
+
+  // Fetch Usage Statistics
+  const fetchUsageStats = async () => {
+    setIsUsageLoading(true);
+    try {
+      const res = await fetch('/api/auth/usage');
+      if (res.ok) {
+        const data = await res.json();
+        setUsageStats(data);
+      }
+    } catch (err) {
+      console.error('Failed to fetch usage stats:', err);
+    } finally {
+      setIsUsageLoading(false);
+    }
+  };
+
+  // Save profile info modifications
+  const handleSaveInfo = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setInfoError('');
+    setInfoSuccess('');
+    setIsInfoLoading(true);
+
+    try {
+      const res = await fetch('/api/auth/profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: editName, email: editEmail }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setInfoSuccess('Profile information updated successfully!');
+        await checkSession(); // Reload session in context header
+      } else {
+        setInfoError(data.error || 'Failed to update profile information');
+      }
+    } catch (err) {
+      setInfoError('Server error while saving info.');
+    } finally {
+      setIsInfoLoading(false);
+    }
+  };
+
+  // Save password updates
+  const handleSavePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSecurityError('');
+    setSecuritySuccess('');
+
+    if (newPassword !== confirmPassword) {
+      setSecurityError('New passwords do not match');
+      return;
+    }
+
+    setIsSecurityLoading(true);
+    try {
+      const res = await fetch('/api/auth/password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ currentPassword, newPassword }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setSecuritySuccess('Password updated successfully!');
+        setCurrentPassword('');
+        setNewPassword('');
+        setConfirmPassword('');
+      } else {
+        setSecurityError(data.error || 'Failed to change password');
+      }
+    } catch (err) {
+      setSecurityError('Server error while changing password.');
+    } finally {
+      setIsSecurityLoading(false);
+    }
   };
 
   // Fetch webhooks
@@ -184,63 +284,12 @@ export function AccountDrawer({ isOpen, onClose, user }: AccountDrawerProps) {
     }
   };
 
-  // Fetch SMTP configurations
-  const fetchSmtpConfig = async () => {
-    try {
-      const res = await fetch('/api/auth/smtp');
-      if (res.ok) {
-        const data = await res.json();
-        if (data.config) {
-          setSmtpHost(data.config.host || '');
-          setSmtpPort(String(data.config.port || '587'));
-          setSmtpUser(data.config.username || '');
-          setSmtpPass(data.config.password || '');
-          setSmtpFrom(data.config.fromEmail || '');
-        }
-      }
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  // Save SMTP Settings
-  const handleSaveSmtp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSmtpError('');
-    setSmtpSuccess('');
-    setIsSmtpLoading(true);
-
-    try {
-      const res = await fetch('/api/auth/smtp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          host: smtpHost,
-          port: Number(smtpPort),
-          username: smtpUser,
-          password: smtpPass,
-          fromEmail: smtpFrom,
-        }),
-      });
-      const data = await res.json();
-      if (res.ok) {
-        setSmtpSuccess('SMTP configuration saved successfully!');
-      } else {
-        setSmtpError(data.error || 'Failed to save SMTP configuration');
-      }
-    } catch (err) {
-      setSmtpError('Server error while saving.');
-    } finally {
-      setIsSmtpLoading(false);
-    }
-  };
-
   // Trigger loads when active tab changes
   useEffect(() => {
     if (!isOpen) return;
+    if (activeTab === 'quota') fetchUsageStats();
     if (activeTab === 'webhooks') fetchWebhooks();
     if (activeTab === 'discord') fetchDiscordStatus();
-    if (activeTab === 'smtp') fetchSmtpConfig();
   }, [activeTab, isOpen]);
 
   if (!isOpen) return null;
@@ -260,7 +309,7 @@ export function AccountDrawer({ isOpen, onClose, user }: AccountDrawerProps) {
               <User className="w-3.5 h-3.5" />
             </div>
             <h2 className="font-sans font-black text-lg tracking-tighter uppercase text-[#FAFAFA]">
-              ACCOUNT & INTEGRATIONS
+              ACCOUNT & SETTINGS
             </h2>
           </div>
           <button
@@ -272,18 +321,42 @@ export function AccountDrawer({ isOpen, onClose, user }: AccountDrawerProps) {
         </header>
 
         {/* Settings Navigation Tabs */}
-        <nav className="flex border-b border-[#262626] shrink-0 overflow-x-auto no-scrollbar font-mono text-[10px] sm:text-xs uppercase font-bold bg-[#0F0F0F]">
+        <nav className="flex border-b border-[#262626] shrink-0 overflow-x-auto no-scrollbar font-mono text-[9px] sm:text-[11px] uppercase font-bold bg-[#0F0F0F]">
           <button
             onClick={() => setActiveTab('profile')}
-            className={`flex-1 py-3.5 text-center border-r border-[#262626] transition-colors ${
+            className={`flex-1 py-3.5 px-2 text-center border-r border-[#262626] transition-colors whitespace-nowrap ${
               activeTab === 'profile' ? 'text-[#FF3D00] bg-[#0A0A0A]' : 'text-[#737373] hover:text-[#FAFAFA]'
             }`}
           >
             Profile & API
           </button>
           <button
+            onClick={() => setActiveTab('info')}
+            className={`flex-1 py-3.5 px-2 text-center border-r border-[#262626] transition-colors whitespace-nowrap ${
+              activeTab === 'info' ? 'text-[#FF3D00] bg-[#0A0A0A]' : 'text-[#737373] hover:text-[#FAFAFA]'
+            }`}
+          >
+            Change Info
+          </button>
+          <button
+            onClick={() => setActiveTab('security')}
+            className={`flex-1 py-3.5 px-2 text-center border-r border-[#262626] transition-colors whitespace-nowrap ${
+              activeTab === 'security' ? 'text-[#FF3D00] bg-[#0A0A0A]' : 'text-[#737373] hover:text-[#FAFAFA]'
+            }`}
+          >
+            Password
+          </button>
+          <button
+            onClick={() => setActiveTab('quota')}
+            className={`flex-1 py-3.5 px-2 text-center border-r border-[#262626] transition-colors whitespace-nowrap ${
+              activeTab === 'quota' ? 'text-[#FF3D00] bg-[#0A0A0A]' : 'text-[#737373] hover:text-[#FAFAFA]'
+            }`}
+          >
+            Quotas
+          </button>
+          <button
             onClick={() => setActiveTab('webhooks')}
-            className={`flex-1 py-3.5 text-center border-r border-[#262626] transition-colors ${
+            className={`flex-1 py-3.5 px-2 text-center border-r border-[#262626] transition-colors whitespace-nowrap ${
               activeTab === 'webhooks' ? 'text-[#FF3D00] bg-[#0A0A0A]' : 'text-[#737373] hover:text-[#FAFAFA]'
             }`}
           >
@@ -291,19 +364,11 @@ export function AccountDrawer({ isOpen, onClose, user }: AccountDrawerProps) {
           </button>
           <button
             onClick={() => setActiveTab('discord')}
-            className={`flex-1 py-3.5 text-center border-r border-[#262626] transition-colors ${
+            className={`flex-1 py-3.5 px-2 text-center transition-colors whitespace-nowrap ${
               activeTab === 'discord' ? 'text-[#FF3D00] bg-[#0A0A0A]' : 'text-[#737373] hover:text-[#FAFAFA]'
             }`}
           >
             Discord
-          </button>
-          <button
-            onClick={() => setActiveTab('smtp')}
-            className={`flex-1 py-3.5 text-center transition-colors ${
-              activeTab === 'smtp' ? 'text-[#FF3D00] bg-[#0A0A0A]' : 'text-[#737373] hover:text-[#FAFAFA]'
-            }`}
-          >
-            SMTP Mail
           </button>
         </nav>
 
@@ -318,7 +383,7 @@ export function AccountDrawer({ isOpen, onClose, user }: AccountDrawerProps) {
                 <div className="h-1 w-12 bg-[#FF3D00] absolute top-0 left-0" />
                 <h3 className="font-mono text-xs text-[#737373] uppercase tracking-wider mb-4 flex items-center gap-1.5">
                   <Shield className="w-3.5 h-3.5 text-[#FF3D00]" />
-                  <span>User Profile</span>
+                  <span>User Credentials</span>
                 </h3>
                 <div className="space-y-3 text-xs font-mono">
                   <div className="flex justify-between pb-2 border-b border-[#1A1A1A]">
@@ -370,7 +435,169 @@ export function AccountDrawer({ isOpen, onClose, user }: AccountDrawerProps) {
             </div>
           )}
 
-          {/* TAB 2: Outbound Webhooks */}
+          {/* TAB 2: Change Info */}
+          {activeTab === 'info' && (
+            <form onSubmit={handleSaveInfo} className="bg-[#0F0F0F] border border-[#262626] p-5 space-y-4">
+              <h3 className="font-mono text-xs text-[#737373] uppercase tracking-wider flex items-center gap-1.5">
+                <Info className="w-3.5 h-3.5 text-[#FF3D00]" />
+                <span>Profile Settings</span>
+              </h3>
+
+              {infoError && <div className="p-2 border border-red-500 bg-red-500/10 text-red-500 text-[11px] font-mono">{infoError}</div>}
+              {infoSuccess && <div className="p-2 border border-emerald-500 bg-emerald-500/10 text-emerald-500 text-[11px] font-mono">{infoSuccess}</div>}
+
+              <div className="space-y-3 text-xs">
+                <div>
+                  <label className="block font-mono uppercase text-[#737373] text-[10px] mb-1">Display Name</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. John Doe"
+                    value={editName}
+                    onChange={(e) => setEditName(e.target.value)}
+                    className="w-full bg-[#1A1A1A] border border-[#262626] focus:border-[#FF3D00] p-2 text-xs font-mono text-[#FAFAFA] outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block font-mono uppercase text-[#737373] text-[10px] mb-1">Email Address</label>
+                  <input
+                    type="email"
+                    required
+                    placeholder="e.g. john@doe.com"
+                    value={editEmail}
+                    onChange={(e) => setEditEmail(e.target.value)}
+                    className="w-full bg-[#1A1A1A] border border-[#262626] focus:border-[#FF3D00] p-2 text-xs font-mono text-[#FAFAFA] outline-none"
+                  />
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={isInfoLoading}
+                className="w-full bg-[#FF3D00] text-[#0A0A0A] font-mono text-xs uppercase font-bold py-2.5 hover:bg-[#FAFAFA] transition-colors flex items-center justify-center gap-2"
+              >
+                {isInfoLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Save Profile Changes'}
+              </button>
+            </form>
+          )}
+
+          {/* TAB 3: Security (Change Password) */}
+          {activeTab === 'security' && (
+            <form onSubmit={handleSavePassword} className="bg-[#0F0F0F] border border-[#262626] p-5 space-y-4">
+              <h3 className="font-mono text-xs text-[#737373] uppercase tracking-wider flex items-center gap-1.5">
+                <Key className="w-3.5 h-3.5 text-[#FF3D00]" />
+                <span>Security Settings</span>
+              </h3>
+
+              {securityError && <div className="p-2 border border-red-500 bg-red-500/10 text-red-500 text-[11px] font-mono">{securityError}</div>}
+              {securitySuccess && <div className="p-2 border border-emerald-500 bg-emerald-500/10 text-emerald-500 text-[11px] font-mono">{securitySuccess}</div>}
+
+              <div className="space-y-3 text-xs">
+                <div>
+                  <label className="block font-mono uppercase text-[#737373] text-[10px] mb-1">Current Password</label>
+                  <input
+                    type="password"
+                    required
+                    placeholder="••••••••••••"
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                    className="w-full bg-[#1A1A1A] border border-[#262626] focus:border-[#FF3D00] p-2 text-xs font-mono text-[#FAFAFA] outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block font-mono uppercase text-[#737373] text-[10px] mb-1">New Password</label>
+                  <input
+                    type="password"
+                    required
+                    placeholder="••••••••••••"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    className="w-full bg-[#1A1A1A] border border-[#262626] focus:border-[#FF3D00] p-2 text-xs font-mono text-[#FAFAFA] outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block font-mono uppercase text-[#737373] text-[10px] mb-1">Confirm New Password</label>
+                  <input
+                    type="password"
+                    required
+                    placeholder="••••••••••••"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className="w-full bg-[#1A1A1A] border border-[#262626] focus:border-[#FF3D00] p-2 text-xs font-mono text-[#FAFAFA] outline-none"
+                  />
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={isSecurityLoading}
+                className="w-full bg-[#FF3D00] text-[#0A0A0A] font-mono text-xs uppercase font-bold py-2.5 hover:bg-[#FAFAFA] transition-colors flex items-center justify-center gap-2"
+              >
+                {isSecurityLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Change Account Password'}
+              </button>
+            </form>
+          )}
+
+          {/* TAB 4: Quotas & Storage Usage */}
+          {activeTab === 'quota' && (
+            <div className="space-y-6">
+              {/* Storage bar */}
+              <div className="bg-[#0F0F0F] border border-[#262626] p-5 space-y-4">
+                <h3 className="font-mono text-xs text-[#737373] uppercase tracking-wider flex items-center gap-1.5">
+                  <Database className="w-3.5 h-3.5 text-[#FF3D00]" />
+                  <span>Workspace Storage Limit</span>
+                </h3>
+
+                {isUsageLoading ? (
+                  <div className="text-center py-6">
+                    <Loader2 className="w-5 h-5 animate-spin mx-auto text-[#737373]" />
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {/* Visual Meter Bar */}
+                    <div className="w-full h-4 bg-black border border-[#262626] p-0.5 overflow-hidden">
+                      <div
+                        className="h-full bg-[#FF3D00] transition-all duration-500"
+                        style={{ width: `${Math.min(100, (usageStats.storageUsed / usageStats.storageLimit) * 100)}%` }}
+                      />
+                    </div>
+
+                    <div className="flex justify-between font-mono text-[10px] sm:text-xs">
+                      <span className="text-[#FF3D00] font-black">{usageStats.storageUsed} MB USED</span>
+                      <span className="text-[#737373]">{usageStats.storageLimit} MB TOTAL LIMIT</span>
+                    </div>
+
+                    <div className="p-3 border border-[#262626] bg-black text-[11px] font-mono text-[#737373] leading-relaxed">
+                      💡 **Notification Mail Delivery:** Reminders are routed directly through MindSpace notifications. Custom SMTP settings are disabled.
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Statistics Details */}
+              <div className="bg-[#0F0F0F] border border-[#262626] p-5 space-y-3">
+                <h4 className="font-mono text-xs text-[#737373] uppercase tracking-wider">
+                  Database Resource Counts
+                </h4>
+                <div className="space-y-2 text-xs font-mono">
+                  <div className="flex justify-between pb-1.5 border-b border-[#1A1A1A]">
+                    <span className="text-[#737373]">ACTIVE CANVASES</span>
+                    <span className="text-[#FAFAFA] font-bold">{usageStats.canvasCount}</span>
+                  </div>
+                  <div className="flex justify-between pb-1.5 border-b border-[#1A1A1A]">
+                    <span className="text-[#737373]">SAVED NOTES</span>
+                    <span className="text-[#FAFAFA] font-bold">{usageStats.noteCount}</span>
+                  </div>
+                  <div className="flex justify-between pb-1">
+                    <span className="text-[#737373]">CONCEPT NODES</span>
+                    <span className="text-[#FAFAFA] font-bold">{usageStats.nodeCount}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 5: Outbound Webhooks */}
           {activeTab === 'webhooks' && (
             <div className="space-y-6">
               {/* Webhook form */}
@@ -470,7 +697,7 @@ export function AccountDrawer({ isOpen, onClose, user }: AccountDrawerProps) {
             </div>
           )}
 
-          {/* TAB 3: Discord Integration */}
+          {/* TAB 6: Discord Integration */}
           {activeTab === 'discord' && (
             <div className="space-y-6">
               {/* Pairing Status */}
@@ -556,87 +783,6 @@ export function AccountDrawer({ isOpen, onClose, user }: AccountDrawerProps) {
                 </div>
               </div>
             </div>
-          )}
-
-          {/* TAB 4: SMTP Config */}
-          {activeTab === 'smtp' && (
-            <form onSubmit={handleSaveSmtp} className="bg-[#0F0F0F] border border-[#262626] p-5 space-y-4">
-              <h3 className="font-mono text-xs text-[#737373] uppercase tracking-wider flex items-center gap-1.5">
-                <Mail className="w-3.5 h-3.5 text-[#FF3D00]" />
-                <span>SMTP Email Configuration</span>
-              </h3>
-
-              {smtpError && <div className="p-2 border border-red-500 bg-red-500/10 text-red-500 text-[11px] font-mono">{smtpError}</div>}
-              {smtpSuccess && <div className="p-2 border border-emerald-500 bg-emerald-500/10 text-emerald-500 text-[11px] font-mono">{smtpSuccess}</div>}
-
-              <div className="space-y-3 text-xs">
-                <div>
-                  <label className="block font-mono uppercase text-[#737373] text-[10px] mb-1">SMTP Host</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. smtp.gmail.com"
-                    value={smtpHost}
-                    onChange={(e) => setSmtpHost(e.target.value)}
-                    className="w-full bg-[#1A1A1A] border border-[#262626] focus:border-[#FF3D00] p-2 text-xs font-mono text-[#FAFAFA] outline-none"
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block font-mono uppercase text-[#737373] text-[10px] mb-1">Port</label>
-                    <input
-                      type="number"
-                      required
-                      placeholder="e.g. 587"
-                      value={smtpPort}
-                      onChange={(e) => setSmtpPort(e.target.value)}
-                      className="w-full bg-[#1A1A1A] border border-[#262626] focus:border-[#FF3D00] p-2 text-xs font-mono text-[#FAFAFA] outline-none"
-                    />
-                  </div>
-                  <div>
-                    <label className="block font-mono uppercase text-[#737373] text-[10px] mb-1">Sender Email</label>
-                    <input
-                      type="email"
-                      required
-                      placeholder="noreply@mindspace.local"
-                      value={smtpFrom}
-                      onChange={(e) => setSmtpFrom(e.target.value)}
-                      className="w-full bg-[#1A1A1A] border border-[#262626] focus:border-[#FF3D00] p-2 text-xs font-mono text-[#FAFAFA] outline-none"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className="block font-mono uppercase text-[#737373] text-[10px] mb-1">SMTP Username</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="username@gmail.com"
-                    value={smtpUser}
-                    onChange={(e) => setSmtpUser(e.target.value)}
-                    className="w-full bg-[#1A1A1A] border border-[#262626] focus:border-[#FF3D00] p-2 text-xs font-mono text-[#FAFAFA] outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block font-mono uppercase text-[#737373] text-[10px] mb-1">SMTP Password</label>
-                  <input
-                    type="password"
-                    required
-                    placeholder="••••••••••••"
-                    value={smtpPass}
-                    onChange={(e) => setSmtpPass(e.target.value)}
-                    className="w-full bg-[#1A1A1A] border border-[#262626] focus:border-[#FF3D00] p-2 text-xs font-mono text-[#FAFAFA] outline-none"
-                  />
-                </div>
-              </div>
-
-              <button
-                type="submit"
-                disabled={isSmtpLoading}
-                className="w-full bg-[#FF3D00] text-[#0A0A0A] font-mono text-xs uppercase font-bold py-2.5 hover:bg-[#FAFAFA] transition-colors flex items-center justify-center gap-2"
-              >
-                {isSmtpLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Save SMTP Configuration'}
-              </button>
-            </form>
           )}
 
         </div>

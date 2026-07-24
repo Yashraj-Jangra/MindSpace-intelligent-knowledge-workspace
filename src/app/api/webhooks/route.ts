@@ -79,3 +79,33 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: (error as Error).message }, { status: 500 });
   }
 }
+
+export async function DELETE(req: Request) {
+  try {
+    const session = await getSessionFromCookie();
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { id } = await req.json();
+    if (!id) {
+      return NextResponse.json({ error: 'Webhook ID is required' }, { status: 400 });
+    }
+
+    if (!isDbDisabled()) {
+      try {
+        await prisma.webhook.delete({
+          where: { id, userId: session.id },
+        });
+        return NextResponse.json({ success: true });
+      } catch (err) {
+        disableDbCircuitBreaker();
+      }
+    }
+
+    return NextResponse.json({ success: true, mock: true });
+  } catch (error) {
+    console.error('[API /webhooks DELETE Error]:', error);
+    return NextResponse.json({ error: (error as Error).message }, { status: 500 });
+  }
+}

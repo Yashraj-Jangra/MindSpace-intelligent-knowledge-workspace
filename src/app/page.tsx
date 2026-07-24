@@ -11,6 +11,7 @@ import { OutlineView } from '@/components/ui/OutlineView';
 import { DocumentUpload } from '@/components/ui/DocumentUpload';
 import { SearchBar } from '@/components/ui/SearchBar';
 import { ExportMenu } from '@/components/ui/ExportMenu';
+import { AccountDrawer } from '@/components/ui/AccountDrawer';
 import { Network, FileText, FileUp, LogIn, UserPlus, LogOut, Shield, User, LayoutDashboard, Bell } from 'lucide-react';
 import { MindSpaceNodeData } from '@/lib/graph/transformer';
 import { useAuth } from '@/contexts/AuthContext';
@@ -47,6 +48,7 @@ export default function Home() {
   const [isDocUploadOpen, setIsDocUploadOpen] = useState(false);
   const [reminderTarget, setReminderTarget] = useState<{ id: string; label: string } | null>(null);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
+  const [isAccountOpen, setIsAccountOpen] = useState(false);
 
   // Initial Demo Graph on mount
   useEffect(() => {
@@ -331,10 +333,14 @@ export default function Home() {
           <div className="border-l border-[#262626] pl-2 sm:pl-3 flex items-center gap-2">
             {user ? (
               <div className="flex items-center gap-2">
-                <div className="flex items-center gap-1.5 bg-[#0F0F0F] border border-[#262626] px-2.5 py-1 text-xs font-mono text-[#FAFAFA]">
+                <button
+                  onClick={() => setIsAccountOpen(true)}
+                  className="flex items-center gap-1.5 bg-[#0F0F0F] border border-[#262626] hover:border-[#FF3D00] px-2.5 py-1.5 text-xs font-mono text-[#FAFAFA] transition-colors"
+                  title="View Profile & Settings"
+                >
                   <User className="w-3.5 h-3.5 text-[#FF3D00]" />
                   <span className="max-w-[80px] sm:max-w-[100px] truncate">{user.name || user.email}</span>
-                </div>
+                </button>
 
                 <button
                   onClick={() => logout()}
@@ -410,6 +416,13 @@ export default function Home() {
         nodeLabel={reminderTarget?.label || ''}
         onClose={() => setReminderTarget(null)}
         onConfirm={handleConfirmReminder}
+      />
+
+      {/* Account Settings & Integrations Panel Drawer */}
+      <AccountDrawer
+        isOpen={isAccountOpen}
+        onClose={() => setIsAccountOpen(false)}
+        user={user}
       />
 
       {/* Notification Toast Alert Manager */}

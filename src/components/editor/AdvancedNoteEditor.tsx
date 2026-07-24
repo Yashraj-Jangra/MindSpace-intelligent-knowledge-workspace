@@ -1027,11 +1027,15 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
               {/* INSERT group */}
               <div className="h-4 w-px bg-[#1E1E1E] mx-1.5 shrink-0" />
               <span className="text-[8px] font-mono uppercase tracking-widest text-[#3a3a3a] px-1 shrink-0 hidden lg:inline">Insert</span>
-              {/* Insert Table Button — opens custom modal */}
+              {/* Insert Table Button — opens custom modal, locks in Stylus mode matching all other toolbar buttons */}
               <button
                 id="insert-canvas-table-btn"
-                onClick={() => setIsInsertTableOpen(true)}
-                className="p-1 text-[#737373] hover:text-[#FF3D00] hover:bg-[#1A1A1A] transition-colors rounded"
+                disabled={!editor?.isEditable || stylusSettings.isStylusModeActive}
+                onClick={() => {
+                  if (!editor?.isEditable || stylusSettings.isStylusModeActive) return;
+                  setIsInsertTableOpen(true);
+                }}
+                className="p-1.5 text-[#737373] hover:text-[#FAFAFA] hover:bg-[#1E1E1E] disabled:opacity-40 disabled:pointer-events-none disabled:cursor-not-allowed transition-colors rounded inline-flex items-center justify-center shrink-0"
                 title="Insert Table"
                 type="button"
               >

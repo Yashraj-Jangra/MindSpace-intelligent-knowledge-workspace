@@ -1,6 +1,13 @@
 # MindSpace - AI-Powered Visual Note-Taking & Mind-Mapping Platform
 
 ## Work Completed
+- [x] **Stylus Round 2 — Scroll, Eraser, Touch & Mode Control Fixes** (Session 2026-07-25 v6):
+  - **Stylus scroll bug (real root cause)**: `touchAction: 'pan-y'` applies to the browser BEFORE JS fires — meaning pen strokes in the downward direction triggered browser scroll regardless of `e.preventDefault()`. Fixed to `touchAction: 'none'` (browser hands full pointer control to JS). Manual touch scroll now implemented in JS for `stylusOnlyMode` finger swipes.
+  - **Stylus Eraser and Pressing Sensitivity**: Removed `pressure >= settings.eraserPressureThreshold` logic completely from eraser events. Erasing now triggers on contact (pressure > 0). Relaxed buttons mask checks from strict `e.buttons === 1` to `e.buttons > 0` to enable physical stylus tail caps and barrel buttons.
+  - **Eraser broken (300ms guard)**: The double-click time guard from v5 blocked any second pointer-down within 300ms of the first — including all rapid erasing and fast sequential strokes. Removed the time-based guard entirely. `onDoubleClick` handler is sufficient for DOM-level double-click suppression.
+  - **Touch can't annotate on tablet**: `isTouchDeviceRef` blanket-blocked ALL `pointerType === 'touch'` events from ever drawing, regardless of `stylusOnlyMode`. Replaced with clean mode-based gate: `stylusOnlyMode && pointerType === 'touch'` → scroll. All other touch events draw normally.
+  - **Auto mode switching**: Removed `navigator.maxTouchPoints` auto-detection from `AdvancedNoteEditor` lazy init. `stylusOnlyMode` reverts to `false` default for all devices — fully user-controlled.
+  - **Manual touch scroll**: When `stylusOnlyMode: true`, touch `pointerDown` records `startY` + `startScrollTop` in `touchScrollRef`. `pointerMove` computes delta and directly sets `scrollContainer.scrollTop`. Clean, native-like 1-finger vertical scroll with no browser interference.
 - [x] **Stylus Input, Scroll & Double-Click Fixes** (Session 2026-07-25 v5):
   - **Root Cause: Scroll Blocked by `touchAction: 'none'`**: Changed canvas `touchAction` from `'none'` (which kills all native scroll) to `'pan-y'` always when stylus mode is active. `pan-y` lets finger swipes vertically scroll the page while pen pointer events still reach the canvas handlers unaffected.
   - **Root Cause: Touch Fingers Drawing Strokes**: Added a unified `shouldIgnorePointerEvent()` gate in `NativeStylusCanvas`. On touch-capable devices (`navigator.maxTouchPoints > 0` i.e. tablets), any `pointerType === 'touch'` event is immediately ignored in `handlePointerDown`, `handlePointerMove`, `handlePointerUp`, `onPointerCancel`, and `onPointerLeave`. Only `pointerType === 'pen'` draws.

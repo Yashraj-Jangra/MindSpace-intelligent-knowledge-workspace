@@ -497,40 +497,36 @@ export function NativeStylusCanvas({
         return;
       }
 
-      const pressure = e.pressure && e.pressure > 0 ? e.pressure : 0.5;
+      if (settings.eraserMode === 'stroke') {
+        const remaining = strokes.filter((s) => {
+          if (!isStrokeErasable(s)) return true;
+          return !isPointNearStroke(s, x, y, settings.eraserSize);
+        });
+        if (remaining.length !== strokes.length) {
+          StylusHaptics.trigger('eraserScrub', settings);
+          onStrokesChange(remaining);
+          updateOffscreenBuffer(remaining);
+          renderFrame();
+        }
+      } else if (settings.eraserMode === 'pixel') {
+        let updatedStrokes: VectorStroke[] = [];
+        let hasErased = false;
 
-      if (pressure >= settings.eraserPressureThreshold) {
-        if (settings.eraserMode === 'stroke') {
-          const remaining = strokes.filter((s) => {
-            if (!isStrokeErasable(s)) return true;
-            return !isPointNearStroke(s, x, y, settings.eraserSize);
-          });
-          if (remaining.length !== strokes.length) {
-            StylusHaptics.trigger('eraserScrub', settings);
-            onStrokesChange(remaining);
-            updateOffscreenBuffer(remaining);
-            renderFrame();
+        for (const s of strokes) {
+          if (!isStrokeErasable(s) || !isPointNearStroke(s, x, y, settings.eraserSize)) {
+            updatedStrokes.push(s);
+          } else {
+            hasErased = true;
+            const split = erasePixelsFromStroke(s, x, y, settings.eraserSize);
+            updatedStrokes.push(...split);
           }
-        } else if (settings.eraserMode === 'pixel') {
-          let updatedStrokes: VectorStroke[] = [];
-          let hasErased = false;
+        }
 
-          for (const s of strokes) {
-            if (!isStrokeErasable(s) || !isPointNearStroke(s, x, y, settings.eraserSize)) {
-              updatedStrokes.push(s);
-            } else {
-              hasErased = true;
-              const split = erasePixelsFromStroke(s, x, y, settings.eraserSize);
-              updatedStrokes.push(...split);
-            }
-          }
-
-          if (hasErased) {
-            StylusHaptics.trigger('eraserScrub', settings);
-            onStrokesChange(updatedStrokes);
-            updateOffscreenBuffer(updatedStrokes);
-            renderFrame();
-          }
+        if (hasErased) {
+          StylusHaptics.trigger('eraserScrub', settings);
+          onStrokesChange(updatedStrokes);
+          updateOffscreenBuffer(updatedStrokes);
+          renderFrame();
         }
       }
       return;
@@ -633,7 +629,7 @@ export function NativeStylusCanvas({
     if (activeTool === 'eraser') {
       setEraserCursorPos({ x, y });
 
-      if (settings.eraserMode === 'lasso' && e.buttons === 1) {
+      if (settings.eraserMode === 'lasso' && e.buttons > 0) {
         lassoPointsRef.current.push({ x, y });
         renderFrame();
         return;
@@ -641,9 +637,7 @@ export function NativeStylusCanvas({
 
       renderFrame();
 
-      const pressure = e.pressure && e.pressure > 0 ? e.pressure : 0.5;
-
-      if (e.buttons === 1 && pressure >= settings.eraserPressureThreshold) {
+      if (e.buttons > 0) {
         if (settings.eraserMode === 'stroke') {
           const remaining = strokes.filter((s) => {
             if (!isStrokeErasable(s)) return true;

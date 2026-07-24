@@ -7,6 +7,7 @@ import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 
 import { RichTextProvider } from 'reactjs-tiptap-editor';
+import * as Tooltip from '@radix-ui/react-tooltip';
 import { Bold, RichTextBold } from 'reactjs-tiptap-editor/bold';
 import { Italic, RichTextItalic } from 'reactjs-tiptap-editor/italic';
 import { TextUnderline, RichTextUnderline } from 'reactjs-tiptap-editor/textunderline';
@@ -1027,20 +1028,34 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
               {/* INSERT group */}
               <div className="h-4 w-px bg-[#1E1E1E] mx-1.5 shrink-0" />
               <span className="text-[8px] font-mono uppercase tracking-widest text-[#3a3a3a] px-1 shrink-0 hidden lg:inline">Insert</span>
-              {/* Insert Table Button — opens custom modal, locks in Stylus mode matching all other toolbar buttons */}
-              <button
-                id="insert-canvas-table-btn"
-                disabled={!editor?.isEditable || stylusSettings.isStylusModeActive}
-                onClick={() => {
-                  if (!editor?.isEditable || stylusSettings.isStylusModeActive) return;
-                  setIsInsertTableOpen(true);
-                }}
-                className="richtext-inline-flex richtext-items-center richtext-justify-center richtext-rounded-md richtext-text-sm richtext-font-medium richtext-transition-colors hover:richtext-bg-accent hover:richtext-text-accent-foreground focus-visible:richtext-outline-none disabled:richtext-pointer-events-none disabled:richtext-opacity-50 richtext-size-8 richtext-p-0"
-                title="Table"
-                type="button"
-              >
-                <Table className="richtext-size-4" />
-              </button>
+              {/* Insert Table Button — wrapped in Radix Tooltip matching Code Block 1:1 */}
+              <Tooltip.Root>
+                <Tooltip.Trigger asChild>
+                  <button
+                    id="insert-canvas-table-btn"
+                    disabled={!editor?.isEditable || stylusSettings.isStylusModeActive}
+                    onClick={() => {
+                      if (!editor?.isEditable || stylusSettings.isStylusModeActive) return;
+                      setIsInsertTableOpen(true);
+                    }}
+                    className="richtext-inline-flex richtext-items-center richtext-justify-center richtext-rounded-md richtext-text-sm richtext-font-medium richtext-ring-offset-background richtext-transition-colors hover:richtext-bg-accent hover:richtext-text-accent-foreground focus-visible:richtext-outline-none disabled:richtext-pointer-events-none disabled:richtext-opacity-50 richtext-h-[32px] richtext-w-[32px] richtext-p-0"
+                    type="button"
+                  >
+                    <Table className="richtext-size-4" />
+                  </button>
+                </Tooltip.Trigger>
+                <Tooltip.Portal>
+                  <Tooltip.Content
+                    side="top"
+                    sideOffset={4}
+                    className="richtext-z-50 richtext-overflow-hidden richtext-rounded-md !richtext-border-none richtext-bg-primary richtext-px-3 richtext-py-1.5 richtext-text-sm richtext-text-primary-foreground richtext-shadow-md richtext-animate-in richtext-fade-in-0 richtext-zoom-in-95 data-[side=bottom]:richtext-slide-in-from-top-2 data-[side=left]:richtext-slide-in-from-right-2 data-[side=right]:richtext-slide-in-from-left-2 data-[side=top]:richtext-slide-in-from-bottom-2"
+                  >
+                    <div className="richtext-flex richtext-max-w-24 richtext-flex-col richtext-items-center richtext-text-center">
+                      <span>TABLE</span>
+                    </div>
+                  </Tooltip.Content>
+                </Tooltip.Portal>
+              </Tooltip.Root>
               <RichTextCodeBlock />
               <RichTextLink />
               <RichTextImage />

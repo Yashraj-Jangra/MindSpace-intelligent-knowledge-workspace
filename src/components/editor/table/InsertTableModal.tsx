@@ -9,89 +9,118 @@ interface InsertTableModalProps {
   onInsert: (rows: number, cols: number) => void;
 }
 
+const PREVIEW_ROWS = 8;
+const PREVIEW_COLS = 10;
+
 export function InsertTableModal({ isOpen, onClose, onInsert }: InsertTableModalProps) {
+  // `rows` and `cols` are the confirmed selection (used for the Insert button label)
   const [rows, setRows] = useState(3);
   const [cols, setCols] = useState(3);
-  const [hoverRow, setHoverRow] = useState(rows);
-  const [hoverCol, setHoverCol] = useState(cols);
+  // `hoverRow` and `hoverCol` track the live grid hover — kept separate so
+  // mouse-leave can restore to confirmed values without flickering the inputs
+  const [hoverRow, setHoverRow] = useState(3);
+  const [hoverCol, setHoverCol] = useState(3);
 
   const firstInputRef = useRef<HTMLInputElement>(null);
 
+  // Reset on open
   useEffect(() => {
     if (isOpen) {
-      setRows(3);
-      setCols(3);
-      setHoverRow(3);
-      setHoverCol(3);
+      setRows(3); setCols(3);
+      setHoverRow(3); setHoverCol(3);
       setTimeout(() => firstInputRef.current?.focus(), 60);
     }
   }, [isOpen]);
 
+  // Keyboard shortcuts
   useEffect(() => {
     if (!isOpen) return;
-    const handler = (e: KeyboardEvent) => {
+    const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
-      if (e.key === 'Enter') handleInsert();
+      // Enter triggers insert with currently confirmed rows/cols
+      if (e.key === 'Enter') doInsert(rows, cols);
     };
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, rows, cols]);
 
-  const handleInsert = (customRows?: number, customCols?: number) => {
-    const r = Math.max(1, Math.min(20, customRows ?? rows));
-    const c = Math.max(1, Math.min(20, customCols ?? cols));
-    onInsert(r, c);
+  const doInsert = (r: number, c: number) => {
+    onInsert(Math.max(1, Math.min(20, r)), Math.max(1, Math.min(20, c)));
     onClose();
   };
 
   if (!isOpen) return null;
 
-  const PREVIEW_ROWS = 8;
-  const PREVIEW_COLS = 10;
+  // Detect light theme to style the modal correctly
+  const isLight = typeof document !== 'undefined' && document.documentElement.classList.contains('light');
+
+  const bg = isLight ? '#FFFFFF' : '#0F0F0F';
+  const bgGrid = isLight ? '#F4F4F5' : '#111111';
+  const bgInput = isLight ? '#F9FAFB' : '#1A1A1A';
+  const textPrimary = isLight ? '#0A0A0A' : '#FAFAFA';
+  const textMuted = isLight ? '#6B7280' : '#737373';
+  const borderColor = isLight ? '#E5E7EB' : '#2A2A2A';
+  const cellInactive = isLight ? '#E5E7EB' : '#2A2A2A';
 
   return (
     <>
       {/* Backdrop */}
       <div
-        className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm"
+        style={{ position: 'fixed', inset: 0, zIndex: 60, background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(3px)' }}
         onClick={onClose}
       />
 
-      {/* Modal Container */}
+      {/* Modal */}
       <div
-        className="fixed z-[70] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 bg-[#0F0F0F] dark:bg-[#0F0F0F] light:bg-white border border-[#FF3D00] shadow-2xl font-mono select-none"
         style={{
-          backgroundColor: 'var(--ct-bg-panel, #0F0F0F)',
+          position: 'fixed',
+          zIndex: 70,
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: 320,
+          backgroundColor: bg,
+          border: '1px solid #FF3D00',
+          boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
+          fontFamily: 'monospace',
+          userSelect: 'none',
         }}
-        onPointerDown={(e) => e.stopPropagation()}
+        onPointerDown={e => e.stopPropagation()}
       >
-        {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-[#262626] dark:border-[#262626] light:border-gray-200">
-          <div className="flex items-center gap-2">
-            <Table className="w-4 h-4 text-[#FF3D00]" strokeWidth={1.5} />
-            <span className="text-[11px] font-bold uppercase tracking-widest text-[#FAFAFA] dark:text-[#FAFAFA] light:text-gray-900">
+        {/* ── Header ─────────────────────────────────────────────────── */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', borderBottom: `1px solid ${borderColor}` }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <Table style={{ width: 14, height: 14, color: '#FF3D00' }} strokeWidth={1.5} />
+            <span style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', color: textPrimary }}>
               Insert Table
             </span>
           </div>
           <button
             onClick={onClose}
-            className="text-[#737373] hover:text-[#FF3D00] transition-colors p-0.5"
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: textMuted, padding: 2, display: 'flex', lineHeight: 1 }}
           >
-            <X className="w-3.5 h-3.5" />
+            <X style={{ width: 13, height: 13 }} />
           </button>
         </div>
 
-        {/* Grid Interactive Preview */}
-        <div className="px-4 pt-4 pb-2">
-          <div className="text-[10px] text-[#737373] uppercase tracking-wider mb-2 flex justify-between items-center">
-            <span>Grid Selection</span>
-            <span className="text-[#FF3D00] font-bold">{hoverRow} × {hoverCol}</span>
+        {/* ── Grid Preview ────────────────────────────────────────────── */}
+        <div style={{ padding: '12px 14px 8px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+            <span style={{ fontSize: 9, color: textMuted, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Grid Selection</span>
+            <span style={{ fontSize: 11, color: '#FF3D00', fontWeight: 700 }}>{hoverRow} × {hoverCol}</span>
           </div>
           <div
-            className="grid gap-0.5 p-1 bg-[#141414] dark:bg-[#141414] light:bg-gray-100 border border-[#262626]"
-            style={{ gridTemplateColumns: `repeat(${PREVIEW_COLS}, 1fr)` }}
+            style={{
+              display: 'grid',
+              gridTemplateColumns: `repeat(${PREVIEW_COLS}, 1fr)`,
+              gap: 2,
+              padding: 6,
+              backgroundColor: bgGrid,
+              border: `1px solid ${borderColor}`,
+            }}
             onMouseLeave={() => {
+              // Restore grid highlight to confirmed values
               setHoverRow(rows);
               setHoverCol(cols);
             }}
@@ -102,20 +131,23 @@ export function InsertTableModal({ isOpen, onClose, onInsert }: InsertTableModal
                 return (
                   <div
                     key={`${r}-${c}`}
-                    className="w-full aspect-square transition-colors duration-75 cursor-pointer"
                     style={{
-                      backgroundColor: active ? '#FF3D00' : 'transparent',
-                      border: '1px solid',
-                      borderColor: active ? '#FF3D00' : '#262626',
-                      opacity: active ? 0.9 : 0.4,
+                      aspectRatio: '1',
+                      backgroundColor: active ? '#FF3D00' : cellInactive,
+                      opacity: active ? 1 : 0.35,
+                      cursor: 'pointer',
+                      transition: 'background-color 60ms, opacity 60ms',
                     }}
                     onMouseEnter={() => {
-                      setHoverRow(r + 1);
-                      setHoverCol(c + 1);
+                      const nr = r + 1;
+                      const nc = c + 1;
+                      setHoverRow(nr);
+                      setHoverCol(nc);
+                      // ← Live sync to manual inputs
+                      setRows(nr);
+                      setCols(nc);
                     }}
-                    onClick={() => {
-                      handleInsert(r + 1, c + 1);
-                    }}
+                    onClick={() => doInsert(r + 1, c + 1)}
                   />
                 );
               })
@@ -123,47 +155,94 @@ export function InsertTableModal({ isOpen, onClose, onInsert }: InsertTableModal
           </div>
         </div>
 
-        {/* Manual Dimension Inputs */}
-        <div className="flex gap-3 px-4 pb-4 pt-2 items-center">
-          <div className="flex-1">
-            <label className="text-[9px] text-[#737373] uppercase tracking-wider block mb-1">Rows</label>
+        {/* ── Manual Dimension Inputs ──────────────────────────────────── */}
+        <div style={{ display: 'flex', gap: 12, padding: '4px 14px 12px', alignItems: 'center' }}>
+          <div style={{ flex: 1 }}>
+            <label style={{ fontSize: 9, color: textMuted, textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 4 }}>
+              Rows
+            </label>
             <input
               ref={firstInputRef}
               type="number"
               min={1}
               max={20}
               value={rows}
-              onChange={(e) => {
+              onChange={e => {
                 const v = Math.max(1, Math.min(20, Number(e.target.value)));
                 setRows(v);
                 setHoverRow(v);
               }}
-              className="w-full bg-[#1A1A1A] dark:bg-[#1A1A1A] light:bg-gray-50 border border-[#262626] focus:border-[#FF3D00] text-[#FAFAFA] dark:text-[#FAFAFA] light:text-gray-900 text-sm px-3 py-1.5 outline-none text-center font-mono transition-colors"
+              style={{
+                width: '100%',
+                backgroundColor: bgInput,
+                border: `1px solid ${borderColor}`,
+                color: textPrimary,
+                fontSize: 13,
+                padding: '6px 8px',
+                textAlign: 'center',
+                outline: 'none',
+                fontFamily: 'monospace',
+                boxSizing: 'border-box',
+              }}
+              onFocus={e => { e.currentTarget.style.borderColor = '#FF3D00'; }}
+              onBlur={e => { e.currentTarget.style.borderColor = borderColor; }}
             />
           </div>
-          <div className="pt-4 text-[#737373] text-sm">×</div>
-          <div className="flex-1">
-            <label className="text-[9px] text-[#737373] uppercase tracking-wider block mb-1">Cols</label>
+          <div style={{ paddingTop: 18, color: textMuted, fontSize: 14 }}>×</div>
+          <div style={{ flex: 1 }}>
+            <label style={{ fontSize: 9, color: textMuted, textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 4 }}>
+              Cols
+            </label>
             <input
               type="number"
               min={1}
               max={20}
               value={cols}
-              onChange={(e) => {
+              onChange={e => {
                 const v = Math.max(1, Math.min(20, Number(e.target.value)));
                 setCols(v);
                 setHoverCol(v);
               }}
-              className="w-full bg-[#1A1A1A] dark:bg-[#1A1A1A] light:bg-gray-50 border border-[#262626] focus:border-[#FF3D00] text-[#FAFAFA] dark:text-[#FAFAFA] light:text-gray-900 text-sm px-3 py-1.5 outline-none text-center font-mono transition-colors"
+              style={{
+                width: '100%',
+                backgroundColor: bgInput,
+                border: `1px solid ${borderColor}`,
+                color: textPrimary,
+                fontSize: 13,
+                padding: '6px 8px',
+                textAlign: 'center',
+                outline: 'none',
+                fontFamily: 'monospace',
+                boxSizing: 'border-box',
+              }}
+              onFocus={e => { e.currentTarget.style.borderColor = '#FF3D00'; }}
+              onBlur={e => { e.currentTarget.style.borderColor = borderColor; }}
             />
           </div>
         </div>
 
-        {/* Action Button */}
-        <div className="px-4 pb-4">
+        {/* ── Insert Button ────────────────────────────────────────────── */}
+        <div style={{ padding: '0 14px 14px' }}>
           <button
-            onClick={() => handleInsert()}
-            className="w-full py-2 bg-[#FF3D00] hover:bg-[#FF5722] active:bg-[#E64A19] text-[#0A0A0A] text-[11px] font-bold uppercase tracking-widest transition-colors"
+            onClick={() => doInsert(rows, cols)}
+            style={{
+              width: '100%',
+              padding: '9px 0',
+              backgroundColor: '#FF3D00',
+              border: '1px solid #FF3D00',
+              color: '#0A0A0A',
+              fontSize: 11,
+              fontWeight: 700,
+              textTransform: 'uppercase',
+              letterSpacing: '0.12em',
+              cursor: 'pointer',
+              fontFamily: 'monospace',
+              transition: 'background-color 120ms',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#FF5722'; }}
+            onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#FF3D00'; }}
+            onMouseDown={e => { e.currentTarget.style.backgroundColor = '#D4370A'; }}
+            onMouseUp={e => { e.currentTarget.style.backgroundColor = '#FF5722'; }}
           >
             Insert {rows} × {cols} Table
           </button>

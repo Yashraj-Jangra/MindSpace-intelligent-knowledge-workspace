@@ -1,27 +1,9 @@
 'use client';
 
-import React, {
-  useState,
-  useRef,
-  useCallback,
-  useEffect,
-  useMemo,
-} from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { NodeViewWrapper } from '@tiptap/react';
 import type { NodeViewProps } from '@tiptap/react';
-import {
-  GripHorizontal,
-  Plus,
-  Trash2,
-  Palette,
-  X,
-  RotateCcw,
-  Maximize2,
-  ChevronLeft,
-  ChevronRight,
-  ChevronUp,
-  ChevronDown,
-} from 'lucide-react';
+import { GripHorizontal, Plus, Trash2, Palette, X, RotateCcw } from 'lucide-react';
 import {
   type CanvasTableTheme,
   type CellData,
@@ -35,7 +17,7 @@ function parseCellData(raw: string | null, rows: number, cols: number): CellData
     try {
       const parsed = JSON.parse(raw);
       if (Array.isArray(parsed) && parsed.length > 0) return parsed as CellData;
-    } catch {/* ignore */}
+    } catch { /**/ }
   }
   return Array.from({ length: rows }, () => Array.from({ length: cols }, () => ''));
 }
@@ -44,10 +26,8 @@ function parseTheme(raw: string | null): CanvasTableTheme {
   if (raw) {
     try {
       const parsed = JSON.parse(raw);
-      if (parsed && typeof parsed === 'object') {
-        return { ...getDefaultTheme(), ...parsed };
-      }
-    } catch {/* ignore */}
+      if (parsed && typeof parsed === 'object') return { ...getDefaultTheme(), ...parsed };
+    } catch { /**/ }
   }
   return getDefaultTheme();
 }
@@ -56,752 +36,798 @@ function parseColWidths(raw: string | null, cols: number, totalWidth: number): n
   if (raw) {
     try {
       const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed) && parsed.length === cols) return parsed as number[];
-    } catch {/* ignore */}
+      if (Array.isArray(parsed) && parsed.length === cols && parsed.every(n => typeof n === 'number' && n > 0))
+        return parsed as number[];
+    } catch { /**/ }
   }
-  const defaultColW = Math.max(60, Math.floor(totalWidth / cols));
+  const base = Math.max(60, Math.floor(totalWidth / cols));
   return Array.from({ length: cols }, (_, i) =>
-    i === cols - 1 ? totalWidth - defaultColW * (cols - 1) : defaultColW
+    i === cols - 1 ? Math.max(60, totalWidth - base * (cols - 1)) : base
   );
 }
 
-function parseRowHeights(raw: string | null, rows: number): (number | null)[] {
+function parseRowHeights(raw: string | null, rows: number): number[] {
   if (raw) {
     try {
       const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed) && parsed.length === rows) return parsed;
-    } catch {/* ignore */}
+      if (Array.isArray(parsed) && parsed.length === rows)
+        // Coerce nulls (old format used null = "auto") or zeros to default height 36
+        return parsed.map(n => (typeof n === 'number' && n > 0 ? n : 36));
+    } catch { /**/ }
   }
-  return Array.from({ length: rows }, () => null);
+  return Array.from({ length: rows }, () => 36);
 }
 
-// ── Sub-components ──────────────────────────────────────────────────────────
+// ── Active drag type ───────────────────────────────────────────────────────
 
-interface ColorPickerRowProps {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-}
+type DragKind =
+  | { kind: 'table'; startX: number; startY: number; initPosX: number; initPosY: number }
+  | { kind: 'corner'; startX: number; startY: number; initW: number; initH: number }
+  | { kind: 'col'; colIdx: number; startX: number; initW: number }
+  | { kind: 'row'; rowIdx: number; startY: number; initH: number };
 
-function ColorPickerRow({ label, value, onChange }: ColorPickerRowProps) {
+// ── Theme Preview Strip ────────────────────────────────────────────────────
+
+function ThemePreview({ theme }: { theme: CanvasTableTheme }) {
+  const bdr = `${theme.borderWidth}px solid ${theme.borderColor}`;
   return (
-    <div className="flex items-center justify-between gap-2 py-1">
-      <span className="text-[10px] font-mono text-[var(--ct-text-muted,#737373)] uppercase tracking-wider flex-1">
-        {label}
-      </span>
-      <div className="flex items-center gap-1.5">
-        <input
-          type="color"
-          value={value.startsWith('#') ? value : '#262626'}
-          onChange={(e) => onChange(e.target.value)}
-          className="w-5 h-5 cursor-pointer border border-[#404040] bg-transparent p-0"
-          style={{ borderRadius: 0 }}
-        />
-        <span className="text-[9px] font-mono text-[var(--ct-text-dim,#525252)]">{value}</span>
+    <div style={{ border: bdr, fontSize: 0, marginBottom: 8 }}>
+      {/* Header row preview */}
+      <div style={{ display: 'flex', borderBottom: bdr }}>
+        {[0, 1, 2].map(ci => (
+          <div
+            key={ci}
+            style={{
+              flex: 1,
+              height: 14,
+              backgroundColor: theme.headerBg,
+              borderRight: ci < 2 ? bdr : undefined,
+            }}
+          />
+        ))}
+      </div>
+      {/* Body row preview */}
+      <div style={{ display: 'flex' }}>
+        {[0, 1, 2].map(ci => (
+          <div
+            key={ci}
+            style={{
+              flex: 1,
+              height: 14,
+              backgroundColor: theme.cellBg,
+              borderRight: ci < 2 ? bdr : undefined,
+            }}
+          />
+        ))}
       </div>
     </div>
   );
 }
 
-// ── Main Component ──────────────────────────────────────────────────────────
+// ── Color Row ──────────────────────────────────────────────────────────────
+
+function ColorRow({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '3px 0' }}>
+      <span style={{ fontSize: 10, fontFamily: 'monospace', color: 'var(--ct-text-muted,#737373)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+        {label}
+      </span>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+        <div style={{ width: 16, height: 16, background: value, border: '1px solid #404040', cursor: 'pointer', position: 'relative', overflow: 'hidden' }}>
+          <input
+            type="color"
+            value={value.startsWith('#') ? value : '#262626'}
+            onChange={e => onChange(e.target.value)}
+            style={{ position: 'absolute', inset: '-4px', width: '200%', height: '200%', cursor: 'pointer', border: 'none', padding: 0 }}
+          />
+        </div>
+        <span style={{ fontSize: 9, fontFamily: 'monospace', color: 'var(--ct-text-dim,#525252)', minWidth: 52 }}>{value}</span>
+      </div>
+    </div>
+  );
+}
+
+// ── Main Component ─────────────────────────────────────────────────────────
 
 export function CanvasTable({ node, updateAttributes, deleteNode, selected }: NodeViewProps) {
   const attrs = node.attrs;
-  const rows: number = attrs.rows ?? 3;
-  const cols: number = attrs.cols ?? 3;
+  const initRows: number = attrs.rows ?? 3;
+  const initCols: number = attrs.cols ?? 3;
+  const initWidth: number = attrs.width ?? 520;
 
-  // ── Local State ────────────────────────────────────────────────────────
-  const [cells, setCells] = useState<CellData>(() =>
-    parseCellData(attrs.cellData, rows, cols)
-  );
+  // ── State ──────────────────────────────────────────────────────────────
+  const [cells, setCells] = useState<CellData>(() => parseCellData(attrs.cellData, initRows, initCols));
   const [theme, setTheme] = useState<CanvasTableTheme>(() => parseTheme(attrs.theme));
   const [posX, setPosX] = useState<number>(attrs.posX ?? 0);
   const [posY, setPosY] = useState<number>(attrs.posY ?? 0);
-  const [width, setWidth] = useState<number>(attrs.width ?? 520);
-  const [gridHeight, setGridHeight] = useState<number | null>(attrs.gridHeight ?? null);
-  const [colWidths, setColWidths] = useState<number[]>(() =>
-    parseColWidths(attrs.colWidths, cols, attrs.width ?? 520)
-  );
-  const [rowHeights, setRowHeights] = useState<(number | null)[]>(() =>
-    parseRowHeights(attrs.rowHeights, rows)
-  );
-
+  const [width, setWidth] = useState<number>(initWidth);
+  const [tableHeight, setTableHeight] = useState<number | null>(attrs.gridHeight ?? null);
+  const [colWidths, setColWidths] = useState<number[]>(() => parseColWidths(attrs.colWidths, initCols, initWidth));
+  const [rowHeights, setRowHeights] = useState<number[]>(() => parseRowHeights(attrs.rowHeights, initRows));
   const [isThemeOpen, setIsThemeOpen] = useState(false);
-  const [isDragging, setIsDragging] = useState(false);
-  const [isResizingCorner, setIsResizingCorner] = useState(false);
-  const [resizingColIdx, setResizingColIdx] = useState<number | null>(null);
-  const [resizingRowIdx, setResizingRowIdx] = useState<number | null>(null);
-
-  // Hover states for discreet cell controls
-  const [hoveredCol, setHoveredCol] = useState<number | null>(null);
+  const [activeDrag, setActiveDrag] = useState<DragKind | null>(null);
   const [hoveredRow, setHoveredRow] = useState<number | null>(null);
+  const [hoveredCol, setHoveredCol] = useState<number | null>(null);
 
-  // ── Sync local state from TipTap attrs (undo/redo support) ─────────────
+  // ── Refs ───────────────────────────────────────────────────────────────
+  const rootRef = useRef<HTMLDivElement>(null);
+  const gridRef = useRef<HTMLDivElement>(null);
+  const activeDragRef = useRef<DragKind | null>(null);
   const lastFlushedCellData = useRef<string | null>(attrs.cellData);
 
+  // Keep activeDragRef in sync (needed by window event handlers)
+  useEffect(() => { activeDragRef.current = activeDrag; }, [activeDrag]);
+
+  // Stable state ref so window handlers can read current values
+  const stateRef = useRef({ cells, theme, posX, posY, width, tableHeight, colWidths, rowHeights });
+  useEffect(() => {
+    stateRef.current = { cells, theme, posX, posY, width, tableHeight, colWidths, rowHeights };
+  });
+
+  // ── Flush to TipTap ────────────────────────────────────────────────────
+  const flushAttrs = useCallback((
+    nextCells: CellData,
+    nextTheme: CanvasTableTheme,
+    nextPosX: number,
+    nextPosY: number,
+    nextWidth: number,
+    nextTableHeight: number | null,
+    nextColWidths: number[],
+    nextRowHeights: number[],
+  ) => {
+    const dataStr = JSON.stringify(nextCells);
+    lastFlushedCellData.current = dataStr;
+    updateAttributes({
+      rows: nextCells.length,
+      cols: nextCells[0]?.length ?? 0,
+      cellData: dataStr,
+      theme: JSON.stringify(nextTheme),
+      posX: nextPosX,
+      posY: nextPosY,
+      width: nextWidth,
+      gridHeight: nextTableHeight,
+      colWidths: JSON.stringify(nextColWidths),
+      rowHeights: JSON.stringify(nextRowHeights),
+    });
+  }, [updateAttributes]);
+
+  // ── Undo/redo sync from attrs ──────────────────────────────────────────
   useEffect(() => {
     if (attrs.cellData !== lastFlushedCellData.current) {
       lastFlushedCellData.current = attrs.cellData;
-      setCells(parseCellData(attrs.cellData, attrs.rows ?? 3, attrs.cols ?? 3));
+      const newCells = parseCellData(attrs.cellData, attrs.rows ?? 3, attrs.cols ?? 3);
+      setCells(newCells);
+      setColWidths(parseColWidths(attrs.colWidths, attrs.cols ?? 3, attrs.width ?? 520));
+      setRowHeights(parseRowHeights(attrs.rowHeights, attrs.rows ?? 3));
     }
     if (attrs.theme) setTheme(parseTheme(attrs.theme));
     if (attrs.posX !== undefined) setPosX(attrs.posX);
     if (attrs.posY !== undefined) setPosY(attrs.posY);
     if (attrs.width !== undefined) setWidth(attrs.width);
-    if (attrs.gridHeight !== undefined) setGridHeight(attrs.gridHeight);
-    if (attrs.colWidths) setColWidths(parseColWidths(attrs.colWidths, attrs.cols ?? 3, attrs.width ?? 520));
-    if (attrs.rowHeights) setRowHeights(parseRowHeights(attrs.rowHeights, attrs.rows ?? 3));
+    setTableHeight(attrs.gridHeight ?? null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [attrs]);
 
-  const wrapperRef = useRef<HTMLDivElement>(null);
-  const dragStart = useRef({ x: 0, y: 0, px: 0, py: 0 });
-  const cornerResizeStart = useRef({ x: 0, y: 0, w: 0, h: 0 });
-  const colResizeStart = useRef({ x: 0, w: 0, nextW: 0 });
-  const rowResizeStart = useRef({ y: 0, h: 0 });
-
-  // ── Sync back to TipTap attrs ──────────────────────────────────────────
-  const flushAttrs = useCallback(
-    (
-      nextCells: CellData,
-      nextTheme: CanvasTableTheme,
-      nextPosX: number,
-      nextPosY: number,
-      nextWidth: number,
-      nextGridHeight: number | null,
-      nextColWidths: number[],
-      nextRowHeights: (number | null)[]
-    ) => {
-      const dataStr = JSON.stringify(nextCells);
-      lastFlushedCellData.current = dataStr;
-      updateAttributes({
-        rows: nextCells.length,
-        cols: nextCells[0]?.length ?? 0,
-        cellData: dataStr,
-        theme: JSON.stringify(nextTheme),
-        posX: nextPosX,
-        posY: nextPosY,
-        width: nextWidth,
-        gridHeight: nextGridHeight,
-        colWidths: JSON.stringify(nextColWidths),
-        rowHeights: JSON.stringify(nextRowHeights),
-      });
-    },
-    [updateAttributes]
-  );
-
-  // Keep colWidths aligned if total width changes or column count changes
+  // ── Window-level drag/resize handlers (avoids lost pointer events) ─────
   useEffect(() => {
-    setColWidths((prev) => {
-      const numC = cells[0]?.length ?? cols;
-      if (prev.length === numC) return prev;
-      return parseColWidths(null, numC, width);
-    });
-  }, [cells, cols, width]);
+    const onMove = (e: PointerEvent) => {
+      const drag = activeDragRef.current;
+      if (!drag) return;
 
-  // Keep rowHeights aligned if row count changes
-  useEffect(() => {
-    setRowHeights((prev) => {
-      if (prev.length === cells.length) return prev;
-      return parseRowHeights(null, cells.length);
-    });
-  }, [cells.length]);
+      if (drag.kind === 'table') {
+        const dx = e.clientX - drag.startX;
+        const dy = e.clientY - drag.startY;
+        setPosX(drag.initPosX + dx);
+        setPosY(drag.initPosY + dy);
+        return;
+      }
 
-  // ── Position Dragging ──────────────────────────────────────────────────
-  const handleDragPointerDown = (e: React.PointerEvent) => {
-    e.stopPropagation();
-    e.preventDefault();
-    setIsDragging(true);
-    dragStart.current = { x: e.clientX, y: e.clientY, px: posX, py: posY };
-    (e.target as HTMLElement).setPointerCapture(e.pointerId);
-  };
+      if (drag.kind === 'corner') {
+        const dw = e.clientX - drag.startX;
+        const dh = e.clientY - drag.startY;
+        const nextW = Math.max(200, drag.initW + dw);
+        const nextH = Math.max(80, drag.initH + dh);
+        // Scale col widths proportionally (use initW, not live width, to avoid drift)
+        const ratio = nextW / drag.initW;
+        const s = stateRef.current;
+        setColWidths(s.colWidths.map(cw => Math.max(40, Math.round(cw * ratio))));
+        setWidth(nextW);
+        setTableHeight(nextH);
+        return;
+      }
 
-  const handleDragPointerMove = (e: React.PointerEvent) => {
-    if (!isDragging) return;
-    const dx = e.clientX - dragStart.current.x;
-    const dy = e.clientY - dragStart.current.y;
-    setPosX(dragStart.current.px + dx);
-    setPosY(dragStart.current.py + dy);
-  };
+      if (drag.kind === 'col') {
+        const dx = e.clientX - drag.startX;
+        const nextW = Math.max(40, drag.initW + dx);
+        setColWidths(prev => {
+          const next = [...prev];
+          next[drag.colIdx] = nextW;
+          return next;
+        });
+        return;
+      }
 
-  const handleDragPointerUp = (e: React.PointerEvent) => {
-    if (!isDragging) return;
-    setIsDragging(false);
-    const dx = e.clientX - dragStart.current.x;
-    const dy = e.clientY - dragStart.current.y;
-    const nextX = dragStart.current.px + dx;
-    const nextY = dragStart.current.py + dy;
-    setPosX(nextX);
-    setPosY(nextY);
-    flushAttrs(cells, theme, nextX, nextY, width, gridHeight, colWidths, rowHeights);
-    try { (e.target as HTMLElement).releasePointerCapture(e.pointerId); } catch {}
-  };
-
-  const handleResetPosition = () => {
-    setPosX(0);
-    setPosY(0);
-    flushAttrs(cells, theme, 0, 0, width, gridHeight, colWidths, rowHeights);
-  };
-
-  // ── Corner Resizing (Width & Height) ───────────────────────────────────
-  const handleCornerResizePointerDown = (e: React.PointerEvent) => {
-    e.stopPropagation();
-    e.preventDefault();
-    setIsResizingCorner(true);
-    const currentH = wrapperRef.current?.offsetHeight ?? 150;
-    cornerResizeStart.current = { x: e.clientX, y: e.clientY, w: width, h: currentH };
-    (e.target as HTMLElement).setPointerCapture(e.pointerId);
-  };
-
-  const handleCornerResizePointerMove = (e: React.PointerEvent) => {
-    if (!isResizingCorner) return;
-    const dw = e.clientX - cornerResizeStart.current.x;
-    const dh = e.clientY - cornerResizeStart.current.y;
-
-    const nextW = Math.max(200, cornerResizeStart.current.w + dw);
-    const nextH = Math.max(80, cornerResizeStart.current.h + dh);
-
-    // Scale column widths proportionally when table width changes
-    const ratio = nextW / width;
-    const nextCols = colWidths.map((cw) => Math.max(40, Math.round(cw * ratio)));
-
-    setWidth(nextW);
-    setGridHeight(nextH);
-    setColWidths(nextCols);
-  };
-
-  const handleCornerResizePointerUp = (e: React.PointerEvent) => {
-    if (!isResizingCorner) return;
-    setIsResizingCorner(false);
-    const dw = e.clientX - cornerResizeStart.current.x;
-    const dh = e.clientY - cornerResizeStart.current.y;
-
-    const nextW = Math.max(200, cornerResizeStart.current.w + dw);
-    const nextH = Math.max(80, cornerResizeStart.current.h + dh);
-    const ratio = nextW / width;
-    const nextCols = colWidths.map((cw) => Math.max(40, Math.round(cw * ratio)));
-
-    setWidth(nextW);
-    setGridHeight(nextH);
-    setColWidths(nextCols);
-    flushAttrs(cells, theme, posX, posY, nextW, nextH, nextCols, rowHeights);
-    try { (e.target as HTMLElement).releasePointerCapture(e.pointerId); } catch {}
-  };
-
-  // ── Column Width Resizing ─────────────────────────────────────────────
-  const handleColResizePointerDown = (cIdx: number, e: React.PointerEvent) => {
-    e.stopPropagation();
-    e.preventDefault();
-    setResizingColIdx(cIdx);
-    colResizeStart.current = {
-      x: e.clientX,
-      w: colWidths[cIdx] || 80,
-      nextW: colWidths[cIdx + 1] || 80,
+      if (drag.kind === 'row') {
+        const dy = e.clientY - drag.startY;
+        const nextH = Math.max(28, drag.initH + dy);
+        setRowHeights(prev => {
+          const next = [...prev];
+          next[drag.rowIdx] = nextH;
+          return next;
+        });
+      }
     };
-    (e.target as HTMLElement).setPointerCapture(e.pointerId);
-  };
 
-  const handleColResizePointerMove = (cIdx: number, e: React.PointerEvent) => {
-    if (resizingColIdx !== cIdx) return;
-    const dx = e.clientX - colResizeStart.current.x;
-    const newW = Math.max(40, colResizeStart.current.w + dx);
+    const onUp = (e: PointerEvent) => {
+      const drag = activeDragRef.current;
+      if (!drag) return;
+      setActiveDrag(null);
+      const s = stateRef.current;
 
-    setColWidths((prev) => {
-      const copy = [...prev];
-      copy[cIdx] = newW;
-      return copy;
-    });
-  };
+      if (drag.kind === 'table') {
+        const dx = e.clientX - drag.startX;
+        const dy = e.clientY - drag.startY;
+        const nx = drag.initPosX + dx;
+        const ny = drag.initPosY + dy;
+        setPosX(nx);
+        setPosY(ny);
+        flushAttrs(s.cells, s.theme, nx, ny, s.width, s.tableHeight, s.colWidths, s.rowHeights);
+        return;
+      }
 
-  const handleColResizePointerUp = (cIdx: number, e: React.PointerEvent) => {
-    if (resizingColIdx !== cIdx) return;
-    setResizingColIdx(null);
-    const dx = e.clientX - colResizeStart.current.x;
-    const newW = Math.max(40, colResizeStart.current.w + dx);
+      if (drag.kind === 'corner') {
+        const dw = e.clientX - drag.startX;
+        const dh = e.clientY - drag.startY;
+        const nextW = Math.max(200, drag.initW + dw);
+        const nextH = Math.max(80, drag.initH + dh);
+        const ratio = nextW / drag.initW;
+        const newColWidths = s.colWidths.map(cw => Math.max(40, Math.round(cw * ratio)));
+        setColWidths(newColWidths);
+        setWidth(nextW);
+        setTableHeight(nextH);
+        flushAttrs(s.cells, s.theme, s.posX, s.posY, nextW, nextH, newColWidths, s.rowHeights);
+        return;
+      }
 
-    const nextColWidths = [...colWidths];
-    nextColWidths[cIdx] = newW;
-    setColWidths(nextColWidths);
+      if (drag.kind === 'col') {
+        const dx = e.clientX - drag.startX;
+        const nextW = Math.max(40, drag.initW + dx);
+        const newColWidths = [...s.colWidths];
+        newColWidths[drag.colIdx] = nextW;
+        const newTotalW = newColWidths.reduce((a, b) => a + b, 0);
+        setColWidths(newColWidths);
+        setWidth(newTotalW);
+        flushAttrs(s.cells, s.theme, s.posX, s.posY, newTotalW, s.tableHeight, newColWidths, s.rowHeights);
+        return;
+      }
 
-    const newTotalW = nextColWidths.reduce((a, b) => a + b, 0);
-    setWidth(newTotalW);
+      if (drag.kind === 'row') {
+        const dy = e.clientY - drag.startY;
+        const nextH = Math.max(28, drag.initH + dy);
+        const newRowHeights = [...s.rowHeights];
+        newRowHeights[drag.rowIdx] = nextH;
+        setRowHeights(newRowHeights);
+        flushAttrs(s.cells, s.theme, s.posX, s.posY, s.width, s.tableHeight, s.colWidths, newRowHeights);
+      }
+    };
 
-    flushAttrs(cells, theme, posX, posY, newTotalW, gridHeight, nextColWidths, rowHeights);
-    try { (e.target as HTMLElement).releasePointerCapture(e.pointerId); } catch {}
-  };
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp);
+    return () => {
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+    };
+  }, [flushAttrs]);
 
-  // ── Row Height Resizing ────────────────────────────────────────────────
-  const handleRowResizePointerDown = (rIdx: number, e: React.PointerEvent) => {
-    e.stopPropagation();
+  // ── Drag start helpers ─────────────────────────────────────────────────
+  const startTableDrag = (e: React.PointerEvent) => {
+    if ((e.target as HTMLElement).closest('button, input, [data-canvas-cell]')) return;
     e.preventDefault();
-    setResizingRowIdx(rIdx);
-
-    const rowEl = wrapperRef.current?.querySelectorAll('.canvas-table-row')[rIdx] as HTMLElement;
-    const currentH = rowEl?.offsetHeight || 36;
-
-    rowResizeStart.current = { y: e.clientY, h: currentH };
-    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+    e.stopPropagation();
+    setActiveDrag({ kind: 'table', startX: e.clientX, startY: e.clientY, initPosX: posX, initPosY: posY });
   };
 
-  const handleRowResizePointerMove = (rIdx: number, e: React.PointerEvent) => {
-    if (resizingRowIdx !== rIdx) return;
-    const dy = e.clientY - rowResizeStart.current.y;
-    const newH = Math.max(28, rowResizeStart.current.h + dy);
-
-    setRowHeights((prev) => {
-      const copy = [...prev];
-      copy[rIdx] = newH;
-      return copy;
-    });
+  const startCornerResize = (e: React.PointerEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const measuredH = rootRef.current?.offsetHeight ?? tableHeight ?? 150;
+    setActiveDrag({ kind: 'corner', startX: e.clientX, startY: e.clientY, initW: width, initH: measuredH });
   };
 
-  const handleRowResizePointerUp = (rIdx: number, e: React.PointerEvent) => {
-    if (resizingRowIdx !== rIdx) return;
-    setResizingRowIdx(null);
-    const dy = e.clientY - rowResizeStart.current.y;
-    const newH = Math.max(28, rowResizeStart.current.h + dy);
-
-    const nextRowHeights = [...rowHeights];
-    nextRowHeights[rIdx] = newH;
-    setRowHeights(nextRowHeights);
-
-    flushAttrs(cells, theme, posX, posY, width, gridHeight, colWidths, nextRowHeights);
-    try { (e.target as HTMLElement).releasePointerCapture(e.pointerId); } catch {}
+  const startColResize = (colIdx: number, e: React.PointerEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setActiveDrag({ kind: 'col', colIdx, startX: e.clientX, initW: colWidths[colIdx] ?? 80 });
   };
 
-  // ── Insert/Delete Row/Col Operations ──────────────────────────────────
-  const insertRowAfter = (rowIdx: number) => {
-    const numCols = cells[0]?.length ?? cols;
-    const newRow = Array(numCols).fill('');
-    const nextCells = [...cells.slice(0, rowIdx + 1), newRow, ...cells.slice(rowIdx + 1)];
-    const nextHeights = [...rowHeights.slice(0, rowIdx + 1), null, ...rowHeights.slice(rowIdx + 1)];
+  const startRowResize = (rowIdx: number, e: React.PointerEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setActiveDrag({ kind: 'row', rowIdx, startY: e.clientY, initH: rowHeights[rowIdx] ?? 36 });
+  };
+
+  // ── Row / Col operations ───────────────────────────────────────────────
+  const insertRow = (afterIdx: number) => {
+    const nc = cells[0]?.length ?? 1;
+    const nextCells = [...cells.slice(0, afterIdx + 1), Array(nc).fill(''), ...cells.slice(afterIdx + 1)];
+    const nextRH = [...rowHeights.slice(0, afterIdx + 1), 36, ...rowHeights.slice(afterIdx + 1)];
     setCells(nextCells);
-    setRowHeights(nextHeights);
-    flushAttrs(nextCells, theme, posX, posY, width, gridHeight, colWidths, nextHeights);
+    setRowHeights(nextRH);
+    flushAttrs(nextCells, theme, posX, posY, width, tableHeight, colWidths, nextRH);
   };
 
-  const insertRowBefore = (rowIdx: number) => {
-    const numCols = cells[0]?.length ?? cols;
-    const newRow = Array(numCols).fill('');
-    const nextCells = [...cells.slice(0, rowIdx), newRow, ...cells.slice(rowIdx)];
-    const nextHeights = [...rowHeights.slice(0, rowIdx), null, ...rowHeights.slice(rowIdx)];
+  const insertRowBefore = (idx: number) => {
+    const nc = cells[0]?.length ?? 1;
+    const nextCells = [...cells.slice(0, idx), Array(nc).fill(''), ...cells.slice(idx)];
+    const nextRH = [...rowHeights.slice(0, idx), 36, ...rowHeights.slice(idx)];
     setCells(nextCells);
-    setRowHeights(nextHeights);
-    flushAttrs(nextCells, theme, posX, posY, width, gridHeight, colWidths, nextHeights);
+    setRowHeights(nextRH);
+    flushAttrs(nextCells, theme, posX, posY, width, tableHeight, colWidths, nextRH);
   };
 
-  const deleteRow = (rowIdx: number) => {
+  const deleteRow = (idx: number) => {
     if (cells.length <= 1) return;
-    const nextCells = cells.filter((_, i) => i !== rowIdx);
-    const nextHeights = rowHeights.filter((_, i) => i !== rowIdx);
+    const nextCells = cells.filter((_, i) => i !== idx);
+    const nextRH = rowHeights.filter((_, i) => i !== idx);
     setCells(nextCells);
-    setRowHeights(nextHeights);
-    flushAttrs(nextCells, theme, posX, posY, width, gridHeight, colWidths, nextHeights);
+    setRowHeights(nextRH);
+    flushAttrs(nextCells, theme, posX, posY, width, tableHeight, colWidths, nextRH);
   };
 
-  const insertColAfter = (colIdx: number) => {
-    const nextCells = cells.map((row) => [
-      ...row.slice(0, colIdx + 1),
-      '',
-      ...row.slice(colIdx + 1),
-    ]);
-    const defaultW = Math.max(60, Math.floor(width / (colWidths.length + 1)));
-    const nextColWidths = [
-      ...colWidths.slice(0, colIdx + 1),
-      defaultW,
-      ...colWidths.slice(colIdx + 1),
-    ];
-    const newTotalW = nextColWidths.reduce((a, b) => a + b, 0);
-
+  const insertCol = (afterIdx: number) => {
+    const defaultW = Math.max(60, Math.floor(120));
+    const nextCells = cells.map(row => [...row.slice(0, afterIdx + 1), '', ...row.slice(afterIdx + 1)]);
+    const nextCW = [...colWidths.slice(0, afterIdx + 1), defaultW, ...colWidths.slice(afterIdx + 1)];
+    const newTotalW = nextCW.reduce((a, b) => a + b, 0);
     setCells(nextCells);
-    setColWidths(nextColWidths);
+    setColWidths(nextCW);
     setWidth(newTotalW);
-    flushAttrs(nextCells, theme, posX, posY, newTotalW, gridHeight, nextColWidths, rowHeights);
+    flushAttrs(nextCells, theme, posX, posY, newTotalW, tableHeight, nextCW, rowHeights);
   };
 
-  const insertColBefore = (colIdx: number) => {
-    const nextCells = cells.map((row) => [
-      ...row.slice(0, colIdx),
-      '',
-      ...row.slice(colIdx),
-    ]);
-    const defaultW = Math.max(60, Math.floor(width / (colWidths.length + 1)));
-    const nextColWidths = [
-      ...colWidths.slice(0, colIdx),
-      defaultW,
-      ...colWidths.slice(colIdx),
-    ];
-    const newTotalW = nextColWidths.reduce((a, b) => a + b, 0);
-
+  const insertColBefore = (idx: number) => {
+    const defaultW = Math.max(60, 120);
+    const nextCells = cells.map(row => [...row.slice(0, idx), '', ...row.slice(idx)]);
+    const nextCW = [...colWidths.slice(0, idx), defaultW, ...colWidths.slice(idx)];
+    const newTotalW = nextCW.reduce((a, b) => a + b, 0);
     setCells(nextCells);
-    setColWidths(nextColWidths);
+    setColWidths(nextCW);
     setWidth(newTotalW);
-    flushAttrs(nextCells, theme, posX, posY, newTotalW, gridHeight, nextColWidths, rowHeights);
+    flushAttrs(nextCells, theme, posX, posY, newTotalW, tableHeight, nextCW, rowHeights);
   };
 
-  const deleteCol = (colIdx: number) => {
+  const deleteCol = (idx: number) => {
     if ((cells[0]?.length ?? 0) <= 1) return;
-    const nextCells = cells.map((row) => row.filter((_, i) => i !== colIdx));
-    const nextColWidths = colWidths.filter((_, i) => i !== colIdx);
-    const newTotalW = nextColWidths.reduce((a, b) => a + b, 0);
-
+    const nextCells = cells.map(row => row.filter((_, i) => i !== idx));
+    const nextCW = colWidths.filter((_, i) => i !== idx);
+    const newTotalW = nextCW.reduce((a, b) => a + b, 0);
     setCells(nextCells);
-    setColWidths(nextColWidths);
+    setColWidths(nextCW);
     setWidth(newTotalW);
-    flushAttrs(nextCells, theme, posX, posY, newTotalW, gridHeight, nextColWidths, rowHeights);
+    flushAttrs(nextCells, theme, posX, posY, newTotalW, tableHeight, nextCW, rowHeights);
   };
 
-  // ── Cell Editing ───────────────────────────────────────────────────────
-  const handleCellBlur = (rowIdx: number, colIdx: number, value: string) => {
-    if (cells[rowIdx]?.[colIdx] === value) return;
+  // ── Cell editing ───────────────────────────────────────────────────────
+  const handleCellBlur = (ri: number, ci: number, value: string) => {
+    if (cells[ri]?.[ci] === value) return;
     const nextCells = cells.map((row, r) =>
-      r === rowIdx ? row.map((cell, c) => (c === colIdx ? value : cell)) : row
+      r === ri ? row.map((cell, c) => (c === ci ? value : cell)) : row
     );
     setCells(nextCells);
-    flushAttrs(nextCells, theme, posX, posY, width, gridHeight, colWidths, rowHeights);
+    flushAttrs(nextCells, theme, posX, posY, width, tableHeight, colWidths, rowHeights);
   };
 
-  // ── Theme Updates ──────────────────────────────────────────────────────
+  // ── Theme ──────────────────────────────────────────────────────────────
   const updateTheme = (patch: Partial<CanvasTableTheme>) => {
-    const nextTheme = { ...theme, ...patch };
-    setTheme(nextTheme);
-    flushAttrs(cells, nextTheme, posX, posY, width, gridHeight, colWidths, rowHeights);
+    const next = { ...theme, ...patch };
+    setTheme(next);
+    flushAttrs(cells, next, posX, posY, width, tableHeight, colWidths, rowHeights);
   };
 
-  const numCols = cells[0]?.length ?? cols;
+  // ── Computed ───────────────────────────────────────────────────────────
+  const numCols = cells[0]?.length ?? 1;
+  const isResizingCol = activeDrag?.kind === 'col';
+  const isResizingRow = activeDrag?.kind === 'row';
+  const isDragging = activeDrag?.kind === 'table';
+  const isResizingCorner = activeDrag?.kind === 'corner';
+  const bdr = `${Math.max(1, theme.borderWidth)}px solid ${theme.borderColor}`;
+
+  // Total pixel width of all columns
+  const totalColWidth = colWidths.reduce((a, b) => a + b, 0);
 
   return (
     <NodeViewWrapper
       className="canvas-table-node-wrapper"
-      style={{ display: 'block', position: 'relative', marginTop: '6px', marginBottom: '6px' }}
+      style={{ display: 'block', position: 'relative', margin: '6px 0', userSelect: 'none' }}
     >
+      {/* ── Root container ─────────────────────────────────────────────── */}
       <div
-        ref={wrapperRef}
-        className={`canvas-table-root select-none group/table ${isDragging ? 'cursor-grabbing' : ''}`}
+        ref={rootRef}
+        className="canvas-table-root"
+        contentEditable={false}
+        suppressContentEditableWarning
         style={{
           position: 'relative',
           transform: `translate3d(${posX}px, ${posY}px, 0)`,
           width: `${width}px`,
-          maxHeight: gridHeight ? `${gridHeight}px` : undefined,
-          border: `${theme.borderWidth}px solid ${theme.borderColor}`,
-          backgroundColor: theme.cellBg,
-          boxShadow: selected ? '0 0 0 2px #FF3D00' : 'none',
-          userSelect: 'none',
+          border: bdr,
+          boxShadow: selected ? '0 0 0 2px #FF3D00' : undefined,
+          cursor: isDragging ? 'grabbing' : undefined,
+          overflow: 'hidden', // clip corners cleanly
         }}
-        contentEditable={false}
-        suppressContentEditableWarning
       >
-        {/* ── Top Sleek Drag Bar ──────────────────────────────────────── */}
+        {/* ── Drag Bar ─────────────────────────────────────────────────── */}
         <div
-          className="canvas-table-drag-bar flex items-center justify-between px-2.5 h-7 cursor-grab active:cursor-grabbing border-b"
+          className="canvas-table-drag-bar"
           style={{
-            backgroundColor: 'var(--ct-bg-drag, #111111)',
-            borderColor: theme.borderColor,
-            color: 'var(--ct-text-muted, #737373)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            height: 28,
+            paddingInline: 10,
+            backgroundColor: 'var(--ct-bg-drag, #111)',
+            borderBottom: bdr,
+            cursor: isDragging ? 'grabbing' : 'grab',
+            userSelect: 'none',
           }}
-          onPointerDown={handleDragPointerDown}
-          onPointerMove={handleDragPointerMove}
-          onPointerUp={handleDragPointerUp}
+          onPointerDown={startTableDrag}
         >
-          <div className="flex items-center gap-2">
-            <GripHorizontal className="w-3.5 h-3.5 text-[#FF3D00] shrink-0" strokeWidth={2} />
-            <span className="text-[10px] font-mono uppercase tracking-wider opacity-80">
+          {/* Left: grip + dimension label */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <GripHorizontal style={{ width: 13, height: 13, color: '#FF3D00', flexShrink: 0 }} strokeWidth={2} />
+            <span style={{ fontSize: 10, fontFamily: 'monospace', color: 'var(--ct-text-muted,#737373)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
               {cells.length} × {numCols}
             </span>
           </div>
 
-          <div className="flex items-center gap-1.5" onPointerDown={(e) => e.stopPropagation()}>
-            {/* Theme Customizer Toggle */}
+          {/* Right: action buttons (stop drag propagation) */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }} onPointerDown={e => e.stopPropagation()}>
             <button
-              onClick={() => setIsThemeOpen((v) => !v)}
-              className={`p-1 rounded transition-colors ${
-                isThemeOpen ? 'text-[#FF3D00] bg-[#FF3D00]/10' : 'hover:text-[#FF3D00]'
-              }`}
-              title="Customize colors & border"
+              onClick={() => setIsThemeOpen(v => !v)}
+              title="Customize table style"
+              style={{
+                padding: 3,
+                background: isThemeOpen ? 'rgba(255,61,0,0.12)' : 'transparent',
+                border: 'none',
+                cursor: 'pointer',
+                color: isThemeOpen ? '#FF3D00' : 'var(--ct-text-muted,#737373)',
+                display: 'flex',
+                alignItems: 'center',
+                borderRadius: 2,
+              }}
             >
-              <Palette className="w-3.5 h-3.5" strokeWidth={1.5} />
+              <Palette style={{ width: 13, height: 13 }} strokeWidth={1.5} />
             </button>
 
-            {/* Reset Drag Position */}
             {(posX !== 0 || posY !== 0) && (
               <button
-                onClick={handleResetPosition}
-                className="p-1 hover:text-[#FF3D00] transition-colors"
-                title="Reset table position"
+                onClick={() => {
+                  setPosX(0); setPosY(0);
+                  flushAttrs(cells, theme, 0, 0, width, tableHeight, colWidths, rowHeights);
+                }}
+                title="Reset position"
+                style={{ padding: 3, background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--ct-text-muted,#737373)', display: 'flex', alignItems: 'center', borderRadius: 2 }}
               >
-                <RotateCcw className="w-3.5 h-3.5" strokeWidth={1.5} />
+                <RotateCcw style={{ width: 13, height: 13 }} strokeWidth={1.5} />
               </button>
             )}
 
-            {/* Delete Node */}
             <button
               onClick={deleteNode}
-              className="p-1 text-[#737373] hover:text-[#ef4444] transition-colors"
               title="Delete table"
+              style={{ padding: 3, background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--ct-text-muted,#737373)', display: 'flex', alignItems: 'center', borderRadius: 2 }}
+              onMouseEnter={e => (e.currentTarget.style.color = '#ef4444')}
+              onMouseLeave={e => (e.currentTarget.style.color = 'var(--ct-text-muted,#737373)')}
             >
-              <Trash2 className="w-3.5 h-3.5" strokeWidth={1.5} />
+              <Trash2 style={{ width: 13, height: 13 }} strokeWidth={1.5} />
             </button>
           </div>
         </div>
 
-        {/* ── Sleek Theme Panel ────────────────────────────────────────── */}
+        {/* ── Theme Panel ───────────────────────────────────────────────── */}
         {isThemeOpen && (
           <div
-            className="canvas-table-theme-panel border-b px-3 py-2.5"
+            onPointerDown={e => e.stopPropagation()}
             style={{
-              borderColor: theme.borderColor,
+              padding: '10px 12px',
               backgroundColor: 'var(--ct-bg-panel, #0A0A0A)',
+              borderBottom: bdr,
             }}
-            contentEditable={false}
-            onPointerDown={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-[9px] font-mono text-[#FF3D00] uppercase tracking-widest font-bold">
-                Table Appearance
+            {/* Header row */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+              <span style={{ fontSize: 9, fontFamily: 'monospace', color: '#FF3D00', textTransform: 'uppercase', letterSpacing: '0.15em', fontWeight: 700 }}>
+                Table Style
               </span>
               <button
                 onClick={() => setIsThemeOpen(false)}
-                className="text-[var(--ct-text-muted,#737373)] hover:text-[#FF3D00]"
+                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2, color: 'var(--ct-text-muted,#737373)', display: 'flex' }}
               >
-                <X className="w-3.5 h-3.5" />
+                <X style={{ width: 13, height: 13 }} />
               </button>
             </div>
 
-            <div className="grid grid-cols-2 gap-x-6 gap-y-1">
-              <ColorPickerRow
-                label="Cell Bg"
-                value={theme.cellBg}
-                onChange={(v) => updateTheme({ cellBg: v })}
-              />
-              <ColorPickerRow
-                label="Header Bg"
-                value={theme.headerBg}
-                onChange={(v) => updateTheme({ headerBg: v })}
-              />
-              <ColorPickerRow
-                label="Border Color"
-                value={theme.borderColor}
-                onChange={(v) => updateTheme({ borderColor: v })}
-              />
-              <ColorPickerRow
-                label="Text Color"
-                value={theme.textColor}
-                onChange={(v) => updateTheme({ textColor: v })}
-              />
+            {/* Live preview */}
+            <ThemePreview theme={theme} />
 
-              <div className="flex items-center justify-between gap-2 py-1 col-span-2">
-                <span className="text-[10px] font-mono text-[var(--ct-text-muted,#737373)] uppercase tracking-wider">
-                  Border Width
+            {/* Color pickers */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 16px' }}>
+              <ColorRow label="Cell Bg" value={theme.cellBg} onChange={v => updateTheme({ cellBg: v })} />
+              <ColorRow label="Header Bg" value={theme.headerBg} onChange={v => updateTheme({ headerBg: v })} />
+              <ColorRow label="Border" value={theme.borderColor} onChange={v => updateTheme({ borderColor: v })} />
+              <ColorRow label="Text" value={theme.textColor} onChange={v => updateTheme({ textColor: v })} />
+            </div>
+
+            {/* Border width */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: 4, marginTop: 2, borderTop: '1px solid #222' }}>
+              <span style={{ fontSize: 10, fontFamily: 'monospace', color: 'var(--ct-text-muted,#737373)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                Border Width
+              </span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <input
+                  type="range" min={0} max={4} step={1}
+                  value={theme.borderWidth}
+                  onChange={e => updateTheme({ borderWidth: Number(e.target.value) })}
+                  className="canvas-table-range"
+                  style={{ width: 80 }}
+                />
+                <span style={{ fontSize: 9, fontFamily: 'monospace', color: 'var(--ct-text-dim,#525252)', width: 20, textAlign: 'right' }}>
+                  {theme.borderWidth}px
                 </span>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="range"
-                    min={0}
-                    max={4}
-                    step={1}
-                    value={theme.borderWidth}
-                    onChange={(e) => updateTheme({ borderWidth: Number(e.target.value) })}
-                    className="w-24 accent-[#FF3D00] h-1"
-                  />
-                  <span className="text-[9px] font-mono text-[var(--ct-text-dim,#525252)] w-4 text-right">
-                    {theme.borderWidth}px
-                  </span>
-                </div>
               </div>
             </div>
           </div>
         )}
 
-        {/* ── Table Grid & Cells ───────────────────────────────────────── */}
+        {/* ── Grid ──────────────────────────────────────────────────────── */}
         <div
-          className="canvas-table-grid relative overflow-x-auto"
-          style={{ backgroundColor: theme.cellBg }}
+          ref={gridRef}
+          style={{
+            position: 'relative',
+            overflowX: totalColWidth > width ? 'auto' : 'hidden',
+            overflowY: tableHeight ? 'auto' : 'visible',
+            height: tableHeight ? `${tableHeight}px` : undefined,
+            backgroundColor: theme.cellBg,
+          }}
         >
-          {cells.map((row, ri) => (
-            <div
-              key={ri}
-              className="canvas-table-row flex relative group/row"
-              style={{
-                height: rowHeights[ri] ? `${rowHeights[ri]}px` : undefined,
-                minHeight: '32px',
-                borderBottom: ri < cells.length - 1 ? `${theme.borderWidth}px solid ${theme.borderColor}` : undefined,
-              }}
-              onMouseEnter={() => setHoveredRow(ri)}
-              onMouseLeave={() => setHoveredRow(null)}
-            >
-              {/* ── Discreet Row Control Overlays (Hover Triggered) ─────── */}
-              {hoveredRow === ri && (
-                <div
-                  className="absolute -left-6 top-1/2 -translate-y-1/2 flex items-center gap-0.5 z-30 bg-[var(--ct-bg-drag,#111111)] border border-[#333333] px-1 py-0.5 shadow-md"
-                  onPointerDown={(e) => e.stopPropagation()}
-                >
-                  <button
-                    onClick={() => insertRowBefore(ri)}
-                    title="Add row above"
-                    className="text-[#737373] hover:text-[#FF3D00] p-0.5"
-                  >
-                    <ChevronUp className="w-3 h-3" />
-                  </button>
-                  <button
-                    onClick={() => deleteRow(ri)}
-                    title="Delete this row"
-                    className="text-[#737373] hover:text-[#ef4444] p-0.5"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                  <button
-                    onClick={() => insertRowAfter(ri)}
-                    title="Add row below"
-                    className="text-[#737373] hover:text-[#FF3D00] p-0.5"
-                  >
-                    <ChevronDown className="w-3 h-3" />
-                  </button>
-                </div>
-              )}
+          {/* ── Column resize handles (full-height, one per boundary) ── */}
+          {colWidths.slice(0, -1).map((_, ci) => {
+            const leftOffset = colWidths.slice(0, ci + 1).reduce((a, b) => a + b, 0);
+            const isActiveCol = activeDrag?.kind === 'col' && activeDrag.colIdx === ci;
+            return (
+              <div
+                key={`col-resize-${ci}`}
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  bottom: 0,
+                  left: leftOffset - 3,
+                  width: 6,
+                  cursor: 'col-resize',
+                  zIndex: 25,
+                  backgroundColor: isActiveCol ? 'rgba(255,61,0,0.5)' : 'transparent',
+                  transition: 'background-color 100ms',
+                }}
+                onPointerDown={e => startColResize(ci, e)}
+                onMouseEnter={e => { if (!isResizingCol) e.currentTarget.style.backgroundColor = 'rgba(255,61,0,0.25)'; }}
+                onMouseLeave={e => { if (!isResizingCol) e.currentTarget.style.backgroundColor = 'transparent'; }}
+                title="Drag to resize column"
+              />
+            );
+          })}
 
-              {/* ── Row Cells ────────────────────────────────────────────── */}
-              {row.map((cellValue, ci) => {
-                const cellWidth = colWidths[ci] || Math.floor(width / numCols);
+          {/* ── Rows ─────────────────────────────────────────────────── */}
+          {cells.map((row, ri) => {
+            const rowH = rowHeights[ri] ?? 36;
+            const isFirstRow = ri === 0;
+            const isLastRow = ri === cells.length - 1;
+            const isActiveRow = activeDrag?.kind === 'row' && activeDrag.rowIdx === ri;
 
-                return (
+            return (
+              <div
+                key={ri}
+                className="canvas-table-row"
+                style={{
+                  display: 'flex',
+                  position: 'relative',
+                  height: `${rowH}px`,
+                  borderBottom: !isLastRow ? bdr : undefined,
+                }}
+                onMouseEnter={() => setHoveredRow(ri)}
+                onMouseLeave={() => setHoveredRow(null)}
+              >
+                {/* Row hover controls — appear on left edge of row */}
+                {hoveredRow === ri && activeDrag === null && (
                   <div
-                    key={ci}
-                    className="relative group/cell"
+                    onPointerDown={e => e.stopPropagation()}
                     style={{
-                      width: `${cellWidth}px`,
-                      minWidth: `${cellWidth}px`,
-                      backgroundColor: ri === 0 && theme.headerBg !== theme.cellBg ? theme.headerBg : theme.cellBg,
-                      borderRight: ci < row.length - 1 ? `${theme.borderWidth}px solid ${theme.borderColor}` : undefined,
+                      position: 'absolute',
+                      left: 4,
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 2,
+                      zIndex: 40,
+                      opacity: 0.85,
                     }}
-                    onMouseEnter={() => setHoveredCol(ci)}
-                    onMouseLeave={() => setHoveredCol(null)}
                   >
-                    {/* ── Discreet Column Control Overlays (Top Row Hover) ── */}
-                    {ri === 0 && hoveredCol === ci && (
-                      <div
-                        className="absolute -top-6 left-1/2 -translate-x-1/2 flex items-center gap-0.5 z-30 bg-[var(--ct-bg-drag,#111111)] border border-[#333333] px-1 py-0.5 shadow-md"
-                        onPointerDown={(e) => e.stopPropagation()}
-                      >
-                        <button
-                          onClick={() => insertColBefore(ci)}
-                          title="Add column left"
-                          className="text-[#737373] hover:text-[#FF3D00] p-0.5"
-                        >
-                          <ChevronLeft className="w-3 h-3" />
-                        </button>
-                        <button
-                          onClick={() => deleteCol(ci)}
-                          title="Delete this column"
-                          className="text-[#737373] hover:text-[#ef4444] p-0.5"
-                        >
-                          <X className="w-3 h-3" />
-                        </button>
-                        <button
-                          onClick={() => insertColAfter(ci)}
-                          title="Add column right"
-                          className="text-[#737373] hover:text-[#FF3D00] p-0.5"
-                        >
-                          <ChevronRight className="w-3 h-3" />
-                        </button>
-                      </div>
+                    {ri > 0 && (
+                      <button onClick={() => insertRowBefore(ri)} title="Insert row above" className="ct-row-btn">
+                        ↑
+                      </button>
                     )}
-
-                    {/* ── Cell Contenteditable Area ───────────────────────── */}
-                    <div
-                      contentEditable
-                      suppressContentEditableWarning
-                      onBlur={(e) => handleCellBlur(ri, ci, (e.target as HTMLDivElement).innerText)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Tab') {
-                          e.preventDefault();
-                          const allCells = wrapperRef.current?.querySelectorAll<HTMLDivElement>('[data-canvas-cell]');
-                          if (!allCells) return;
-                          const arr = Array.from(allCells);
-                          const idx = arr.findIndex((el) => el === e.currentTarget);
-                          const next = e.shiftKey ? arr[idx - 1] : arr[idx + 1];
-                          next?.focus();
-                        }
-                        e.stopPropagation();
-                      }}
-                      data-canvas-cell=""
-                      data-row={ri}
-                      data-col={ci}
-                      className="canvas-table-cell outline-none w-full h-full px-2.5 py-2 text-[13px] font-sans break-words"
-                      style={{
-                        color: theme.textColor,
-                        fontWeight: ri === 0 && theme.headerBg !== theme.cellBg ? 600 : 400,
-                        minHeight: '28px',
-                        display: 'block',
-                        wordBreak: 'break-word',
-                        whiteSpace: 'pre-wrap',
-                      }}
-                    >
-                      {cellValue}
-                    </div>
-
-                    {/* ── Per-Column Drag Resize Edge Handle ─────────────── */}
-                    {ci < row.length - 1 && (
-                      <div
-                        className="absolute right-0 top-0 bottom-0 w-1.5 cursor-col-resize z-20 hover:bg-[#FF3D00] transition-colors opacity-0 hover:opacity-100"
-                        style={{ transform: 'translateX(50%)' }}
-                        onPointerDown={(e) => handleColResizePointerDown(ci, e)}
-                        onPointerMove={(e) => handleColResizePointerMove(ci, e)}
-                        onPointerUp={(e) => handleColResizePointerUp(ci, e)}
-                        title="Drag to resize column"
-                      />
-                    )}
+                    <button onClick={() => insertRow(ri)} title="Insert row below" className="ct-row-btn">
+                      +
+                    </button>
+                    <button onClick={() => deleteRow(ri)} title="Delete row" className="ct-row-btn ct-row-btn-del">
+                      ×
+                    </button>
                   </div>
-                );
-              })}
+                )}
 
-              {/* ── Per-Row Drag Resize Bottom Edge Handle ──────────────── */}
-              {ri < cells.length - 1 && (
-                <div
-                  className="absolute left-0 right-0 bottom-0 h-1.5 cursor-row-resize z-20 hover:bg-[#FF3D00] transition-colors opacity-0 hover:opacity-100"
-                  style={{ transform: 'translateY(50%)' }}
-                  onPointerDown={(e) => handleRowResizePointerDown(ri, e)}
-                  onPointerMove={(e) => handleRowResizePointerMove(ri, e)}
-                  onPointerUp={(e) => handleRowResizePointerUp(ri, e)}
-                  title="Drag to resize row height"
-                />
-              )}
-            </div>
-          ))}
+                {/* Cells */}
+                {row.map((cellValue, ci) => {
+                  const cellW = colWidths[ci] ?? Math.floor(width / numCols);
+                  const bgColor = isFirstRow ? theme.headerBg : theme.cellBg;
+                  const isLastCol = ci === row.length - 1;
+
+                  return (
+                    <div
+                      key={ci}
+                      style={{
+                        width: `${cellW}px`,
+                        minWidth: `${cellW}px`,
+                        flexShrink: 0,
+                        position: 'relative',
+                        backgroundColor: bgColor,
+                        borderRight: !isLastCol ? bdr : undefined,
+                      }}
+                      onMouseEnter={() => setHoveredCol(ci)}
+                      onMouseLeave={() => setHoveredCol(null)}
+                    >
+                      {/* Col hover controls — only on first row */}
+                      {ri === 0 && hoveredCol === ci && activeDrag === null && (
+                        <div
+                          onPointerDown={e => e.stopPropagation()}
+                          style={{
+                            position: 'absolute',
+                            top: 3,
+                            left: '50%',
+                            transform: 'translateX(-50%)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 2,
+                            zIndex: 40,
+                            opacity: 0.85,
+                          }}
+                        >
+                          {ci > 0 && (
+                            <button onClick={() => insertColBefore(ci)} title="Insert col left" className="ct-col-btn">
+                              ←
+                            </button>
+                          )}
+                          <button onClick={() => insertCol(ci)} title="Insert col right" className="ct-col-btn">
+                            +
+                          </button>
+                          <button onClick={() => deleteCol(ci)} title="Delete col" className="ct-col-btn ct-col-btn-del">
+                            ×
+                          </button>
+                        </div>
+                      )}
+
+                      {/* Contenteditable cell */}
+                      <div
+                        contentEditable
+                        suppressContentEditableWarning
+                        data-canvas-cell=""
+                        data-row={ri}
+                        data-col={ci}
+                        onBlur={e => handleCellBlur(ri, ci, (e.target as HTMLDivElement).innerText)}
+                        onKeyDown={e => {
+                          if (e.key === 'Tab') {
+                            e.preventDefault();
+                            const all = gridRef.current?.querySelectorAll<HTMLElement>('[data-canvas-cell]');
+                            if (!all) return;
+                            const arr = Array.from(all);
+                            const idx = arr.indexOf(e.currentTarget as HTMLElement);
+                            const next = e.shiftKey ? arr[idx - 1] : arr[idx + 1];
+                            next?.focus();
+                          }
+                          e.stopPropagation();
+                        }}
+                        className="canvas-table-cell"
+                        style={{
+                          color: theme.textColor,
+                          fontWeight: isFirstRow ? 600 : 400,
+                          padding: '6px 10px',
+                          fontSize: 13,
+                          minHeight: '100%',
+                          display: 'block',
+                          outline: 'none',
+                          wordBreak: 'break-word',
+                          whiteSpace: 'pre-wrap',
+                          fontFamily: 'inherit',
+                        }}
+                      >
+                        {cellValue}
+                      </div>
+                    </div>
+                  );
+                })}
+
+                {/* Row resize handle — at bottom edge, full width */}
+                {!isLastRow && (
+                  <div
+                    style={{
+                      position: 'absolute',
+                      left: 0,
+                      right: 0,
+                      bottom: -3,
+                      height: 6,
+                      cursor: 'row-resize',
+                      zIndex: 24,
+                      backgroundColor: isActiveRow ? 'rgba(255,61,0,0.5)' : 'transparent',
+                      transition: 'background-color 100ms',
+                    }}
+                    onPointerDown={e => startRowResize(ri, e)}
+                    onMouseEnter={e => { if (!isResizingRow) e.currentTarget.style.backgroundColor = 'rgba(255,61,0,0.25)'; }}
+                    onMouseLeave={e => { if (!isResizingRow) e.currentTarget.style.backgroundColor = 'transparent'; }}
+                    title="Drag to resize row"
+                  />
+                )}
+              </div>
+            );
+          })}
         </div>
 
-        {/* ── Add Row Footer Button ────────────────────────────────────── */}
+        {/* ── Footer: Add Row + Add Col ─────────────────────────────────── */}
         <div
-          className="canvas-table-add-row flex items-center justify-center h-6 cursor-pointer group/addrow transition-colors border-t"
+          onPointerDown={e => e.stopPropagation()}
           style={{
-            borderColor: theme.borderColor,
+            display: 'flex',
+            borderTop: bdr,
             backgroundColor: 'var(--ct-bg-add-row, #0F0F0F)',
           }}
-          onClick={() => insertRowAfter(cells.length - 1)}
-          onPointerDown={(e) => e.stopPropagation()}
-          title="Add new row"
           contentEditable={false}
         >
-          <Plus className="w-3 h-3 text-[#737373] group-hover/addrow:text-[#FF3D00] transition-colors" strokeWidth={2} />
-          <span className="ml-1 text-[9px] font-mono text-[#737373] group-hover/addrow:text-[#FF3D00] uppercase tracking-wider transition-colors">
-            Row
-          </span>
+          <button
+            onClick={() => insertRow(cells.length - 1)}
+            title="Add row"
+            className="ct-footer-btn"
+            style={{ flex: 1, borderRight: bdr }}
+          >
+            <Plus style={{ width: 11, height: 11 }} strokeWidth={2} />
+            <span>Row</span>
+          </button>
+          <button
+            onClick={() => insertCol(numCols - 1)}
+            title="Add column"
+            className="ct-footer-btn"
+            style={{ flex: 1 }}
+          >
+            <Plus style={{ width: 11, height: 11 }} strokeWidth={2} />
+            <span>Col</span>
+          </button>
         </div>
 
-        {/* ── Bottom-right Multi-directional Corner Resize Handle ───────── */}
+        {/* ── Corner resize handle ──────────────────────────────────────── */}
         <div
-          className="absolute bottom-0 right-0 w-3.5 h-3.5 flex items-center justify-center cursor-nwse-resize z-30 hover:bg-[#FF3D00]/30 transition-colors"
+          onPointerDown={startCornerResize}
+          title="Drag to resize table"
           style={{
-            backgroundColor: 'var(--ct-bg-drag, #111111)',
-            borderTop: `${theme.borderWidth}px solid ${theme.borderColor}`,
-            borderLeft: `${theme.borderWidth}px solid ${theme.borderColor}`,
+            position: 'absolute',
+            bottom: 0,
+            right: 0,
+            width: 14,
+            height: 14,
+            cursor: 'nwse-resize',
+            zIndex: 50,
+            backgroundColor: isResizingCorner ? '#FF3D00' : 'var(--ct-bg-drag,#111)',
+            borderTop: bdr,
+            borderLeft: bdr,
           }}
-          onPointerDown={handleCornerResizePointerDown}
-          onPointerMove={handleCornerResizePointerMove}
-          onPointerUp={handleCornerResizePointerUp}
-          title="Drag to resize table (width & height)"
-          contentEditable={false}
-        >
-          <Maximize2 className="w-2.5 h-2.5 text-[#737373] hover:text-[#FF3D00] transition-colors" strokeWidth={2} />
-        </div>
+        />
       </div>
     </NodeViewWrapper>
   );

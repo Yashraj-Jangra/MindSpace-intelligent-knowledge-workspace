@@ -160,6 +160,24 @@
 - [ ] Check that the two-row toolbar scrolls cleanly on mobile without breaking layout.
 - [ ] Validate the left-panel page thumbnail drawer slide-in animation and per-page actions.
 
+## Future Roadmap (Planned Features)
+- [ ] **Personalized Hub Dashboard (`/`):**
+  - Make `/` the new centralized user cockpit, shifting the raw canvas to `/canvas/[id]`.
+  - **Urgency Timeline Widget:** Aggregated visual list of upcoming deadlines, pinned notes, and critical tasks.
+  - **Quick Capture Inbox:** Minimalist text block dump for rapid thoughts, auto-structured into mind maps by AI.
+- [ ] **Calendar with Google Calendar Sync:**
+  - Full Google Calendar oauth sync to import events, flight/concert tickets, and sync scheduled reminders.
+  - Interactive calendar month/week grid view on the dashboard.
+- [ ] **Community & Chat System:**
+  - Real-time chat popup and slide-out side panel inside notes and canvas views.
+  - Live canvas sharing and bi-directional synchronous co-editing (multiplayer cursor pointers).
+- [ ] **Micro / Macro Task System:**
+  - Nested micro-tasks inside macro objectives with individual progress meters.
+  - Frequent notifications and high-visibility visual warnings on the front page for attention-seeking tasks.
+  - **Pomodoro Focus Mode Widget:** Integrated focus timer that logs work session stats against tasks.
+- [ ] **Audio Quick Capture / Voice Notes:**
+  - In-app voice recorder to transcribe audio notes automatically into the text capture inbox.
+
 
 
 

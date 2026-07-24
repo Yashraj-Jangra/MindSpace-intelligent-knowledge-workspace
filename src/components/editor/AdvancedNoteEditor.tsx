@@ -1035,11 +1035,11 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
                   if (!editor?.isEditable || stylusSettings.isStylusModeActive) return;
                   setIsInsertTableOpen(true);
                 }}
-                className="p-1.5 text-[#737373] hover:text-[#FAFAFA] hover:bg-[#1E1E1E] disabled:opacity-40 disabled:pointer-events-none disabled:cursor-not-allowed transition-colors rounded inline-flex items-center justify-center shrink-0"
-                title="Insert Table"
+                className="richtext-inline-flex richtext-items-center richtext-justify-center richtext-rounded-md richtext-text-sm richtext-font-medium richtext-transition-colors hover:richtext-bg-accent hover:richtext-text-accent-foreground focus-visible:richtext-outline-none disabled:richtext-pointer-events-none disabled:richtext-opacity-50 richtext-size-8 richtext-p-0"
+                title="Table"
                 type="button"
               >
-                <Table className="w-4 h-4" strokeWidth={1.5} />
+                <Table className="richtext-size-4" />
               </button>
               <RichTextCodeBlock />
               <RichTextLink />

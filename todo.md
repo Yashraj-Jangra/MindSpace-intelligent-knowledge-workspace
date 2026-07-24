@@ -3,11 +3,14 @@
 ## Work Completed
 - [x] **Account Settings & Integrations Drawer** (Session 2026-07-25 v8):
   - **Rules of Hooks Violation Fix**: Grouped all React hooks (`useState`, `useEffect`, and `useCallback`) together at the very top level of the component preceding any early returns or redirects. This fully eliminates runtime hook-count mismatches during loading cycles.
-  - **Account & Integrations Slide Drawer**: Added a slide-over settings panel accessible by clicking the user badge in the header. The panel includes tabs for user profiles, webhook management, Discord pairings, and SMTP setups.
+  - **Profile Settings & Change Info**: Added "Change Info" tab to modify name/email, dynamically updating the app session context (`/api/auth/profile`).
+  - **Account Password Security**: Added "Password" tab to securely update password credentials by verifying current passwords and hashing new passwords with bcrypt (`/api/auth/password`).
+  - **Dynamic Storage Quota Metrics**: Added "Quotas" tab showing real-time resource statistics (canvases, notes, nodes) and a visual progress meter tracking MB usage against a 100MB limit (`/api/auth/usage`).
+  - **Removed SMTP Client Options**: Hidden SMTP options to route email alerts automatically through the default system mailer configs.
+  - **Account & Integrations Slide Drawer**: Added a slide-over settings panel accessible by clicking the user badge in the header. The panel includes tabs for user profiles, webhook management, and Discord pairings.
   - **REST API Credentials & CLI Integration**: Displays user IDs and provides clear documentation with copying options for curl CLI node injection commands.
   - **Outbound Webhooks Management (CRUD)**: Enabled registering, viewing, and deleting outbound webhooks directly from the UI, introducing a `DELETE` endpoint in `/api/webhooks`.
   - **Discord Bot Pairing**: Integrates with the local database to generate 6-digit pairing codes and configure channel-specific Discord webhook alert URLs.
-  - **SMTP Configurations API**: Built a custom SMTP setting upsert endpoint (`/api/auth/smtp`) and added settings form inputs inside the SMTP panel tab.
 - [x] **Secure Account & Session Management Restoration** (Session 2026-07-25 v7):
   - **WSL Database Port Shift**: Shifted PostgreSQL to port `5433` and MinIO to ports `9008`/`9009` to resolve port conflicts with existing background containers in WSL (such as `vaultr_postgres` and `portainer`). Successfully launched the containers and synced the database schema.
   - **AuthContext & API Session Strictness**: Removed all `DEFAULT_DEV_USER` and `default_user` mock fallbacks. Setting/validating cookie sessions now yields authentic results, properly falling back to `null` and locking unauthenticated states.

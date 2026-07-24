@@ -371,7 +371,9 @@ export function CanvasTable({ node, updateAttributes, deleteNode }: NodeViewProp
   };
   const startCornerResize = (e: React.PointerEvent) => {
     e.preventDefault(); e.stopPropagation();
-    setActiveDrag({ kind: 'corner', startX: e.clientX, startY: e.clientY, initW: width, initColWidths: [...colWidths] });
+    // Use sum of colWidths as initW (= actual cell content width, no border ambiguity)
+    const contentW = colWidths.reduce((a, b) => a + b, 0);
+    setActiveDrag({ kind: 'corner', startX: e.clientX, startY: e.clientY, initW: contentW, initColWidths: [...colWidths] });
   };
   const startColResize = (ci: number, e: React.PointerEvent) => {
     e.preventDefault(); e.stopPropagation();
@@ -509,7 +511,9 @@ export function CanvasTable({ node, updateAttributes, deleteNode }: NodeViewProp
           position: 'relative',
           display: 'inline-block',
           transform: `translate3d(${posX}px, ${posY}px, 0)`,
-          width: `${width}px`,
+          // No explicit width — the root auto-sizes to its content (sum of colWidths).
+          // Setting width here with box-sizing:border-box would squeeze the content area
+          // by 2*borderWidth, causing the last column to overflow the border.
           border: bdr,
           cursor: isDragging ? 'grabbing' : undefined,
         }}

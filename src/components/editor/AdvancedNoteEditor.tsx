@@ -151,10 +151,16 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
   const [activeColor, setActiveColor] = useState<string>('#FF3D00');
   const [strokeWidth, setStrokeWidth] = useState<number>(3);
   const [lineType, setLineType] = useState<LineType>('solid');
-  const [stylusSettings, setStylusSettings] = useState<StylusSettings>({
-    ...DEFAULT_STYLUS_SETTINGS,
-    isStylusModeActive: true,
-    stylusOnlyMode: false,
+  const [stylusSettings, setStylusSettings] = useState<StylusSettings>(() => {
+    // Auto-detect touch-capable devices (tablets, iPads, Android tablets).
+    // On tablets: stylusOnlyMode defaults to TRUE so finger = scroll, pen = draw.
+    // On desktop (maxTouchPoints === 0): stylusOnlyMode = false so mouse can draw.
+    const isTablet = typeof navigator !== 'undefined' && navigator.maxTouchPoints > 0;
+    return {
+      ...DEFAULT_STYLUS_SETTINGS,
+      isStylusModeActive: true,
+      stylusOnlyMode: isTablet, // Tablets: finger scrolls, pen draws. Desktop: mouse draws.
+    };
   });
   const [strokes, setStrokes] = useState<VectorStroke[]>(initialPages[0]?.strokes || []);
   const [undoStack, setUndoStack] = useState<VectorStroke[][]>([]);
@@ -1348,7 +1354,18 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
             />
 
             {/* Notebook Paper Workspace Scroll Area */}
-            <div className="note-editor-canvas-area relative flex-1 bg-[#050505] overflow-auto" style={{ minHeight: 'calc(100vh - 160px)' }}>
+            <div
+              className="note-editor-canvas-area relative flex-1 bg-[#050505] overflow-auto"
+              style={{ minHeight: 'calc(100vh - 160px)' }}
+              onDoubleClick={(e) => {
+                // Suppress double-click/double-tap browser-level side effects (iOS zoom, etc.)
+                // The canvas itself also handles this, but belt-and-suspenders for the container.
+                const target = e.target as HTMLElement;
+                if (target.tagName === 'CANVAS') {
+                  e.preventDefault();
+                }
+              }}
+            >
               {/* Zoom Transform Wrapper — centers and scales the A4 paper sheet */}
               <div
                 className={`py-10 flex ${lockCenter ? 'justify-center' : 'justify-start'} px-4 origin-top`}

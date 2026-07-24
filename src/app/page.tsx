@@ -25,7 +25,7 @@ export default function Home() {
   const [canvasId, setCanvasId] = useState<string | null>(null);
   const [title, setTitle] = useState('Untitled MindSpace Map');
   const [isGenerating, setIsGenerating] = useState(false);
-  
+    
   // Modals & Panels
   const [isOutlineOpen, setIsOutlineOpen] = useState(false);
   const [isDocUploadOpen, setIsDocUploadOpen] = useState(false);
@@ -33,24 +33,7 @@ export default function Home() {
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
   const [isAccountOpen, setIsAccountOpen] = useState(false);
 
-  // Redirect to login if unauthenticated after loading finishes
-  useEffect(() => {
-    if (!isLoading && !user) {
-      router.push('/login');
-    }
-  }, [user, isLoading, router]);
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-[#0A0A0A] text-[#FAFAFA] flex items-center justify-center font-mono text-xs uppercase tracking-widest">
-        Loading Session...
-      </div>
-    );
-  }
-
-  if (!user) return null;
-
-  // Initial Demo Graph on mount
+  // Hook: Initial Demo Graph on mount
   useEffect(() => {
     const initialDemoNodes: ReactFlowNode<MindSpaceNodeData>[] = [
       {
@@ -114,36 +97,7 @@ export default function Home() {
     setEdges(initialDemoEdges);
   }, []);
 
-  // Handle AI Prompt Graph Generation
-  const handleGenerateGraph = async (promptText: string) => {
-    setIsGenerating(true);
-    try {
-      const res = await fetch('/api/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          prompt: promptText,
-          canvasId,
-          userId: user.id,
-        }),
-      });
-
-      if (!res.ok) throw new Error('Failed to generate graph');
-
-      const data = await res.json();
-      if (data.canvasId) setCanvasId(data.canvasId);
-      if (data.title) setTitle(data.title);
-      if (data.nodes) setNodes(data.nodes);
-      if (data.edges) setEdges(data.edges);
-    } catch (err) {
-      console.error('Error generating graph:', err);
-      alert('Failed to generate mind map graph.');
-    } finally {
-      setIsGenerating(false);
-    }
-  };
-
-  // Handle AI Copilot Node Topic Expansion
+  // Hook: AI Copilot Node Topic Expansion
   const handleExpandNode = useCallback(
     async (nodeId: string, label: string, markdown: string) => {
       try {
@@ -167,7 +121,7 @@ export default function Home() {
     [canvasId]
   );
 
-  // Handle AI Copilot Toolbar Actions (Summarize, Rewrite, Auto-Link)
+  // Hook: AI Copilot Toolbar Actions (Summarize, Rewrite, Auto-Link)
   const handleCopilotAction = useCallback(
     async (action: 'summarize' | 'rewrite' | 'auto-link', nodeId: string, label: string, markdown?: string) => {
       try {
@@ -200,14 +154,14 @@ export default function Home() {
     [canvasId]
   );
 
-  // Handle Bi-Directional Outline Live Text Edit
+  // Hook: Bi-Directional Outline Live Text Edit
   const handleUpdateNodeText = useCallback((nodeId: string, label: string, markdown: string) => {
     setNodes((prev) =>
       prev.map((n) => (n.id === nodeId ? { ...n, data: { ...n.data, label, markdown } } : n))
     );
   }, []);
 
-  // Handle Node Spotlight from RAG Search
+  // Hook: Node Spotlight from RAG Search
   const handleSelectSearchNode = useCallback((targetNode: { id: string; label: string; positionX: number; positionY: number }) => {
     setNodes((prev) =>
       prev.map((n) => ({
@@ -217,6 +171,59 @@ export default function Home() {
     );
   }, []);
 
+  // Hook: Reminder Modal Trigger
+  const handleOpenReminderModal = useCallback((nodeId: string, label: string) => {
+    setReminderTarget({ id: nodeId, label });
+  }, []);
+
+  // Hook: Redirect to login if unauthenticated after loading finishes
+  useEffect(() => {
+    if (!isLoading && !user) {
+      router.push('/login');
+    }
+  }, [user, isLoading, router]);
+
+  // --- EARLY RETURNS ---
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[#0A0A0A] text-[#FAFAFA] flex items-center justify-center font-mono text-xs uppercase tracking-widest">
+        Loading Session...
+      </div>
+    );
+  }
+
+  if (!user) return null;
+
+  // --- REGULAR HANDLERS ---
+  // Handle AI Prompt Graph Generation
+  const handleGenerateGraph = async (promptText: string) => {
+    setIsGenerating(true);
+    try {
+      const res = await fetch('/api/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          prompt: promptText,
+          canvasId,
+          userId: user.id,
+        }),
+      });
+
+      if (!res.ok) throw new Error('Failed to generate graph');
+
+      const data = await res.json();
+      if (data.canvasId) setCanvasId(data.canvasId);
+      if (data.title) setTitle(data.title);
+      if (data.nodes) setNodes(data.nodes);
+      if (data.edges) setEdges(data.edges);
+    } catch (err) {
+      console.error('Error generating graph:', err);
+      alert('Failed to generate mind map graph.');
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   // Handle Document Upload Graph Generation
   const handleDocumentSuccess = (data: { canvasId: string; title: string; nodes: any[]; edges: any[] }) => {
     if (data.canvasId) setCanvasId(data.canvasId);
@@ -225,10 +232,7 @@ export default function Home() {
     if (data.edges) setEdges(data.edges);
   };
 
-  // Handle Reminder Setting
-  const handleOpenReminderModal = useCallback((nodeId: string, label: string) => {
-    setReminderTarget({ id: nodeId, label });
-  }, []);
+
 
   const handleConfirmReminder = async (nodeId: string, reminderAt: string) => {
     try {

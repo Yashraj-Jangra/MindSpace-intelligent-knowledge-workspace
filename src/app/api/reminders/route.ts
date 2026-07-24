@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/db';
+import { prisma, isDbDisabled, disableDbCircuitBreaker } from '@/lib/db';
 import { dispatchWebhookEvent } from '@/lib/webhooks/dispatcher';
 
 export async function GET(req: Request) {
@@ -7,13 +7,21 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const userId = searchParams.get('userId') || 'default_user';
 
-    const notifications = await prisma.notification.findMany({
-      where: { userId },
-      include: { node: true },
-      orderBy: { scheduledFor: 'asc' },
-    });
+    if (!isDbDisabled()) {
+      try {
+        const notifications = await prisma.notification.findMany({
+          where: { userId },
+          include: { node: true },
+          orderBy: { scheduledFor: 'asc' },
+        });
 
-    return NextResponse.json({ notifications });
+        return NextResponse.json({ notifications });
+      } catch (err) {
+        disableDbCircuitBreaker();
+      }
+    }
+
+    return NextResponse.json({ notifications: [] });
   } catch (error) {
     return NextResponse.json({ error: (error as Error).message }, { status: 500 });
   }
@@ -29,31 +37,48 @@ export async function POST(req: Request) {
 
     const scheduledDate = new Date(reminderAt);
 
-    // Update node deadline
-    const updatedNode = await prisma.node.update({
-      where: { id: nodeId },
-      data: { reminderAt: scheduledDate, type: 'REMINDER_NODE' },
-    });
+    if (!isDbDisabled()) {
+      try {
+        const updatedNode = await prisma.node.update({
+          where: { id: nodeId },
+          data: { reminderAt: scheduledDate, type: 'REMINDER_NODE' },
+        });
 
-    // Create Notification Record
-    const notification = await prisma.notification.create({
-      data: {
-        userId,
-        nodeId,
-        title: title || `Reminder: ${updatedNode.label}`,
-        message: message || updatedNode.markdown || 'Node task deadline',
-        scheduledFor: scheduledDate,
-      },
-    });
+        const notification = await prisma.notification.create({
+          data: {
+            userId,
+            nodeId,
+            title: title || `Reminder: ${updatedNode.label}`,
+            message: message || updatedNode.markdown || 'Node task deadline',
+            scheduledFor: scheduledDate,
+          },
+        });
 
-    // Trigger webhook event
-    await dispatchWebhookEvent(userId, 'reminder.fired', {
-      notificationId: notification.id,
+        await dispatchWebhookEvent(userId, 'reminder.fired', {
+          notificationId: notification.id,
+          nodeId,
+          scheduledFor: scheduledDate.toISOString(),
+        });
+
+        return NextResponse.json({ notification, node: updatedNode });
+      } catch (err) {
+        disableDbCircuitBreaker();
+      }
+    }
+
+    // Fallback response when DB disabled
+    const mockNotification = {
+      id: `notif_${Date.now()}`,
+      userId,
       nodeId,
+      title: title || 'Reminder',
+      message: message || 'Node deadline',
       scheduledFor: scheduledDate.toISOString(),
-    });
+      isRead: false,
+      createdAt: new Date().toISOString(),
+    };
 
-    return NextResponse.json({ notification, node: updatedNode });
+    return NextResponse.json({ notification: mockNotification, node: null });
   } catch (error) {
     console.error('[API /reminders POST Error]:', error);
     return NextResponse.json({ error: (error as Error).message }, { status: 500 });

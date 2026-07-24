@@ -1,11 +1,11 @@
 # MindSpace - AI-Powered Visual Note-Taking & Mind-Mapping Platform
 
 ## Work Completed
-- [x] **Reactive Toolbar Active State Tracking** (Session 2026-07-24 v3):
+- [x] **Reactive Toolbar Active State Tracking & Action Button Fix** (Session 2026-07-24 v3):
+  - **Root Cause Fix (MutationObserver):** Discovered that `reactjs-tiptap-editor`'s `useToggleActive(undefined)` hook defaults to a toggle switch behavior on click when `isActive` is undefined, causing buttons like Horizontal Rule (`RichTextHorizontalRule`) to toggle `data-state="on"` when clicked. Attached a `MutationObserver` on the toolbar container that catches attribute changes and synchronously neutralizes `data-state="on"` on all action buttons (Horizontal Rule, Alignment, Clear, Undo, Redo, Search, Table Insert), keeping them permanently in normal non-active state (`data-state="off"`).
   - **Dynamic Active State Synchronization:** Subscribed `AdvancedNoteEditor` directly to TipTap editor events (`selectionUpdate`, `transaction`, `update`, `focus`, `blur`).
   - **Real-Time Tool Highlight Fix:** Every tool button (Checklist/TaskList, Bullet List, Ordered List, Bold, Italic, Underline, Strikethrough, Highlight, Blockquote, Code Block, Heading, Link, Table) now updates its `data-state` (`"on"` / `"off"`) in real time based on `editor.isActive(...)` under the cursor.
   - **Mutually Exclusive List Types:** Enforced strict single-active priority between `taskList`, `bulletList`, and `orderedList` (only 1 list type can be active at a time).
-  - **Category A One-Shot Actions:** Horizontal Rule (`HorizontalRule`), Text Alignment (`RichTextAlign`), Clear Formatting (`RichTextClear`), Undo, Redo, and Search buttons are strictly maintained in standard non-active state color (`data-state="off"`).
   - **List & Tool Switching Cases Covered:** Turning off a checklist (e.g. by pressing Enter or Backspace or clicking Checklist again) immediately turns off the red highlight; switching from checklist to bullet list turns off checklist and highlights bullet list; moving cursor across text with mixed formatting accurately highlights all active tools simultaneously.
   - **Build:** `npx tsc --noEmit` verified with 0 compilation errors.
 

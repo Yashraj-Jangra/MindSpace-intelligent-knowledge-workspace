@@ -319,15 +319,62 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
   useEffect(() => {
     if (!editor || editor.isDestroyed) return;
 
-    const updateToolbarActiveStates = () => {
-      const row2 = document.querySelector('.note-editor-toolbar-row2');
-      if (!row2) return;
+    const row2 = document.querySelector('.note-editor-toolbar-row2');
+    if (!row2) return;
 
+    const isActionContainerOrButton = (btn: HTMLElement): boolean => {
+      const svg = btn.querySelector('svg');
+      const svgHTML = svg ? svg.outerHTML : btn.innerHTML;
+      const ariaLabel = (btn.getAttribute('aria-label') || btn.getAttribute('title') || btn.textContent || '').toLowerCase();
+      const btnId = btn.id;
+
+      return (
+        btnId === 'insert-canvas-table-btn' ||
+        svgHTML.includes('lucide-minus') ||
+        svgHTML.includes('lucide-align') ||
+        svgHTML.includes('lucide-eraser') ||
+        svgHTML.includes('lucide-undo') ||
+        svgHTML.includes('lucide-redo') ||
+        svgHTML.includes('lucide-replace') ||
+        ariaLabel.includes('align') ||
+        ariaLabel.includes('horizontal') ||
+        ariaLabel.includes('divider') ||
+        ariaLabel.includes('rule') ||
+        ariaLabel.includes('clear') ||
+        ariaLabel.includes('undo') ||
+        ariaLabel.includes('redo') ||
+        ariaLabel.includes('search') ||
+        ariaLabel.includes('replace')
+      );
+    };
+
+    // MutationObserver to immediately neutralize useToggleActive's internal toggle state on Action buttons
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.type === 'attributes' && mutation.attributeName === 'data-state') {
+          const target = mutation.target as HTMLElement;
+          if (target && target.getAttribute('data-state') === 'on') {
+            const btn = target.tagName === 'BUTTON' ? target : target.closest('button');
+            if (btn && isActionContainerOrButton(btn)) {
+              target.setAttribute('data-state', 'off');
+            }
+          }
+        }
+      });
+    });
+
+    observer.observe(row2, {
+      attributes: true,
+      attributeFilter: ['data-state'],
+      subtree: true,
+    });
+
+    const updateToolbarActiveStates = () => {
       const rawTaskList = editor.isActive('taskList');
       const rawBulletList = editor.isActive('bulletList');
       const rawOrderedList = editor.isActive('orderedList');
 
-      // Enforce strict single-active priority: only ONE list type can be active at any given moment
+      // Enforce strict single-active priority: ONLY ONE list type can be active at any given moment
       let taskListActive = false;
       let bulletListActive = false;
       let orderedListActive = false;
@@ -361,26 +408,9 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
         const svg = btn.querySelector('svg');
         const svgHTML = svg ? svg.outerHTML : btn.innerHTML;
         const ariaLabel = (btn.getAttribute('aria-label') || btn.getAttribute('title') || btn.textContent || '').toLowerCase();
-        const btnId = btn.id;
 
         // Category A One-Shot Actions (Horizontal Rule, Alignment, Clear, Undo, Redo, Search) MUST NEVER maintain an active red state color
-        if (
-          svgHTML.includes('lucide-minus') ||
-          svgHTML.includes('lucide-align') ||
-          svgHTML.includes('lucide-eraser') ||
-          svgHTML.includes('lucide-undo') ||
-          svgHTML.includes('lucide-redo') ||
-          svgHTML.includes('lucide-replace') ||
-          ariaLabel.includes('align') ||
-          ariaLabel.includes('horizontal') ||
-          ariaLabel.includes('divider') ||
-          ariaLabel.includes('rule') ||
-          ariaLabel.includes('clear') ||
-          ariaLabel.includes('undo') ||
-          ariaLabel.includes('redo') ||
-          ariaLabel.includes('search') ||
-          ariaLabel.includes('replace')
-        ) {
+        if (isActionContainerOrButton(btn)) {
           if (btn.getAttribute('data-state') !== 'off') {
             btn.setAttribute('data-state', 'off');
           }
@@ -390,7 +420,7 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
         let isActive = false;
         let matched = false;
 
-        if (btnId === 'insert-canvas-table-btn' || svgHTML.includes('lucide-table') || ariaLabel.includes('table')) {
+        if (btn.id === 'insert-canvas-table-btn' || svgHTML.includes('lucide-table') || ariaLabel.includes('table')) {
           isActive = activeStates.table;
           matched = true;
         } else if (svgHTML.includes('lucide-list-todo') || ariaLabel.includes('task') || ariaLabel.includes('todo') || ariaLabel.includes('checklist')) {
@@ -451,6 +481,7 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
     editor.on('blur', updateToolbarActiveStates);
 
     return () => {
+      observer.disconnect();
       editor.off('selectionUpdate', updateToolbarActiveStates);
       editor.off('transaction', updateToolbarActiveStates);
       editor.off('update', updateToolbarActiveStates);

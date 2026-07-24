@@ -5,7 +5,7 @@
   - **Dynamic Active State Synchronization:** Subscribed `AdvancedNoteEditor` directly to TipTap editor events (`selectionUpdate`, `transaction`, `update`, `focus`, `blur`).
   - **Real-Time Tool Highlight Fix:** Every tool button (Checklist/TaskList, Bullet List, Ordered List, Bold, Italic, Underline, Strikethrough, Highlight, Blockquote, Code Block, Heading, Link, Table) now updates its `data-state` (`"on"` / `"off"`) in real time based on `editor.isActive(...)` under the cursor.
   - **Mutually Exclusive List Types:** Enforced strict single-active priority between `taskList`, `bulletList`, and `orderedList` (only 1 list type can be active at a time).
-  - **One-Shot & Inactive Buttons:** Horizontal Rule (`HorizontalRule`) and Text Alignment (`RichTextAlign`) buttons are maintained in standard non-active state color without maintaining an active red highlight.
+  - **Category A One-Shot Actions:** Horizontal Rule (`HorizontalRule`), Text Alignment (`RichTextAlign`), Clear Formatting (`RichTextClear`), Undo, Redo, and Search buttons are strictly maintained in standard non-active state color (`data-state="off"`).
   - **List & Tool Switching Cases Covered:** Turning off a checklist (e.g. by pressing Enter or Backspace or clicking Checklist again) immediately turns off the red highlight; switching from checklist to bullet list turns off checklist and highlights bullet list; moving cursor across text with mixed formatting accurately highlights all active tools simultaneously.
   - **Build:** `npx tsc --noEmit` verified with 0 compilation errors.
 

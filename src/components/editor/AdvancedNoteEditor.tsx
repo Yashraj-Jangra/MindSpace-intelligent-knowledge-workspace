@@ -363,14 +363,23 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
         const ariaLabel = (btn.getAttribute('aria-label') || btn.getAttribute('title') || btn.textContent || '').toLowerCase();
         const btnId = btn.id;
 
-        // Horizontal Rule and Text Alignment buttons must NEVER maintain an active red state color
+        // Category A One-Shot Actions (Horizontal Rule, Alignment, Clear, Undo, Redo, Search) MUST NEVER maintain an active red state color
         if (
           svgHTML.includes('lucide-minus') ||
           svgHTML.includes('lucide-align') ||
+          svgHTML.includes('lucide-eraser') ||
+          svgHTML.includes('lucide-undo') ||
+          svgHTML.includes('lucide-redo') ||
+          svgHTML.includes('lucide-replace') ||
           ariaLabel.includes('align') ||
           ariaLabel.includes('horizontal') ||
           ariaLabel.includes('divider') ||
-          ariaLabel.includes('rule')
+          ariaLabel.includes('rule') ||
+          ariaLabel.includes('clear') ||
+          ariaLabel.includes('undo') ||
+          ariaLabel.includes('redo') ||
+          ariaLabel.includes('search') ||
+          ariaLabel.includes('replace')
         ) {
           if (btn.getAttribute('data-state') !== 'off') {
             btn.setAttribute('data-state', 'off');

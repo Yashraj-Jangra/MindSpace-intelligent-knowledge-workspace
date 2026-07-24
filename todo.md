@@ -1,6 +1,11 @@
 # MindSpace - AI-Powered Visual Note-Taking & Mind-Mapping Platform
 
 ## Work Completed
+- [x] **Toolbar Active States, Table Button & Sidebar Alignment Fixes** (Session 2026-07-24 v4):
+  - **Root Cause Fix for Uncontrolled Radix Toggles:** Handled uncontrolled Radix `Toggle` behavior in `reactjs-tiptap-editor` by adding a capturing click handler on the formatting toolbar container that intercepts action-only buttons (Horizontal Rule, Eraser, Align, Undo, Redo) and forces their DOM attribute `data-state` to `"off"`.
+  - **Exclusivity Enforcement:** Implemented a reactive `useEffect` that listens to TipTap transactions and selection updates to sync list exclusivity (`taskList`, `bulletList`, `orderedList`) so that they are strictly mutually exclusive and can never visually stay active concurrently.
+  - **Visual Alignment Corrections:** Aligned the left border of the workspace main editor area exactly with the Left Sidebar and header back button container by updating padding from `pl-14` to `pl-12` (`w-12` or 48px).
+  - **Table Button Styling Integration:** Updated the custom Table button classes and CSS properties in both light and dark modes to fully match the standard formatting toolbar buttons (such as the Code Block button) on hover, active states, and stylus disabled states.
 - [x] **Toolbar Active State Architecture & Root Cause Fix** (Session 2026-07-24 v3):
   - **Root Cause Discovered & Fixed:** Analyzed `reactjs-tiptap-editor` library internals and identified the exact root cause:
     1. `HorizontalRule` extension omitted `isActive` in its `button` options, causing `useToggleActive(undefined)` to default to a toggle switch behavior that flipped `dataState` to `'on'` on every click and transaction.

@@ -1755,6 +1755,120 @@ html.light button[class*="richtext-"].is-active svg {
   stroke: #FF3D00 !important;
 }
 
+/* Non-switch buttons in the editor toolbar should never show active (red/grey highlighted) styles */
+body:not(.light) .reactjs-tiptap-editor button[data-state="on"]:has(svg.lucide-minus),
+body:not(.light) .reactjs-tiptap-editor button[data-state="on"]:has(svg.lucide-eraser),
+body:not(.light) .reactjs-tiptap-editor button[data-state="on"]:has(svg.lucide-undo2),
+body:not(.light) .reactjs-tiptap-editor button[data-state="on"]:has(svg.lucide-redo2),
+body:not(.light) .reactjs-tiptap-editor button[data-state="on"]:has(svg[class*="TextAlign"]),
+body:not(.light) .reactjs-tiptap-editor button[data-state="on"]:has(svg.lucide-align-left),
+body:not(.light) .reactjs-tiptap-editor button[data-state="on"]:has(svg.lucide-align-center),
+body:not(.light) .reactjs-tiptap-editor button[data-state="on"]:has(svg.lucide-align-right),
+body:not(.light) .reactjs-tiptap-editor button[data-state="on"]:has(svg.lucide-align-justify) {
+  background-color: transparent !important;
+  color: #737373 !important;
+  border-bottom: none !important;
+}
+
+body:not(.light) .reactjs-tiptap-editor button[data-state="on"]:has(svg.lucide-minus) svg,
+body:not(.light) .reactjs-tiptap-editor button[data-state="on"]:has(svg.lucide-eraser) svg,
+body:not(.light) .reactjs-tiptap-editor button[data-state="on"]:has(svg.lucide-undo2) svg,
+body:not(.light) .reactjs-tiptap-editor button[data-state="on"]:has(svg.lucide-redo2) svg,
+body:not(.light) .reactjs-tiptap-editor button[data-state="on"]:has(svg[class*="TextAlign"]) svg,
+body:not(.light) .reactjs-tiptap-editor button[data-state="on"]:has(svg.lucide-align-left) svg,
+body:not(.light) .reactjs-tiptap-editor button[data-state="on"]:has(svg.lucide-align-center) svg,
+body:not(.light) .reactjs-tiptap-editor button[data-state="on"]:has(svg.lucide-align-right) svg,
+body:not(.light) .reactjs-tiptap-editor button[data-state="on"]:has(svg.lucide-align-justify) svg {
+  color: #737373 !important;
+  stroke: #737373 !important;
+}
+
+html.light .reactjs-tiptap-editor button[data-state="on"]:has(svg.lucide-minus),
+html.light .reactjs-tiptap-editor button[data-state="on"]:has(svg.lucide-eraser),
+html.light .reactjs-tiptap-editor button[data-state="on"]:has(svg.lucide-undo2),
+html.light .reactjs-tiptap-editor button[data-state="on"]:has(svg.lucide-redo2),
+html.light .reactjs-tiptap-editor button[data-state="on"]:has(svg[class*="TextAlign"]),
+html.light .reactjs-tiptap-editor button[data-state="on"]:has(svg.lucide-align-left),
+html.light .reactjs-tiptap-editor button[data-state="on"]:has(svg.lucide-align-center),
+html.light .reactjs-tiptap-editor button[data-state="on"]:has(svg.lucide-align-right),
+html.light .reactjs-tiptap-editor button[data-state="on"]:has(svg.lucide-align-justify) {
+  background-color: transparent !important;
+  color: #475569 !important;
+  border-bottom: none !important;
+}
+
+html.light .reactjs-tiptap-editor button[data-state="on"]:has(svg.lucide-minus) svg,
+html.light .reactjs-tiptap-editor button[data-state="on"]:has(svg.lucide-eraser) svg,
+html.light .reactjs-tiptap-editor button[data-state="on"]:has(svg.lucide-undo2) svg,
+html.light .reactjs-tiptap-editor button[data-state="on"]:has(svg.lucide-redo2) svg,
+html.light .reactjs-tiptap-editor button[data-state="on"]:has(svg[class*="TextAlign"]) svg,
+html.light .reactjs-tiptap-editor button[data-state="on"]:has(svg.lucide-align-left) svg,
+html.light .reactjs-tiptap-editor button[data-state="on"]:has(svg.lucide-align-center) svg,
+html.light .reactjs-tiptap-editor button[data-state="on"]:has(svg.lucide-align-right) svg,
+html.light .reactjs-tiptap-editor button[data-state="on"]:has(svg.lucide-align-justify) svg {
+  color: #475569 !important;
+  stroke: #475569 !important;
+}
+
+/* Custom Table Button alignment and formatting */
+body:not(.light) #insert-canvas-table-btn {
+  color: #737373 !important;
+  background: transparent !important;
+  border-radius: 0px !important;
+  transition: color 150ms, background 150ms !important;
+}
+body:not(.light) #insert-canvas-table-btn svg {
+  color: #737373 !important;
+  stroke: #737373 !important;
+}
+body:not(.light) #insert-canvas-table-btn:hover {
+  color: #FAFAFA !important;
+  background: #1A1A1A !important;
+}
+body:not(.light) #insert-canvas-table-btn:hover svg {
+  color: #FAFAFA !important;
+  stroke: #FAFAFA !important;
+}
+body:not(.light) #insert-canvas-table-btn:disabled,
+body:not(.light) #insert-canvas-table-btn:disabled svg {
+  opacity: 0.3 !important;
+  pointer-events: none !important;
+  color: #737373 !important;
+  stroke: #737373 !important;
+}
+
+html.light #insert-canvas-table-btn,
+.light #insert-canvas-table-btn {
+  color: #475569 !important;
+  background: transparent !important;
+  border-radius: 0px !important;
+}
+html.light #insert-canvas-table-btn svg,
+.light #insert-canvas-table-btn svg {
+  color: #475569 !important;
+  stroke: #475569 !important;
+}
+html.light #insert-canvas-table-btn:hover,
+.light #insert-canvas-table-btn:hover {
+  color: #0F172A !important;
+  background-color: #E2E8F0 !important;
+}
+html.light #insert-canvas-table-btn:hover svg,
+.light #insert-canvas-table-btn:hover svg {
+  color: #0F172A !important;
+  stroke: #0F172A !important;
+}
+html.light #insert-canvas-table-btn:disabled,
+html.light #insert-canvas-table-btn:disabled svg,
+.light #insert-canvas-table-btn:disabled,
+.light #insert-canvas-table-btn:disabled svg {
+  opacity: 0.3 !important;
+  pointer-events: none !important;
+  color: #475569 !important;
+  stroke: #475569 !important;
+}
+
+
 /* Toolbar container backgrounds — dark */
 .richtext-toolbar-wrapper,
 [class*="richtext-toolbar"],

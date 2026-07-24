@@ -637,6 +637,204 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
     return () => clearTimeout(timer);
   }, [editor, saveStatus, saveNote]);
 
+  // Synchronize Text Formatting Toolbar buttons' active states reactively and handle uncontrolled Radix toggles
+  useEffect(() => {
+    if (!editor || editor.isDestroyed) return;
+
+    const updateToolbarActiveStates = () => {
+      const row2 = document.querySelector('.note-editor-toolbar-row2');
+      if (!row2) return;
+
+      const rawTaskList = editor.isActive('taskList');
+      const rawBulletList = editor.isActive('bulletList');
+      const rawOrderedList = editor.isActive('orderedList');
+
+      // Enforce strict single-active priority: ONLY ONE list type can be active at any given moment
+      let taskListActive = false;
+      let bulletListActive = false;
+      let orderedListActive = false;
+
+      if (rawTaskList) {
+        taskListActive = true;
+      } else if (rawBulletList) {
+        bulletListActive = true;
+      } else if (rawOrderedList) {
+        orderedListActive = true;
+      }
+
+      const activeStates: Record<string, boolean> = {
+        taskList: taskListActive,
+        bulletList: bulletListActive,
+        orderedList: orderedListActive,
+        blockquote: editor.isActive('blockquote'),
+        codeBlock: editor.isActive('codeBlock'),
+        bold: editor.isActive('bold'),
+        italic: editor.isActive('italic'),
+        underline: editor.isActive('underline'),
+        strike: editor.isActive('strike'),
+        highlight: editor.isActive('highlight'),
+        heading: editor.isActive('heading'),
+        link: editor.isActive('link'),
+        table: editor.isActive('canvasTable') || editor.isActive('table'),
+      };
+
+      const buttons = row2.querySelectorAll('button');
+      buttons.forEach((btn) => {
+        const svg = btn.querySelector('svg');
+        const svgHTML = svg ? svg.outerHTML : btn.innerHTML;
+        const ariaLabel = (btn.getAttribute('aria-label') || btn.getAttribute('title') || btn.textContent || '').toLowerCase();
+        const btnId = btn.id;
+
+        // Rule 1: One-shot actions (Horizontal Rule, Clear Formatting, Undo, Redo, Align) MUST NEVER maintain active state
+        const isActionOnly = 
+          btnId === 'insert-canvas-table-btn' ||
+          svgHTML.includes('lucide-minus') ||
+          svgHTML.includes('lucide-eraser') ||
+          svgHTML.includes('lucide-undo2') ||
+          svgHTML.includes('lucide-redo2') ||
+          svgHTML.includes('lucide-align') ||
+          ariaLabel.includes('align') ||
+          ariaLabel.includes('horizontal') ||
+          ariaLabel.includes('divider') ||
+          ariaLabel.includes('rule') ||
+          ariaLabel.includes('clear') ||
+          ariaLabel.includes('eraser') ||
+          ariaLabel.includes('undo') ||
+          ariaLabel.includes('redo');
+
+        if (isActionOnly) {
+          if (btn.getAttribute('data-state') !== 'off') {
+            btn.setAttribute('data-state', 'off');
+          }
+          btn.removeAttribute('aria-pressed');
+          return;
+        }
+
+        let isActive = false;
+        let matched = false;
+
+        if (svgHTML.includes('lucide-list-todo') || ariaLabel.includes('task') || ariaLabel.includes('todo') || ariaLabel.includes('checklist')) {
+          isActive = activeStates.taskList;
+          matched = true;
+        } else if (svgHTML.includes('lucide-list-ordered') || ariaLabel.includes('ordered') || ariaLabel.includes('numbered')) {
+          isActive = activeStates.orderedList;
+          matched = true;
+        } else if ((svgHTML.includes('lucide-list') && !svgHTML.includes('lucide-list-todo') && !svgHTML.includes('lucide-list-ordered')) || ariaLabel.includes('bullet')) {
+          isActive = activeStates.bulletList;
+          matched = true;
+        } else if (svgHTML.includes('lucide-quote') || ariaLabel.includes('quote') || ariaLabel.includes('blockquote')) {
+          isActive = activeStates.blockquote;
+          matched = true;
+        } else if (svgHTML.includes('lucide-code-xml') || svgHTML.includes('lucide-code') || ariaLabel.includes('code block') || ariaLabel.includes('codeblock')) {
+          isActive = activeStates.codeBlock;
+          matched = true;
+        } else if (svgHTML.includes('lucide-bold') || ariaLabel.includes('bold')) {
+          isActive = activeStates.bold;
+          matched = true;
+        } else if (svgHTML.includes('lucide-italic') || ariaLabel.includes('italic')) {
+          isActive = activeStates.italic;
+          matched = true;
+        } else if (svgHTML.includes('lucide-underline') || ariaLabel.includes('underline')) {
+          isActive = activeStates.underline;
+          matched = true;
+        } else if (svgHTML.includes('lucide-strikethrough') || ariaLabel.includes('strike')) {
+          isActive = activeStates.strike;
+          matched = true;
+        } else if (svgHTML.includes('lucide-highlighter') || ariaLabel.includes('highlight')) {
+          isActive = activeStates.highlight;
+          matched = true;
+        } else if (svgHTML.includes('lucide-heading') || ariaLabel.includes('heading')) {
+          isActive = activeStates.heading;
+          matched = true;
+        } else if (svgHTML.includes('lucide-link') || ariaLabel.includes('link')) {
+          isActive = activeStates.link;
+          matched = true;
+        }
+
+        if (matched) {
+          const nextState = isActive ? 'on' : 'off';
+          if (btn.getAttribute('data-state') !== nextState) {
+            btn.setAttribute('data-state', nextState);
+          }
+          if (isActive) {
+            btn.setAttribute('aria-pressed', 'true');
+          } else {
+            btn.removeAttribute('aria-pressed');
+          }
+        }
+      });
+    };
+
+    // Toolbar click listener to reset action-only buttons immediately (overrides Radix toggle internal state)
+    const handleToolbarClick = (e: MouseEvent) => {
+      const button = (e.target as HTMLElement).closest('button');
+      if (!button) return;
+
+      const svg = button.querySelector('svg');
+      const svgHTML = svg ? svg.outerHTML : button.innerHTML;
+      const ariaLabel = (button.getAttribute('aria-label') || button.getAttribute('title') || button.textContent || '').toLowerCase();
+      const btnId = button.id;
+
+      const isActionOnly = 
+        btnId === 'insert-canvas-table-btn' ||
+        svgHTML.includes('lucide-minus') ||
+        svgHTML.includes('lucide-eraser') ||
+        svgHTML.includes('lucide-undo2') ||
+        svgHTML.includes('lucide-redo2') ||
+        svgHTML.includes('lucide-align') ||
+        ariaLabel.includes('align') ||
+        ariaLabel.includes('horizontal') ||
+        ariaLabel.includes('divider') ||
+        ariaLabel.includes('rule') ||
+        ariaLabel.includes('clear') ||
+        ariaLabel.includes('eraser') ||
+        ariaLabel.includes('undo') ||
+        ariaLabel.includes('redo');
+
+      if (isActionOnly) {
+        setTimeout(() => {
+          button.setAttribute('data-state', 'off');
+          button.removeAttribute('aria-pressed');
+        }, 0);
+        setTimeout(() => {
+          button.setAttribute('data-state', 'off');
+          button.removeAttribute('aria-pressed');
+        }, 50);
+      } else {
+        // For other buttons, trigger active state sync after click
+        setTimeout(updateToolbarActiveStates, 0);
+        setTimeout(updateToolbarActiveStates, 50);
+      }
+    };
+
+    const row2 = document.querySelector('.note-editor-toolbar-row2');
+    if (row2) {
+      row2.addEventListener('click', handleToolbarClick as any, true);
+    }
+
+    // Run initial sync
+    updateToolbarActiveStates();
+
+    // Subscribe to TipTap events for real-time reactive sync
+    editor.on('selectionUpdate', updateToolbarActiveStates);
+    editor.on('transaction', updateToolbarActiveStates);
+    editor.on('update', updateToolbarActiveStates);
+    editor.on('focus', updateToolbarActiveStates);
+    editor.on('blur', updateToolbarActiveStates);
+
+    return () => {
+      if (row2) {
+        row2.removeEventListener('click', handleToolbarClick as any, true);
+      }
+      editor.off('selectionUpdate', updateToolbarActiveStates);
+      editor.off('transaction', updateToolbarActiveStates);
+      editor.off('update', updateToolbarActiveStates);
+      editor.off('focus', updateToolbarActiveStates);
+      editor.off('blur', updateToolbarActiveStates);
+    };
+  }, [editor]);
+
+
   // Telemetry Calculations
   const plainText = useMemo(() => {
     if (!editor) return content;
@@ -1003,7 +1201,7 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
 
       {/* Main Workspace */}
       <main
-        className={`note-editor-main flex-1 w-full flex flex-col transition-all duration-200 ${isSidebarVisible ? 'pl-14' : 'pl-0'
+        className={`note-editor-main flex-1 w-full flex flex-col transition-all duration-200 ${isSidebarVisible ? 'pl-12' : 'pl-0'
           }`}
       >
         {/* Tag Manager Bar */}
@@ -1110,7 +1308,7 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
                       if (!editor?.isEditable || stylusSettings.isStylusModeActive) return;
                       setIsInsertTableOpen(true);
                     }}
-                    className="richtext-inline-flex richtext-items-center richtext-justify-center richtext-rounded-md richtext-text-sm richtext-font-medium richtext-ring-offset-background richtext-transition-colors hover:richtext-bg-accent hover:richtext-text-accent-foreground focus-visible:richtext-outline-none disabled:richtext-pointer-events-none disabled:richtext-opacity-50 richtext-h-[32px] richtext-w-[32px] richtext-p-0"
+                    className="richtext-inline-flex richtext-items-center richtext-justify-center richtext-rounded-md richtext-text-sm richtext-font-medium richtext-ring-offset-background richtext-transition-colors hover:richtext-bg-muted hover:richtext-text-muted-foreground focus-visible:richtext-outline-none disabled:richtext-pointer-events-none disabled:richtext-opacity-50 richtext-h-[32px] richtext-w-[32px] richtext-p-0"
                     type="button"
                   >
                     <Table className="richtext-size-4" />

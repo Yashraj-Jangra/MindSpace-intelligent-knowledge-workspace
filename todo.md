@@ -1,6 +1,13 @@
 # MindSpace - AI-Powered Visual Note-Taking & Mind-Mapping Platform
 
 ## Work Completed
+- [x] **Secure Account & Session Management Restoration** (Session 2026-07-25 v7):
+  - **AuthContext & API Session Strictness**: Removed all `DEFAULT_DEV_USER` and `default_user` mock fallbacks. Setting/validating cookie sessions now yields authentic results, properly falling back to `null` and locking unauthenticated states.
+  - **Server-Side Page Protection**: Added `getSessionFromCookie()` checks and redirects to `/login` for private pages: `/dashboard`, `/reminders`, and `/notes/[id]`.
+  - **Client-Side Page Protection**: Wrapped the Home/Canvas page `/` in `useAuth()` state listener. If a user is not authenticated after loading completes, they are automatically routed via `useRouter` to `/login`.
+  - **Private API Verification**: Added strict `401 Unauthorized` checks to all backend APIs (`/api/notes`, `/api/notes/[id]`, `/api/generate`, `/api/nodes/expand`, `/api/nodes/copilot`, `/api/parse-document`, `/api/reminders`, `/api/webhooks`, `/api/discord/pair`).
+  - **Note & Canvas Authorization**: Enforced authorization check for `/api/notes/[id]` (GET/PATCH/DELETE) and `/api/v1/nodes` (GET/POST) ensuring users cannot read, write, or delete items they do not own.
+  - **Production-Ready Login**: Replaced the automatic registration on login in `/api/auth/login` to prevent user accounts from being created dynamically. Rejected login attempts for unregistered emails with standard errors, and blocked blank-password logins for Google OAuth profiles. Removed the `'password123'` development test bypass.
 - [x] **Stylus Round 2 — Scroll, Eraser, Touch & Mode Control Fixes** (Session 2026-07-25 v6):
   - **Stylus scroll bug (real root cause)**: `touchAction: 'pan-y'` applies to the browser BEFORE JS fires — meaning pen strokes in the downward direction triggered browser scroll regardless of `e.preventDefault()`. Fixed to `touchAction: 'none'` (browser hands full pointer control to JS). Manual touch scroll now implemented in JS for `stylusOnlyMode` finger swipes.
   - **Stylus Eraser and Pressing Sensitivity**: Removed `pressure >= settings.eraserPressureThreshold` logic completely from eraser events. Erasing now triggers on contact (pressure > 0). Relaxed buttons mask checks from strict `e.buttons === 1` to `e.buttons > 0` to enable physical stylus tail caps and barrel buttons.

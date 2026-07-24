@@ -4,6 +4,7 @@ import { getUserNotes } from '@/lib/notes-storage';
 import { getSessionFromCookie } from '@/lib/session';
 import { Plus, Pin, Bell, Tag, FileText, Search, Network, Clock, Shield } from 'lucide-react';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
+import { redirect } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,7 +14,10 @@ export default async function NotesDashboard({
   searchParams: Promise<{ search?: string; tag?: string }>;
 }) {
   const session = await getSessionFromCookie();
-  const userId = session?.id || 'default_user';
+  if (!session) {
+    redirect('/login');
+  }
+  const userId = session.id;
 
   const resolvedSearchParams = await searchParams;
   const search = resolvedSearchParams?.search || '';

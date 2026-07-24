@@ -3,12 +3,16 @@ import Link from 'next/link';
 import { getUserNotes } from '@/lib/notes-storage';
 import { getSessionFromCookie } from '@/lib/session';
 import { Bell, ArrowLeft, Clock, FileText, CheckCircle2, AlertTriangle, Shield } from 'lucide-react';
+import { redirect } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
 
 export default async function RemindersDashboard() {
   const session = await getSessionFromCookie();
-  const userId = session?.id || 'default_user';
+  if (!session) {
+    redirect('/login');
+  }
+  const userId = session.id;
 
   const notes = await getUserNotes(userId);
   const reminderNotes = notes.filter((n) => n.reminderAt);

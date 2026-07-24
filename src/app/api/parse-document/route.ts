@@ -7,14 +7,20 @@ import { calculateElkLayout } from '@/lib/graph/layout';
 import { prisma } from '@/lib/db';
 import { dispatchWebhookEvent } from '@/lib/webhooks/dispatcher';
 import { NodeType } from '@prisma/client';
+import { getSessionFromCookie } from '@/lib/session';
 
 export async function POST(req: Request) {
   try {
+    const session = await getSessionFromCookie();
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    const userId = session.id;
+
     const formData = await req.formData();
     const file = formData.get('file') as File | null;
     const rawText = formData.get('text') as string | null;
     const canvasId = formData.get('canvasId') as string | null;
-    const userId = (formData.get('userId') as string) || 'default_user';
 
     let documentContent = rawText || '';
 

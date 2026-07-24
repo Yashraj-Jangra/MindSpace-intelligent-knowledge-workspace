@@ -7,10 +7,16 @@ import { calculateElkLayout } from '@/lib/graph/layout';
 import { prisma } from '@/lib/db';
 import { dispatchWebhookEvent } from '@/lib/webhooks/dispatcher';
 import { NodeType } from '@prisma/client';
+import { getSessionFromCookie } from '@/lib/session';
 
 export async function POST(req: Request) {
   try {
-    const { prompt, canvasId, userId = 'default_user' } = await req.json();
+    const session = await getSessionFromCookie();
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    const userId = session.id;
+    const { prompt, canvasId } = await req.json();
 
     if (!prompt || typeof prompt !== 'string') {
       return NextResponse.json({ error: 'Prompt text is required' }, { status: 400 });

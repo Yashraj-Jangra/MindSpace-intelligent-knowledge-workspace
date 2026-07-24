@@ -1,10 +1,14 @@
 import { NextResponse } from 'next/server';
 import { prisma, isDbDisabled, disableDbCircuitBreaker } from '@/lib/db';
+import { getSessionFromCookie } from '@/lib/session';
 
 export async function GET(req: Request) {
   try {
-    const { searchParams } = new URL(req.url);
-    const userId = searchParams.get('userId') || 'default_user';
+    const session = await getSessionFromCookie();
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    const userId = session.id;
 
     if (!isDbDisabled()) {
       try {
@@ -27,7 +31,13 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
-    const { name, targetUrl, events, secret, userId = 'default_user' } = await req.json();
+    const session = await getSessionFromCookie();
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    const userId = session.id;
+
+    const { name, targetUrl, events, secret } = await req.json();
 
     if (!targetUrl) {
       return NextResponse.json({ error: 'targetUrl is required' }, { status: 400 });

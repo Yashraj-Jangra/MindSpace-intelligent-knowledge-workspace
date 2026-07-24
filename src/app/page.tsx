@@ -14,14 +14,33 @@ import { ExportMenu } from '@/components/ui/ExportMenu';
 import { Network, FileText, FileUp, LogIn, UserPlus, LogOut, Shield, User, LayoutDashboard, Bell } from 'lucide-react';
 import { MindSpaceNodeData } from '@/lib/graph/transformer';
 import { useAuth } from '@/contexts/AuthContext';
+import { useRouter } from 'next/navigation';
 
 export default function Home() {
-  const { user, logout } = useAuth();
+  const { user, isLoading, logout } = useAuth();
+  const router = useRouter();
   const [nodes, setNodes] = useState<ReactFlowNode<MindSpaceNodeData>[]>([]);
   const [edges, setEdges] = useState<ReactFlowEdge[]>([]);
   const [canvasId, setCanvasId] = useState<string | null>(null);
   const [title, setTitle] = useState('Untitled MindSpace Map');
   const [isGenerating, setIsGenerating] = useState(false);
+
+  // Redirect to login if unauthenticated after loading finishes
+  useEffect(() => {
+    if (!isLoading && !user) {
+      router.push('/login');
+    }
+  }, [user, isLoading, router]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[#0A0A0A] text-[#FAFAFA] flex items-center justify-center font-mono text-xs uppercase tracking-widest">
+        Loading Session...
+      </div>
+    );
+  }
+
+  if (!user) return null;
 
   // Modals & Panels
   const [isOutlineOpen, setIsOutlineOpen] = useState(false);
@@ -103,7 +122,7 @@ export default function Home() {
         body: JSON.stringify({
           prompt: promptText,
           canvasId,
-          userId: user?.id || 'default_user',
+          userId: user.id,
         }),
       });
 

@@ -5,7 +5,10 @@ import { getUserNotes, createNote } from '@/lib/notes-storage';
 export async function GET(req: Request) {
   try {
     const session = await getSessionFromCookie();
-    const userId = session?.id || 'default_user';
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    const userId = session.id;
 
     const { searchParams } = new URL(req.url);
     const search = searchParams.get('search') || '';
@@ -21,7 +24,10 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   try {
     const session = await getSessionFromCookie();
-    const userId = session?.id || 'default_user';
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    const userId = session.id;
 
     const { title, content, tags, priority, reminderAt } = await req.json();
 

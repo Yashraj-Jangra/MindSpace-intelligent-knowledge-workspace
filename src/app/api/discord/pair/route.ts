@@ -1,11 +1,15 @@
 import { NextResponse } from 'next/server';
 import { generateDiscordPairingCode, pairDiscordAccount } from '@/lib/discord/bot';
 import { prisma } from '@/lib/db';
+import { getSessionFromCookie } from '@/lib/session';
 
 export async function GET(req: Request) {
   try {
-    const { searchParams } = new URL(req.url);
-    const userId = searchParams.get('userId') || 'default_user';
+    const session = await getSessionFromCookie();
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    const userId = session.id;
 
     const account = await prisma.discordAccount.findUnique({
       where: { userId },
@@ -19,19 +23,28 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
-    const { action, userId = 'default_user', pairingCode, discordUserId, discordUsername, webhookUrl } = await req.json();
+    const body = await req.json();
+    const { action, pairingCode, discordUserId, discordUsername, webhookUrl } = body;
 
-    if (action === 'generate-code') {
-      const code = await generateDiscordPairingCode(userId);
-      return NextResponse.json({ pairingCode: code });
-    }
-
+    // Discord Bot completes pairing externally via code lookup (no session cookie)
     if (action === 'pair') {
       if (!pairingCode || !discordUserId) {
         return NextResponse.json({ error: 'pairingCode and discordUserId are required' }, { status: 400 });
       }
       const account = await pairDiscordAccount(pairingCode, discordUserId, discordUsername || 'DiscordUser');
       return NextResponse.json({ account, success: true });
+    }
+
+    // Front-end client actions (require active session check)
+    const session = await getSessionFromCookie();
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    const userId = session.id;
+
+    if (action === 'generate-code') {
+      const code = await generateDiscordPairingCode(userId);
+      return NextResponse.json({ pairingCode: code });
     }
 
     if (action === 'set-webhook') {

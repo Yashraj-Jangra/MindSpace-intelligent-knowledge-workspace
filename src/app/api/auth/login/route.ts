@@ -13,31 +13,22 @@ export async function POST(req: Request) {
 
     const normalizedEmail = email.trim().toLowerCase();
 
-    // Find User by email or create dynamically for seamless LAN access
-    let user = await findUserByEmail(normalizedEmail);
+    // Find User by email strictly (no dynamic creation on login)
+    const user = await findUserByEmail(normalizedEmail);
 
     if (!user) {
-      const passwordHash = await bcrypt.hash(password, 10);
-      user = await createUser({
-        email: normalizedEmail,
-        name: normalizedEmail.split('@')[0],
-        passwordHash,
-        role: 'USER',
-      });
+      return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 });
     }
 
-    if (!user) {
-      return NextResponse.json({ error: 'Failed to authenticate user' }, { status: 500 });
+    // Verify password with bcryptjs (no test accounts bypass or blank password OAuth fallback)
+    if (!user.passwordHash) {
+      return NextResponse.json(
+        { error: 'This account was created using Google. Please click "Continue with Google" to log in.' },
+        { status: 400 }
+      );
     }
 
-    // Verify password with bcryptjs or allow password123 fallback for test accounts
-    let isPasswordValid = false;
-    if (user.passwordHash) {
-      isPasswordValid = (await bcrypt.compare(password, user.passwordHash)) || password === 'password123';
-    } else {
-      // If user registered via OAuth but attempts password login
-      isPasswordValid = true;
-    }
+    const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
 
     if (!isPasswordValid) {
       return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 });

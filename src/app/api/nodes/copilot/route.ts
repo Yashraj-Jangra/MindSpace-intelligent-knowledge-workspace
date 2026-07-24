@@ -4,6 +4,7 @@ import { openai } from '@ai-sdk/openai';
 import { z } from 'zod';
 import { prisma } from '@/lib/db';
 import { dispatchWebhookEvent } from '@/lib/webhooks/dispatcher';
+import { getSessionFromCookie } from '@/lib/session';
 
 const AutoLinkEdgesSchema = z.object({
   suggestedEdges: z.array(
@@ -17,7 +18,12 @@ const AutoLinkEdgesSchema = z.object({
 
 export async function POST(req: Request) {
   try {
-    const { action, nodeId, label, markdown, tone = 'executive', canvasId, userId = 'default_user' } = await req.json();
+    const session = await getSessionFromCookie();
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    const userId = session.id;
+    const { action, nodeId, label, markdown, tone = 'executive', canvasId } = await req.json();
 
     if (!action) {
       return NextResponse.json({ error: 'Action parameter is required' }, { status: 400 });

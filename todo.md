@@ -2,6 +2,7 @@
 
 ## Work Completed
 - [x] **Secure Account & Session Management Restoration** (Session 2026-07-25 v7):
+  - **WSL Database Port Shift**: Shifted PostgreSQL to port `5433` and MinIO to ports `9008`/`9009` to resolve port conflicts with existing background containers in WSL (such as `vaultr_postgres` and `portainer`). Successfully launched the containers and synced the database schema.
   - **AuthContext & API Session Strictness**: Removed all `DEFAULT_DEV_USER` and `default_user` mock fallbacks. Setting/validating cookie sessions now yields authentic results, properly falling back to `null` and locking unauthenticated states.
   - **Server-Side Page Protection**: Added `getSessionFromCookie()` checks and redirects to `/login` for private pages: `/dashboard`, `/reminders`, and `/notes/[id]`.
   - **Client-Side Page Protection**: Wrapped the Home/Canvas page `/` in `useAuth()` state listener. If a user is not authenticated after loading completes, they are automatically routed via `useRouter` to `/login`.

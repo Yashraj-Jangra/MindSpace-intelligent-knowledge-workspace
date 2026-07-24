@@ -376,3 +376,347 @@ Every commit message starts with an emoji type, followed by a space and a lowerc
 - No AI-sounding phrases ("Refactor codebase to optimize performance metrics").
 - No sprint tags, ticket IDs, or milestone references in commit messages.
 - Keep messages punchy and human (e.g. `✨ add urgency timeline to hub dashboard`).
+
+---
+
+## 12. Frontend Engineering Role
+
+Act as an expert frontend engineer, UI/UX designer, visual design specialist, and typography expert. Before proposing or writing any code, build a clear mental model of the current system:
+
+- Identify the tech stack (Next.js, Tailwind, existing component architecture).
+- Understand the existing design tokens (colors, spacing, typography), global styles, and utility patterns.
+- Review the current component architecture and naming conventions.
+- Note any constraints (performance, bundle-size, legacy CSS).
+
+When writing code:
+- Match existing patterns (folder structure, naming, styling approach, component patterns).
+- Centralise design tokens, maximise reusability, minimise duplication.
+- Explain reasoning briefly so the developer understands *why* choices are made.
+
+Always:
+- Preserve or improve accessibility.
+- Maintain visual consistency with the Bold Typography system below.
+- Leave the codebase in a cleaner state than you found it.
+- Ensure layouts are responsive and usable across devices.
+- Make deliberate, creative design choices that express the system's personality — never produce generic or boilerplate UI.
+
+---
+
+## 13. Bold Typography Design System
+
+### Design Philosophy
+
+Bold Typography is **poster design translated to web**. Typography isn't decoration — it's the entire visual language. Every design decision serves the type: color exists to create contrast, space exists to frame letterforms, and interaction exists to reveal typographic details.
+
+### Core Principles
+
+1. **Type as Hero**: Headlines aren't just labels — they're the visual centrepiece. A well-set 80pt headline is more compelling than any stock photo.
+2. **Extreme Scale Contrast**: The gap between headline and body creates drama. Think 6:1 or greater ratio between H1 and paragraph text.
+3. **Deliberate Negative Space**: White (or black) space isn't empty — it's the frame around your type. Generous margins make headlines feel intentional, not cramped.
+4. **Strict Hierarchy**: Every element has a clear rank. No two elements compete for attention. The eye flows naturally: headline → subhead → body → action.
+5. **Restrained Palette**: Black, white, and one accent. More colors dilute typographic impact. Let the type shapes do the work.
+
+### The Vibe
+
+**Confident. Editorial. Deliberate.** This isn't friendly SaaS — it's a design manifesto. The page feels like a gallery exhibition or luxury magazine spread. Every word earns its place.
+
+Visual signatures:
+- Massive headlines that make you scroll
+- Tight letter-spacing on display text (`-0.04em` to `-0.06em`)
+- Wide letter-spacing on labels (`0.1em` to `0.2em`)
+- Text that bleeds to edge on mobile
+- Underlines as the primary interactive affordance
+- **No rounded corners** — sharp edges match sharp typography
+
+---
+
+### Color Tokens (Dark Mode Default)
+
+```
+background:        #0A0A0A    // Near-black, not pure black
+foreground:        #FAFAFA    // Warm white
+muted:             #1A1A1A    // Subtle surface elevation
+mutedForeground:   #737373    // Secondary text (WCAG AA on dark)
+accent:            #FF3D00    // Vermillion — warm, urgent, visible
+accentForeground:  #0A0A0A    // Dark text on accent
+border:            #262626    // Barely-there dividers
+input:             #1A1A1A    // Input backgrounds
+card:              #0F0F0F    // Slight elevation from bg
+cardForeground:    #FAFAFA
+ring:              #FF3D00    // Focus states match accent
+```
+
+The accent (vermillion/red-orange) creates urgency and warmth against the cold dark background. Used sparingly — headlines, key CTAs, and underlines only.
+
+---
+
+### Typography
+
+**Primary Stack**: `"Inter Tight", "Inter", system-ui, sans-serif`
+- Inter Tight for headlines (tighter default spacing)
+
+**Mono Stack**: `"JetBrains Mono", "Fira Code", monospace`
+- Labels, stats, technical details, code snippets
+
+**Scale System**:
+```
+xs:    0.75rem    // 12px - fine print
+sm:    0.875rem   // 14px - captions
+base:  1rem       // 16px - body
+lg:    1.125rem   // 18px - lead paragraphs
+xl:    1.25rem    // 20px - subheads
+2xl:   1.5rem     // 24px - section intros
+3xl:   2rem       // 32px - H3
+4xl:   2.5rem     // 40px - H2
+5xl:   3.5rem     // 56px - H1 mobile
+6xl:   4.5rem     // 72px - H1 tablet
+7xl:   6rem       // 96px - H1 desktop
+8xl:   8rem       // 128px - Hero statement
+```
+
+**Tracking**:
+```
+tighter:  -0.06em   // Display headlines
+tight:    -0.04em   // Large headings
+normal:   -0.01em   // Body (slightly tightened)
+wide:     0.05em    // Small labels
+wider:    0.1em     // All-caps labels
+widest:   0.2em     // Sparse emphasis
+```
+
+**Line Heights**:
+```
+none:     1         // Single-line headlines
+tight:    1.1       // Multi-line headlines
+snug:     1.25      // Subheads
+normal:   1.6       // Body text
+relaxed:  1.75      // Long-form reading
+```
+
+---
+
+### Radius & Border
+
+```
+radius:      0px    // No border-radius anywhere. Sharp edges only.
+border:      1px    // Thin, precise dividers
+borderThick: 2px    // Accent underlines
+```
+
+### Shadows & Effects
+
+No traditional shadows. Depth comes from:
+- **Layered type**: Large muted text behind smaller bright text
+- **Underlines**: 2–3px accent lines under interactive elements
+- **Dividers**: Full-width horizontal rules
+
+```
+shadow:     none
+textShadow: none
+```
+
+### Textures & Patterns
+
+**Subtle noise grain**: Very subtle fractal noise at 1.5% opacity over the entire page — adds tactile quality without being obtrusive. Implemented via inline SVG data URL with `feTurbulence` filter.
+
+**Typographic layering for depth**:
+- Decorative oversized numbers/text behind content with low opacity
+- Accent bars: thin horizontal accent-colored bars (`h-1 w-16`) as visual anchors on key elements
+
+---
+
+### Component Stylings
+
+#### Buttons
+
+**Primary** — text-only with animated underline:
+```
+- No background fill
+- Text in accent color (#FF3D00)
+- Animated underline: absolute span, h-0.5, bg-accent
+- Hover: scale-x-110 underline
+- Uppercase, tracking-wider (0.1em)
+- Font-weight: 600
+- Active state: translate-y-px for press feedback
+- Transition: 150ms all, cubic-bezier(0.25, 0, 0, 1)
+```
+
+**Secondary/outline**:
+```
+- Border: 1px solid foreground
+- Text: foreground
+- Hover: bg-foreground, text becomes background (full inversion)
+- Sharp corners (0px radius)
+- Padding: px-6, py-2/3/4
+- Uppercase, tracking-wider
+```
+
+**Ghost**:
+```
+- No border, no fill
+- Text: mutedForeground → foreground on hover
+- Underline: scale-x-0 → scale-x-100 on hover (h-px, thinner)
+```
+
+**All buttons**:
+```
+- Focus-visible: 2px ring in accent, 2px offset
+- Disabled: pointer-events-none, opacity-50
+- Whitespace-nowrap
+```
+
+#### Cards / Containers
+
+Minimal card usage. Content separated by:
+- Generous section padding (`py-20` to `py-40`)
+- Full-width horizontal borders
+- Typography scale changes
+- Background alternation (`background` ↔ `muted`)
+
+When a card is necessary:
+```
+- Border: 1px solid border (#262626)
+- Background: #0F0F0F (card token)
+- No radius, no shadow
+- Padding: p-6 (mobile) → p-8 (desktop)
+- Hover: border color lightens (150ms)
+```
+
+Featured cards:
+```
+- Accent top border: absolute h-1 w-12 bg-[#FF3D00]
+- No background change — border is the differentiator
+```
+
+#### Inputs
+
+```
+- Background: #1A1A1A
+- Border: 1px solid #262626
+- Border-radius: 0px
+- Height: h-12 (mobile) → h-14 (desktop)
+- Font-size: text-base (16px, prevents iOS zoom)
+- Padding: px-4
+- Text: foreground (#FAFAFA)
+- Placeholder: mutedForeground (#737373)
+- Focus: border-[#FF3D00], outline-none, no ring glow
+- Transition: colors 150ms
+- Disabled: cursor-not-allowed, opacity-50
+```
+
+---
+
+### Layout Strategy
+
+**Container**:
+```
+maxWidth: 1200px (max-w-5xl)
+padding: 24px mobile, 48px tablet, 64px desktop
+```
+
+**Section Spacing**:
+```
+py-20 (80px)  - tight sections
+py-28 (112px) - standard sections
+py-40 (160px) - hero/CTA sections
+```
+
+**Grid Philosophy**:
+- Asymmetric grids: 7/5 or 8/4 splits over 6/6
+- Staggered alignment: elements don't always align top
+- Text columns: max-w-2xl for readability; headlines can span full width
+
+---
+
+### Effects & Animation
+
+**Motion Philosophy**: Fast and decisive. No bouncy easing. No playful delays. Movement is confident and direct.
+
+```
+duration: 150ms  - micro-interactions (buttons, underlines, inputs)
+duration: 200ms  - standard transitions (accordion, color changes)
+duration: 500ms  - image hover effects
+easing: cubic-bezier(0.25, 0, 0, 1)  - fast-out, crisp stop
+```
+
+**Specific effects**:
+- Underline scale: `scale-x-0 → scale-x-100` on hover for ghost, `scale-x-100 → scale-x-110` for primary
+- Active press: `translate-y-px`
+- Card hover: border lightens, background color shifts — no lift, no shadow, no scale
+- Image hover: `scale-105` over 500ms on image only, `overflow-hidden` on container
+- Page scroll: fade-in + slide-up (opacity 0→1, translateY 20→0) over 500ms, stagger children 80ms
+
+**Urgency animations** (task/reminder specific):
+```
+animate-pulse  — overdue items, pulsing vermillion (#FF3D00)
+shimmer        — due today, amber border glow
+```
+
+---
+
+### Iconography
+
+From `lucide-react`:
+```
+- Stroke width: 1.5px (thinner than default 2px for elegance)
+- Sizes:
+  - 14px / w-3.5 h-3.5 — compact UI, inline labels
+  - 16px              — inline with small text
+  - 20px              — standard nav/toolbar icons
+  - 24px              — feature section, card icons
+- Color: currentColor (inherits from parent)
+- Accent icons: text-[#FF3D00] explicitly
+- Style: always outline/stroke — never filled
+- Prefer text labels over icon-only where space allows
+```
+
+---
+
+### Responsive Strategy
+
+**Mobile-first typography scaling**:
+- Headlines: `text-3xl` (mobile) → `text-5xl` (tablet) → `text-7xl` (desktop)
+- Body: `text-base` (16px) with `md:text-lg` on key sections
+- Maintain hierarchy ratio at all breakpoints
+
+**Layout shifts**:
+- Stats: 1 col → 2 col (sm) → 4 col (md)
+- Features: 1 col → 2 col (sm) → 3 col (lg)
+- Asymmetric grids collapse to stacked on mobile
+
+**Spacing adjustments**:
+- Section padding: `py-20` (mobile) → `py-28` (md) → `py-40` (lg)
+- Container padding: `px-6` (mobile) → `px-12` (md) → `px-16` (lg)
+- Gap progression: `gap-4` → `gap-6` → `gap-8`
+
+**Mobile-specific**:
+- Touch targets: minimum 44×44px (buttons `h-12` on mobile)
+- Hide large decorative overflow text on mobile to prevent horizontal scroll
+- Stack email input + button on mobile, side-by-side on tablet+
+
+---
+
+### Accessibility
+
+**Contrast**:
+```
+foreground (#FAFAFA) on background (#0A0A0A) = 18.1:1  ✓
+mutedForeground (#737373) on background      = 5.3:1   ✓ AA
+accent (#FF3D00) on background               = 5.4:1   ✓ AA (large text)
+```
+
+**Focus states**:
+- 2px accent (`#FF3D00`) outline, 2px offset
+- No glow, no fill change
+- Visible on all interactive elements
+
+**Typography**:
+- Body text minimum 16px
+- Line-height minimum 1.5 for body
+- No font weights below 400
+
+**Interaction**:
+- Touch targets minimum 44×44px
+- Underlines 2px+ for visibility
+- Color is never the only indicator of state
+

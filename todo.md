@@ -1,16 +1,17 @@
 # MindSpace - AI-Powered Visual Note-Taking & Mind-Mapping Platform
 
 ## Work Completed
-- [x] **Table System Polish & Theme Pass** (Session 2026-07-24):
-  - Removed A/B/C column letters and 1/2/3 row numbers to make the table clean, minimal, and sleek.
-  - Implemented multi-directional corner resizing (both horizontal width and vertical height resizing simultaneously).
-  - Added per-column width resize drag handles and per-row height resize drag handles directly on table cell edges.
-  - Replaced cluttering permanent row/column gutters with discreet, non-intrusive hover-triggered control popups (`+col before`, `+col after`, `-col`, `+row above`, `+row below`, `-row`).
-  - Added full Light & Dark mode support using CSS custom variables (`--ct-bg-drag`, `--ct-bg-panel`, `--ct-bg-add-row`, `--ct-text-muted`, `--ct-text-dim`) and adaptive `getDefaultTheme()` fallback.
-  - Updated `InsertTableModal.tsx` so clicking any cell on the 8x10 grid preview immediately inserts the table and auto-closes the modal.
-  - Updated toolbar table button in `AdvancedNoteEditor.tsx` to match the exact icon style and appearance of surrounding tools.
-  - Flushed cell content changes on `onBlur` to keep contenteditable editing smooth and prevent prose-mirror focus fighting.
-  - Build: `✓ Compiled successfully in 15.6s` — zero errors.
+- [x] **Canvas Table Full Overhaul** (Session 2026-07-24 v2):
+  - **Resize fix (core bug):** Switched ALL drag/resize operations to `window.addEventListener` + `useRef` pattern, eliminating stale closure bugs that caused vertical resize to not work. Corner resize now correctly tracks both width and height simultaneously from stable initial capture values.
+  - **Column resize full-height:** Moved col-resize handles OUT of individual cells — now rendered as absolutely-positioned overlays spanning the full grid height (one per column boundary), so the entire column line highlights on hover — not just the first cell.
+  - **Row resize handle:** Unchanged approach but now guaranteed full-width across the row and triggers a visible orange line highlight identical to the column handle UX.
+  - **Add Col + Add Row footer:** Replaced single "+Row" bar with a split footer — left half "+ Row", right half "+ Col", separated by a vertical border line.
+  - **Inline row/col controls:** Replaced the overflow-clipped `-left-6`/`-top-6` absolute popups with compact inline control chips that render inside the row (left edge) and first-row cell (top edge), staying within table bounds.
+  - **Theme panel with live preview:** Added a 2-row mini table swatch at the top of the theme panel that updates live as colors/borders are changed.
+  - **Light theme:** CSS variables (`--ct-bg-drag`, `--ct-bg-panel`, `--ct-bg-add-row`) correctly themed for `html.light` context. Range slider track, border colors, all match light UI.
+  - **InsertTableModal:** Grid hover now live-syncs to manual row/col number inputs. Insert button has always-visible accent styling (not invisible when not hovered). Modal fully themed for both dark and light mode via runtime `document.documentElement.classList` detection.
+  - **Backward compat:** `parseRowHeights` now coerces old `null` values (previous format used `null` for "auto height") to 36px default, so saved tables from v1 load correctly.
+  - **Build:** TypeScript type check — zero errors. Committed as `81858af`.
 
 
 - [x] Pivoted MindSpace into a **Classic Notes-First Product Architecture**.

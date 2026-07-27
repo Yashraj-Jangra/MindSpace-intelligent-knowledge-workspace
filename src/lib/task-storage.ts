@@ -1,7 +1,23 @@
 import fs from 'fs';
 import path from 'path';
 import { prisma, isDbDisabled, disableDbCircuitBreaker } from './db';
-import { TaskStatus, TaskPriority } from '@prisma/client';
+
+export type TaskStatus = 'TODO' | 'IN_PROGRESS' | 'DONE' | 'CANCELLED';
+export type TaskPriority = 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+
+export const TaskStatus = {
+  TODO: 'TODO' as const,
+  IN_PROGRESS: 'IN_PROGRESS' as const,
+  DONE: 'DONE' as const,
+  CANCELLED: 'CANCELLED' as const,
+};
+
+export const TaskPriority = {
+  CRITICAL: 'CRITICAL' as const,
+  HIGH: 'HIGH' as const,
+  MEDIUM: 'MEDIUM' as const,
+  LOW: 'LOW' as const,
+};
 
 export interface StoredTask {
   id: string;

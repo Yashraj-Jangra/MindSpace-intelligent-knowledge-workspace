@@ -5,9 +5,8 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { HubHeader } from '@/components/hub/HubHeader';
 import { MacroTaskWidget } from '@/components/tasks/MacroTaskWidget';
-import { StoredTask } from '@/lib/task-storage';
+import { StoredTask, TaskStatus, TaskPriority } from '@/lib/task-storage';
 import { ListTodo, Plus, Search, ShieldAlert } from 'lucide-react';
-import { TaskStatus, TaskPriority } from '@prisma/client';
 
 export default function TasksPage() {
   const { user, isLoading: isAuthLoading } = useAuth();

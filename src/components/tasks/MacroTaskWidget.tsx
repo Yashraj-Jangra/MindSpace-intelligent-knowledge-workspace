@@ -2,9 +2,8 @@
 
 import React, { useState } from 'react';
 import { ChevronDown, ChevronUp, Trash2, Pin, Plus } from 'lucide-react';
-import { StoredTask } from '@/lib/task-storage';
+import { StoredTask, TaskPriority } from '@/lib/task-storage';
 import { TaskCard } from './TaskCard';
-import { TaskPriority } from '@prisma/client';
 
 interface MacroTaskWidgetProps {
   macroTask: StoredTask;

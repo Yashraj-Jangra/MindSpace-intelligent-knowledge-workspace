@@ -62,6 +62,7 @@ model User {
   discordAccount DiscordAccount?
   smtpConfig     SmtpConfig?
   captures       Capture[]
+  tasks          Task[]
 
   @@map("users")
 }
@@ -310,4 +311,44 @@ model Capture {
 
   @@index([userId, status])
   @@map("captures")
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  DONE
+  CANCELLED
+}
+
+enum TaskPriority {
+  CRITICAL
+  HIGH
+  MEDIUM
+  LOW
+}
+
+model Task {
+  id          String       @id @default(cuid())
+  userId      String
+  parentId    String?      // null = Macro Task, set = Micro Task
+  title       String
+  description String?      @db.Text
+  status      TaskStatus   @default(TODO)
+  priority    TaskPriority @default(MEDIUM)
+  dueAt       DateTime?
+  isPinned    Boolean      @default(false)
+  tags        String[]     @default([])
+  notifyEvery Int?         // minutes between nudges (Sprint 3)
+  channels    String[]     @default(["in_app"]) // Sprint 3
+  completedAt DateTime?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parent   Task?  @relation("TaskHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  subtasks Task[] @relation("TaskHierarchy")
+
+  @@index([userId, status])
+  @@index([dueAt])
+  @@map("tasks")
 }

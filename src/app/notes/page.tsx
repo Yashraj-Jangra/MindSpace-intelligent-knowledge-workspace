@@ -67,6 +67,9 @@ export default async function NotesLibrary({
             <Link href="/" className="text-[#737373] hover:text-[#FAFAFA] uppercase tracking-wider transition-colors">
               Hub
             </Link>
+            <Link href="/tasks" className="text-[#737373] hover:text-[#FAFAFA] uppercase tracking-wider transition-colors">
+              Tasks
+            </Link>
             <Link href="/reminders" className="text-[#737373] hover:text-[#FAFAFA] uppercase tracking-wider transition-colors">
               Reminders
             </Link>

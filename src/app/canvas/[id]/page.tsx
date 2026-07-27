@@ -12,7 +12,7 @@ import { DocumentUpload } from '@/components/ui/DocumentUpload';
 import { SearchBar } from '@/components/ui/SearchBar';
 import { ExportMenu } from '@/components/ui/ExportMenu';
 import { AccountDrawer } from '@/components/ui/AccountDrawer';
-import { Network, FileText, FileUp, LogIn, UserPlus, LogOut, User, LayoutDashboard, Bell, ArrowLeft } from 'lucide-react';
+import { Network, FileText, FileUp, LogIn, UserPlus, LogOut, User, LayoutDashboard, Bell, ArrowLeft, ListTodo } from 'lucide-react';
 import { MindSpaceNodeData } from '@/lib/graph/transformer';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
@@ -324,6 +324,14 @@ export default function CanvasWorkspace({ params }: { params: Promise<{ id: stri
           >
             <LayoutDashboard className="w-3.5 h-3.5 text-[#FF3D00]" />
             <span className="hidden sm:inline">Notes</span>
+          </Link>
+
+          <Link
+            href="/tasks"
+            className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 border border-[#262626] hover:border-[#FF3D00] text-xs font-mono uppercase tracking-wider text-[#FAFAFA] transition-colors"
+          >
+            <ListTodo className="w-3.5 h-3.5 text-[#3b82f6]" />
+            <span className="hidden sm:inline">Tasks</span>
           </Link>
 
           <Link

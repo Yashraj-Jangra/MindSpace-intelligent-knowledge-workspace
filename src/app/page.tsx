@@ -3,13 +3,23 @@ import { redirect } from 'next/navigation';
 import { getSessionFromCookie } from '@/lib/session';
 import { getUserNotes } from '@/lib/notes-storage';
 import { getUserCanvases } from '@/lib/canvas-storage';
+import { getUserTasksDue, getPinnedTasks } from '@/lib/task-storage';
 import { HubHeader } from '@/components/hub/HubHeader';
 import { QuickCaptureInbox } from '@/components/hub/QuickCaptureInbox';
 import { UrgencyTimeline, TimelineItem } from '@/components/hub/UrgencyTimeline';
 import { RecentCanvasesGrid } from '@/components/hub/RecentCanvasesGrid';
-import { PinnedItemsRail } from '@/components/hub/PinnedItemsRail';
+import { PinnedItemsRail, PinnedItem } from '@/components/hub/PinnedItemsRail';
+import { CriticalZoneBanner } from '@/components/hub/CriticalZoneBanner';
 
 export const dynamic = 'force-dynamic';
+
+function isOverdueOrToday(dueAtStr: string | null) {
+  if (!dueAtStr) return false;
+  const now = new Date();
+  const due = new Date(dueAtStr);
+  const isToday = due.toDateString() === now.toDateString();
+  return due < now || isToday;
+}
 
 export default async function HubDashboard() {
   const session = await getSessionFromCookie();
@@ -21,10 +31,18 @@ export default async function HubDashboard() {
   // Server-side database/JSON fallback data queries
   const notes = await getUserNotes(userId);
   const canvases = await getUserCanvases(userId);
+  const dueTasks = await getUserTasksDue(userId);
+  const pinnedTasks = await getPinnedTasks(userId);
 
-  // Compile timeline item reminders from notes
+  // Identify critical overdue/due-today tasks for the top pressure banner
+  const criticalTasks = dueTasks.filter(
+    (t) => t.priority === 'CRITICAL' && isOverdueOrToday(t.dueAt)
+  );
+
   const now = new Date();
-  const timelineItems: TimelineItem[] = notes
+
+  // 1. Compile timeline item reminders from notes
+  const noteTimelineItems: TimelineItem[] = notes
     .filter((n) => n.reminderAt)
     .map((n) => {
       const reminderDate = new Date(n.reminderAt!);
@@ -49,9 +67,34 @@ export default async function HubDashboard() {
       };
     });
 
-  // Sort timeline: OVERDUE first -> DUE_TODAY -> UPCOMING
+  // 2. Compile timeline items from due tasks
+  const taskTimelineItems: TimelineItem[] = dueTasks.map((t) => {
+    const due = new Date(t.dueAt!);
+    const isToday = due.toDateString() === now.toDateString();
+    const isOverdue = due < now && !isToday;
+
+    let urgency: 'OVERDUE' | 'DUE_TODAY' | 'UPCOMING' = 'UPCOMING';
+    if (isToday) {
+      urgency = 'DUE_TODAY';
+    } else if (isOverdue) {
+      urgency = 'OVERDUE';
+    }
+
+    return {
+      id: t.id,
+      type: 'TASK_DEADLINE',
+      title: t.title,
+      urgency,
+      deadlineAt: t.dueAt!,
+      sourceId: t.id,
+      sourceUrl: `/tasks`,
+    };
+  });
+
+  // Merge & Sort timeline: OVERDUE first -> DUE_TODAY -> UPCOMING, then chronologically
+  const combinedTimeline = [...noteTimelineItems, ...taskTimelineItems];
   const urgencyWeight = { OVERDUE: 0, DUE_TODAY: 1, UPCOMING: 2 };
-  timelineItems.sort((a, b) => {
+  combinedTimeline.sort((a, b) => {
     if (urgencyWeight[a.urgency] !== urgencyWeight[b.urgency]) {
       return urgencyWeight[a.urgency] - urgencyWeight[b.urgency];
     }
@@ -60,8 +103,32 @@ export default async function HubDashboard() {
 
   const pinnedNotes = notes.filter((n) => n.isPinned);
 
+  // Widen pinned rails to accept notes + tasks unified sorted by update time
+  const pinnedItems: PinnedItem[] = [
+    ...pinnedNotes.map((n) => ({
+      id: n.id,
+      type: 'note' as const,
+      title: n.title,
+      priority: n.priority,
+      updatedAt: n.updatedAt,
+      url: `/notes/${n.id}`,
+      content: n.content || undefined,
+    })),
+    ...pinnedTasks.map((t) => ({
+      id: t.id,
+      type: 'task' as const,
+      title: t.title,
+      priority: t.priority,
+      updatedAt: t.updatedAt,
+      url: `/tasks`,
+    })),
+  ].sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+
   return (
     <div className="min-h-screen w-full bg-[#0A0A0A] text-[#FAFAFA] flex flex-col font-sans selection:bg-[#FF3D00] selection:text-[#0A0A0A]">
+      {/* Dynamic top critical task alert banner */}
+      <CriticalZoneBanner criticalTasks={criticalTasks} />
+
       {/* Personalized Hub Navigation Header */}
       <HubHeader />
 
@@ -91,12 +158,12 @@ export default async function HubDashboard() {
           {/* Quick Actions & Timeline sidebar (1/3 width on desktop) */}
           <div className="space-y-6">
             <QuickCaptureInbox />
-            <UrgencyTimeline initialItems={timelineItems} />
+            <UrgencyTimeline initialItems={combinedTimeline} />
           </div>
         </div>
 
         {/* Pinned rail below main grid */}
-        <PinnedItemsRail pinnedNotes={pinnedNotes} />
+        <PinnedItemsRail pinnedItems={pinnedItems} />
       </main>
     </div>
   );

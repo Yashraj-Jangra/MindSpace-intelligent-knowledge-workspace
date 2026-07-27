@@ -62,6 +62,9 @@ export default async function RemindersDashboard() {
           <Link href="/" className="text-[#737373] hover:text-[#FAFAFA] uppercase tracking-wider transition-colors shrink-0">
             Hub
           </Link>
+          <Link href="/tasks" className="text-[#737373] hover:text-[#FAFAFA] uppercase tracking-wider transition-colors shrink-0">
+            Tasks
+          </Link>
           <Link href="/reminders" className="text-[#FF3D00] font-bold uppercase tracking-wider shrink-0">
             Reminders
           </Link>

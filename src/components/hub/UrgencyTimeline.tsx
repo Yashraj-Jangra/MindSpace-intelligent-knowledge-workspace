@@ -2,11 +2,11 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Bell, Clock, AlertTriangle, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { Bell, Clock, AlertTriangle, ArrowRight, CheckCircle2, ListTodo } from 'lucide-react';
 
 export interface TimelineItem {
   id: string;
-  type: 'NOTE_REMINDER' | 'CANVAS_DEADLINE';
+  type: 'NOTE_REMINDER' | 'CANVAS_DEADLINE' | 'TASK_DEADLINE';
   title: string;
   urgency: 'OVERDUE' | 'DUE_TODAY' | 'UPCOMING';
   deadlineAt: string;
@@ -25,18 +25,20 @@ export function UrgencyTimeline({ initialItems }: UrgencyTimelineProps) {
     try {
       const offsetMs = offsetHours * 60 * 60 * 1000;
       const nextReminderDate = new Date(Date.now() + offsetMs).toISOString();
+      const targetItem = items.find((i) => i.id === itemId);
+      if (!targetItem) return;
 
-      const res = await fetch(`/api/notes/${itemId}`, {
+      const isTask = targetItem.type === 'TASK_DEADLINE';
+      const url = isTask ? `/api/tasks/${itemId}` : `/api/notes/${itemId}`;
+      const payload = isTask ? { dueAt: nextReminderDate } : { reminderAt: nextReminderDate };
+
+      const res = await fetch(url, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          reminderAt: nextReminderDate,
-        }),
+        body: JSON.stringify(payload),
       });
 
       if (res.ok) {
-        // Optimistically update item in list or remove it if it shifts position
-        // We'll update the item state, re-categorize it, and resort
         setItems((prev) => {
           const updated = prev.map((item) => {
             if (item.id === itemId) {
@@ -71,7 +73,7 @@ export function UrgencyTimeline({ initialItems }: UrgencyTimelineProps) {
           });
         });
       } else {
-        alert('Failed to snooze reminder.');
+        alert('Failed to snooze item.');
       }
     } catch (err) {
       console.error('Error snoozing timeline item:', err);
@@ -80,16 +82,21 @@ export function UrgencyTimeline({ initialItems }: UrgencyTimelineProps) {
 
   const handleComplete = async (itemId: string) => {
     try {
-      const res = await fetch(`/api/notes/${itemId}`, {
-        method: 'PATCH',
+      const targetItem = items.find((i) => i.id === itemId);
+      if (!targetItem) return;
+
+      const isTask = targetItem.type === 'TASK_DEADLINE';
+      const url = isTask ? `/api/tasks/${itemId}/complete` : `/api/notes/${itemId}`;
+      const method = isTask ? 'POST' : 'PATCH';
+      const payload = isTask ? {} : { reminderAt: null };
+
+      const res = await fetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          reminderAt: null, // clear the reminder
-        }),
+        body: JSON.stringify(payload),
       });
 
       if (res.ok) {
-        // Remove item from active timeline list
         setItems((prev) => prev.filter((item) => item.id !== itemId));
       } else {
         alert('Failed to complete item.');
@@ -99,14 +106,17 @@ export function UrgencyTimeline({ initialItems }: UrgencyTimelineProps) {
     }
   };
 
-  const getUrgencyIcon = (urgency: string) => {
+  const getUrgencyIcon = (urgency: string, type: string) => {
+    if (type === 'TASK_DEADLINE') {
+      return <ListTodo className="w-4 h-4 text-[#FF3D00] shrink-0" />;
+    }
     switch (urgency) {
       case 'OVERDUE':
-        return <AlertTriangle className="w-4 h-4 text-[#FF3D00]" />;
+        return <AlertTriangle className="w-4 h-4 text-[#FF3D00] shrink-0" />;
       case 'DUE_TODAY':
-        return <Clock className="w-4 h-4 text-[#F59E0B]" />;
+        return <Clock className="w-4 h-4 text-[#F59E0B] shrink-0" />;
       default:
-        return <Bell className="w-4 h-4 text-[#737373]" />;
+        return <Bell className="w-4 h-4 text-[#737373] shrink-0" />;
     }
   };
 
@@ -145,7 +155,7 @@ export function UrgencyTimeline({ initialItems }: UrgencyTimelineProps) {
               }`}
             >
               <div className="flex items-start gap-2.5">
-                <span className="mt-0.5 shrink-0">{getUrgencyIcon(item.urgency)}</span>
+                <span className="mt-0.5 shrink-0">{getUrgencyIcon(item.urgency, item.type)}</span>
                 <div>
                   <h4 className="font-sans font-bold text-xs sm:text-sm text-[#FAFAFA] line-clamp-1">
                     {item.title}
@@ -158,7 +168,6 @@ export function UrgencyTimeline({ initialItems }: UrgencyTimelineProps) {
 
               {/* Action Toolbar */}
               <div className="flex items-center gap-2 font-mono text-[10px] shrink-0 self-end sm:self-auto">
-                {/* Check off */}
                 <button
                   onClick={() => handleComplete(item.id)}
                   className="px-2 py-1 bg-[#10b981]/10 border border-[#10b981]/30 hover:bg-[#10b981] hover:text-[#0A0A0A] text-[#10b981] transition-colors"
@@ -190,11 +199,10 @@ export function UrgencyTimeline({ initialItems }: UrgencyTimelineProps) {
                   </button>
                 </div>
 
-                {/* Link out */}
                 <Link
                   href={item.sourceUrl}
                   className="p-1 border border-[#262626] hover:border-[#FF3D00] text-[#737373] hover:text-[#FF3D00] transition-colors ml-1"
-                  title="Jump to note"
+                  title={item.type === 'TASK_DEADLINE' ? 'Jump to task' : 'Jump to note'}
                 >
                   <ArrowRight className="w-3.5 h-3.5" />
                 </Link>

@@ -1,7 +1,7 @@
 import crypto from 'crypto';
 import { prisma } from '../db';
 
-export type WebhookEvent = 'node.created' | 'node.updated' | 'reminder.fired' | 'canvas.updated';
+export type WebhookEvent = 'node.created' | 'node.updated' | 'reminder.fired' | 'canvas.updated' | 'task.completed';
 
 export async function dispatchWebhookEvent(
   userId: string,

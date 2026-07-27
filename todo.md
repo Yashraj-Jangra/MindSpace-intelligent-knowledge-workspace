@@ -1,6 +1,15 @@
 # MindSpace - AI-Powered Visual Note-Taking & Mind-Mapping Platform
 
 ## Work Completed
+- [x] **Task System (Macro/Micro + Pomodoro)** (Session 2026-07-27 v10):
+  - **Collapsible Macro Cards & Progress**: Built `MacroTaskWidget.tsx` displaying nested subtask rows, priority level badges, relative due times, and real-time completion progress meters (`%` complete).
+  - **Subtask Checklist Rows**: Built `TaskCard.tsx` with checklist triggers, priority tracking dots, overdue flags, and Pomodoro focus-run buttons.
+  - **Pomodoro Focus Timer Context & Widget**: Built `PomodoroContext.tsx` and the floating `PomodoroTimer.tsx` widget. Keeps focus and break sessions active globally across Hub, Notes, and Canvas navigation.
+  - **Dedicated Task Board Page (`/tasks`)**: Built a full workspace page for macro creation, filtering (All/Active/Done/Critical), and search.
+  - **Hub Dashboard Integration**: Created a pulsing `CriticalZoneBanner.tsx` warning for overdue critical items, injected task deadlines into the combined `UrgencyTimeline`, and mapped pinned tasks into the unified scrollable `PinnedItemsRail`.
+  - **Storage Fallbacks**: Implemented `task-storage.ts` dual-mode operations with Postgres database queries and `.data/tasks.json` write structures.
+  - **Webhook Triggers**: Added `'task.completed'` to dispatcher handlers to automatically fire HMAC-signed payload POSTs to registered webhooks.
+  - **Navigation Sync**: Linked `/tasks` routes across all headers.
 - [x] **Hub Dashboard & Canvas Routing** (Session 2026-07-27 v9):
   - **Personal Cockpit Dashboard (`/`)**: Created a new server-side rendered welcome hub.
   - **Quick Capture Inbox**: Created an auto-expanding input field for rapid thought dumps with integrated regex URL detection.
@@ -167,24 +176,24 @@
 ## Next Steps
 - [ ] Test live note creation, rich text editing, freehand stylus writing, and mind map canvas drawing in browser.
 - [ ] Verify zoom controls work correctly with stylus pointer coordinate compensation.
-- [ ] Validate new Hub Dashboard loading, Quick Capture dumping, and Urgency Timeline snooze actions.
-- [ ] Plan and prepare for **Sprint 2: Task System (Micro/Macro + Pomodoro)**.
+- [ ] Validate new Task System page, collapsible macro cards, subtask checkoffs, and the global Pomodoro timer.
+- [ ] Plan and prepare for **Sprint 3: Advanced Reminders & Multi-Channel Dispatch (BullMQ + Nodemailer + Bots)**.
 
 ## Future Roadmap (Planned Features)
 - [x] **Personalized Hub Dashboard (`/`):**
   - Make `/` the new centralized user cockpit, shifting the raw canvas to `/canvas/[id]`.
   - **Urgency Timeline Widget:** Aggregated visual list of upcoming deadlines, pinned notes, and critical tasks.
   - **Quick Capture Inbox:** Minimalist text block dump for rapid thoughts.
+- [x] **Micro / Macro Task System:**
+  - Nested micro-tasks inside macro objectives with individual progress meters.
+  - Frequent notifications and high-visibility visual warnings on the front page for attention-seeking tasks.
+  - **Pomodoro Focus Mode Widget:** Integrated focus timer that logs work session stats against tasks.
 - [ ] **Calendar with Google Calendar Sync:**
   - Full Google Calendar oauth sync to import events, flight/concert tickets, and sync scheduled reminders.
   - Interactive calendar month/week grid view on the dashboard.
 - [ ] **Community & Chat System:**
   - Real-time chat popup and slide-out side panel inside notes and canvas views.
   - Live canvas sharing and bi-directional synchronous co-editing (multiplayer cursor pointers).
-- [ ] **Micro / Macro Task System:**
-  - Nested micro-tasks inside macro objectives with individual progress meters.
-  - Frequent notifications and high-visibility visual warnings on the front page for attention-seeking tasks.
-  - **Pomodoro Focus Mode Widget:** Integrated focus timer that logs work session stats against tasks.
 - [ ] **Audio Quick Capture / Voice Notes:**
   - In-app voice recorder to transcribe audio notes automatically into the text capture inbox.
 

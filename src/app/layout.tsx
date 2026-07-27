@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { AuthProvider } from '@/contexts/AuthContext';
+import { PomodoroProvider } from '@/contexts/PomodoroContext';
+import { PomodoroTimer } from '@/components/tasks/PomodoroTimer';
 
 export const metadata: Metadata = {
   title: 'MindSpace | AI-Powered Visual Note-Taking & Mind-Mapping Platform',
@@ -15,7 +17,12 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body className="bg-[#0A0A0A] text-[#FAFAFA] antialiased selection:bg-[#FF3D00] selection:text-[#0A0A0A]">
-        <AuthProvider>{children}</AuthProvider>
+        <AuthProvider>
+          <PomodoroProvider>
+            {children}
+            <PomodoroTimer />
+          </PomodoroProvider>
+        </AuthProvider>
       </body>
     </html>
   );

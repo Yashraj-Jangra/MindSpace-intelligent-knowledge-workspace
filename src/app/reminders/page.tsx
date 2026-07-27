@@ -56,11 +56,11 @@ export default async function RemindersDashboard() {
 
         {/* Responsive Navigation Header */}
         <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4 font-mono text-xs overflow-x-auto py-1 sm:py-0 no-scrollbar">
-          <Link href="/dashboard" className="text-[#737373] hover:text-[#FAFAFA] uppercase tracking-wider transition-colors shrink-0">
+          <Link href="/notes" className="text-[#737373] hover:text-[#FAFAFA] uppercase tracking-wider transition-colors shrink-0">
             Notes
           </Link>
           <Link href="/" className="text-[#737373] hover:text-[#FAFAFA] uppercase tracking-wider transition-colors shrink-0">
-            Canvas Map
+            Hub
           </Link>
           <Link href="/reminders" className="text-[#FF3D00] font-bold uppercase tracking-wider shrink-0">
             Reminders

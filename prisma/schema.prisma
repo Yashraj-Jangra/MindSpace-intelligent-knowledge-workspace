@@ -49,6 +49,7 @@ model User {
   image         String?
   role          UserRole       @default(USER)
   passwordHash  String?
+  username      String?        @unique
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
 
@@ -60,6 +61,7 @@ model User {
   webhooks       Webhook[]
   discordAccount DiscordAccount?
   smtpConfig     SmtpConfig?
+  captures       Capture[]
 
   @@map("users")
 }
@@ -294,4 +296,18 @@ model SystemSetting {
   updatedAt DateTime @updatedAt
 
   @@map("system_settings")
+}
+
+model Capture {
+  id        String   @id @default(cuid())
+  userId    String
+  rawText   String   @db.Text
+  sourceUrl String?
+  status    String   @default("PENDING") // PENDING | PROCESSED | DISCARDED
+  canvasId  String?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, status])
+  @@map("captures")
 }

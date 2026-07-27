@@ -898,7 +898,7 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
   const handleDeleteNote = async () => {
     if (confirm('Are you sure you want to delete this note?')) {
       await fetch(`/api/notes/${initialNote.id}`, { method: 'DELETE' });
-      router.push('/dashboard');
+      router.push('/notes');
     }
   };
 
@@ -1032,9 +1032,9 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
           {/* Back Button Box — 100% aligned with left sidebar width (w-12 / 48px) */}
           <div className="w-12 h-14 shrink-0 flex items-center justify-center border-r border-[#262626] bg-[#0F0F0F]">
             <button
-              onClick={() => router.push('/dashboard')}
+              onClick={() => router.push('/notes')}
               className="p-2 text-[#737373] hover:text-[#FAFAFA] hover:bg-[#1E1E1E] rounded-md transition-colors flex items-center justify-center"
-              title="Back to Dashboard"
+              title="Back to Notes Library"
             >
               <ArrowLeft className="w-4 h-4 stroke-[1.5]" />
             </button>

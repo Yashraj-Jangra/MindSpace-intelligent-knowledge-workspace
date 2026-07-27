@@ -25,7 +25,7 @@ export default async function NotePage({ params }: { params: Promise<{ id: strin
       });
       redirect(`/notes/${note.id}`);
     } else {
-      redirect('/dashboard');
+      redirect('/notes');
     }
   }
 

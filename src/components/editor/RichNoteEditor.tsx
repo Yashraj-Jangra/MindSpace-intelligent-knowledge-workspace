@@ -126,7 +126,7 @@ export function RichNoteEditor({ initialNote }: RichNoteEditorProps) {
   const handleDeleteNote = async () => {
     if (confirm('Are you sure you want to delete this note?')) {
       await fetch(`/api/notes/${initialNote.id}`, { method: 'DELETE' });
-      router.push('/dashboard');
+      router.push('/notes');
     }
   };
 
@@ -138,7 +138,8 @@ export function RichNoteEditor({ initialNote }: RichNoteEditorProps) {
         method: 'POST',
       });
       if (res.ok) {
-        router.push('/');
+        const data = await res.json();
+        router.push(`/canvas/${data.canvasId}`);
       }
     } catch (err) {
       console.error('Failed to convert note to canvas:', err);
@@ -153,11 +154,11 @@ export function RichNoteEditor({ initialNote }: RichNoteEditorProps) {
       <header className="h-16 border-b border-[#262626] bg-[#0A0A0A]/95 px-6 flex items-center justify-between sticky top-0 z-30">
         <div className="flex items-center gap-4">
           <button
-            onClick={() => router.push('/dashboard')}
+            onClick={() => router.push('/notes')}
             className="flex items-center gap-1.5 text-xs font-mono uppercase tracking-wider text-[#737373] hover:text-[#FAFAFA] transition-colors"
           >
             <ArrowLeft className="w-4 h-4 stroke-[1.5]" />
-            <span>Dashboard</span>
+            <span>Notes</span>
           </button>
 
           <div className="h-4 w-px bg-[#262626]" />

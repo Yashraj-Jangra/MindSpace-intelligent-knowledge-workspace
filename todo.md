@@ -1,6 +1,16 @@
 # MindSpace - AI-Powered Visual Note-Taking & Mind-Mapping Platform
 
 ## Work Completed
+- [x] **Hub Dashboard & Canvas Routing** (Session 2026-07-27 v9):
+  - **Personal Cockpit Dashboard (`/`)**: Created a new server-side rendered welcome hub.
+  - **Quick Capture Inbox**: Created an auto-expanding input field for rapid thought dumps with integrated regex URL detection.
+  - **Urgency Timeline Widget**: Created a vertical sorting list displaying deadlines and notes reminders with interactive inline +1h/+1d/+1w snooze actions and complete checks.
+  - **Recent Canvases Grid**: Displays active canvases, inline renaming tools, deletion triggers, and a canvas creation CTA redirecting to dynamic paths.
+  - **Pinned Items Rail**: Created a horizontal scroll rail to display pinned notes.
+  - **Dynamic Routing Shift**: Shifted the React Flow workspace from `/` to `/canvas/[id]`, linking debounce-autosave handlers to persist graph nodes and edges.
+  - **Notes Route relocation**: Repurposed `/dashboard` to redirect to `/` and moved the note grid to `/notes`.
+  - **Dual-Path Storage Layers**: Built `canvas-storage.ts` and `capture-storage.ts` with Postgres Prisma database logic and local `.data` JSON fallbacks.
+  - **Navigation Sync**: Cleaned up and updated all header links and redirects app-wide from `/dashboard` to `/notes` or `/`.
 - [x] **Account Settings & Integrations Drawer** (Session 2026-07-25 v8):
   - **Rules of Hooks Violation Fix**: Grouped all React hooks (`useState`, `useEffect`, and `useCallback`) together at the very top level of the component preceding any early returns or redirects. This fully eliminates runtime hook-count mismatches during loading cycles.
   - **Profile Settings & Change Info**: Added "Change Info" tab to modify name/email, dynamically updating the app session context (`/api/auth/profile`).
@@ -157,14 +167,14 @@
 ## Next Steps
 - [ ] Test live note creation, rich text editing, freehand stylus writing, and mind map canvas drawing in browser.
 - [ ] Verify zoom controls work correctly with stylus pointer coordinate compensation.
-- [ ] Check that the two-row toolbar scrolls cleanly on mobile without breaking layout.
-- [ ] Validate the left-panel page thumbnail drawer slide-in animation and per-page actions.
+- [ ] Validate new Hub Dashboard loading, Quick Capture dumping, and Urgency Timeline snooze actions.
+- [ ] Plan and prepare for **Sprint 2: Task System (Micro/Macro + Pomodoro)**.
 
 ## Future Roadmap (Planned Features)
-- [ ] **Personalized Hub Dashboard (`/`):**
+- [x] **Personalized Hub Dashboard (`/`):**
   - Make `/` the new centralized user cockpit, shifting the raw canvas to `/canvas/[id]`.
   - **Urgency Timeline Widget:** Aggregated visual list of upcoming deadlines, pinned notes, and critical tasks.
-  - **Quick Capture Inbox:** Minimalist text block dump for rapid thoughts, auto-structured into mind maps by AI.
+  - **Quick Capture Inbox:** Minimalist text block dump for rapid thoughts.
 - [ ] **Calendar with Google Calendar Sync:**
   - Full Google Calendar oauth sync to import events, flight/concert tickets, and sync scheduled reminders.
   - Interactive calendar month/week grid view on the dashboard.

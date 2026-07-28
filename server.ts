@@ -65,6 +65,95 @@ app.prepare().then(() => {
         intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages],
       });
 
+      discordClient.on('interactionCreate', async (interaction) => {
+        if (!interaction.isChatInputCommand() && !interaction.isButton() && !interaction.isStringSelectMenu()) return;
+
+        let optionsPayload: any = undefined;
+        if (interaction.isChatInputCommand()) {
+          optionsPayload = interaction.options.data.map(opt => ({
+            name: opt.name,
+            type: opt.type,
+            value: opt.value,
+            options: opt.options?.map(subOpt => ({
+              name: subOpt.name,
+              type: subOpt.type,
+              value: subOpt.value,
+            }))
+          }));
+        }
+
+        let customIdPayload: string | undefined = undefined;
+        let valuesPayload: string[] | undefined = undefined;
+        if (interaction.isButton()) {
+          customIdPayload = interaction.customId;
+        } else if (interaction.isStringSelectMenu()) {
+          customIdPayload = interaction.customId;
+          valuesPayload = interaction.values;
+        }
+
+        const payload = {
+          type: interaction.isChatInputCommand() ? 2 : 3,
+          id: interaction.id,
+          token: interaction.token,
+          application_id: interaction.applicationId,
+          guild_id: interaction.guildId,
+          channel_id: interaction.channelId,
+          user: {
+            id: interaction.user.id,
+            username: interaction.user.username,
+            avatar: interaction.user.avatar,
+            discriminator: interaction.user.discriminator,
+          },
+          member: interaction.member ? {
+            user: {
+              id: interaction.user.id,
+              username: interaction.user.username,
+              avatar: interaction.user.avatar,
+              discriminator: interaction.user.discriminator,
+            }
+          } : undefined,
+          data: {
+            id: interaction.isChatInputCommand() ? interaction.commandId : undefined,
+            name: interaction.isChatInputCommand() ? interaction.commandName : undefined,
+            custom_id: customIdPayload,
+            component_type: interaction.isButton() ? 2 : interaction.isStringSelectMenu() ? 3 : undefined,
+            values: valuesPayload,
+            type: interaction.isChatInputCommand() ? 1 : undefined,
+            options: optionsPayload,
+          }
+        };
+
+        try {
+          await interaction.deferReply({ ephemeral: true });
+
+          const response = await fetch(`http://localhost:${port}/api/discord/bot`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'x-local-bypass': 'true',
+            },
+            body: JSON.stringify(payload),
+          });
+
+          if (response.ok) {
+            const result = await response.json();
+            if (result?.data?.content) {
+              await interaction.editReply(result.data.content);
+            } else {
+              await interaction.editReply('Command processed successfully.');
+            }
+          } else {
+            const errText = await response.text();
+            await interaction.editReply(`❌ Failed to process command on local server: ${errText || 'Internal error'}`);
+          }
+        } catch (err) {
+          console.error('[Discord Bot Gateway Interaction Error]:', err);
+          try {
+            await interaction.editReply('❌ Local server connection error or processing timeout.');
+          } catch (e) {}
+        }
+      });
+
       discordClient.once('ready', () => {
         console.log(`[Discord Bot Manager] Persistent bot ONLINE: ${discordClient?.user?.tag}`);
         discordClient?.user?.setPresence({

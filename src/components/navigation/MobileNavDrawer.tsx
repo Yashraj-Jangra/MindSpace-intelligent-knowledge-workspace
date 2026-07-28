@@ -16,6 +16,7 @@ import {
   User,
   LogOut,
   Zap,
+  MessageSquare,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
@@ -39,6 +40,7 @@ export function MobileNavDrawer({ isOpen, onClose, onOpenAccount }: MobileNavDra
     { href: '/tasks', label: 'Tasks Engine', icon: CheckSquare, exact: false },
     { href: '/calendar', label: 'Calendar Cockpit', icon: Calendar, exact: false },
     { href: '/reminders', label: 'Reminders Feed', icon: Bell, exact: false },
+    { href: '/chat', label: 'Community Chat', icon: MessageSquare, exact: false },
     ...(user?.role === 'ADMIN'
       ? [{ href: '/admin', label: 'Admin Governance', icon: Shield, exact: false }]
       : []),

@@ -4,15 +4,17 @@ import React, { useState } from 'react';
 import { MessageSquare, X } from 'lucide-react';
 import { ChatPanel } from './ChatPanel';
 import { useAuth } from '@/contexts/AuthContext';
+import { usePathname } from 'next/navigation';
 
 export function ChatBubble() {
   const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
+  const pathname = usePathname();
 
-  if (!user) return null;
+  if (!user || pathname === '/chat') return null;
 
   return (
-    <div className="fixed bottom-5 right-5 z-50 font-sans">
+    <div className="fixed bottom-6 left-6 z-50 font-sans">
       {isOpen ? (
         <div className="w-[360px] sm:w-[400px] h-[520px] shadow-2xl animate-in slide-in-from-bottom-5 duration-200">
           <ChatPanel onClose={() => setIsOpen(false)} />

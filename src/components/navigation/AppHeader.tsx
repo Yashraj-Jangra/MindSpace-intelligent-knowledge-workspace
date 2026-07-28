@@ -28,6 +28,7 @@ export function AppHeader({ title, actions }: AppHeaderProps) {
     { href: '/tasks', label: 'Tasks', exact: false },
     { href: '/calendar', label: 'Calendar', exact: false },
     { href: '/reminders', label: 'Reminders', exact: false },
+    { href: '/chat', label: 'Chat', exact: false },
     ...(user.role === 'ADMIN'
       ? [{ href: '/admin', label: 'Admin', exact: false, isAdmin: true }]
       : []),

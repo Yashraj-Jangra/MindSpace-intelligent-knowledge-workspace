@@ -32,9 +32,35 @@ async function main() {
         data: { role: 'ADMIN' },
       });
       dbUpdated = true;
-      console.log('\x1b[32m%s\x1b[0m', `✓ PostgreSQL DB: User ${user.email} (ID: ${user.id}) role set to ADMIN`);
+      console.log('\x1b[32m%s\x1b[0m', `✓ PostgreSQL DB: User ${user.email} (ID: ${user.id}) role updated to ADMIN`);
     } else {
-      console.log('\x1b[33m%s\x1b[0m', `! PostgreSQL DB: User with email "${normalizedEmail}" not found in DB.`);
+      // Check local JSON store for user details to auto-sync to PostgreSQL DB
+      const jsonPath = path.join(process.cwd(), '.data', 'users.json');
+      if (fs.existsSync(jsonPath)) {
+        const raw = fs.readFileSync(jsonPath, 'utf-8');
+        const users = JSON.parse(raw);
+        const jsonUser = users.find((u) => u.email && u.email.toLowerCase() === normalizedEmail);
+
+        if (jsonUser) {
+          const createdDbUser = await prisma.user.create({
+            data: {
+              id: jsonUser.id,
+              email: normalizedEmail,
+              name: jsonUser.name || normalizedEmail.split('@')[0],
+              username: jsonUser.name || normalizedEmail.split('@')[0],
+              passwordHash: jsonUser.passwordHash || null,
+              role: 'ADMIN',
+              image: jsonUser.image || null,
+            },
+          });
+          dbUpdated = true;
+          console.log('\x1b[32m%s\x1b[0m', `✓ PostgreSQL DB: Synced user ${createdDbUser.email} (ID: ${createdDbUser.id}) to DB with ADMIN role`);
+        }
+      }
+
+      if (!dbUpdated) {
+        console.log('\x1b[33m%s\x1b[0m', `! PostgreSQL DB: User with email "${normalizedEmail}" not found in DB.`);
+      }
     }
   } catch (err) {
     console.warn('\x1b[33m%s\x1b[0m', `! PostgreSQL DB Update warning: ${err.message}`);

@@ -22,6 +22,10 @@ async function registerCommands() {
     const commands = [
       new SlashCommandBuilder().setName('tasks').setDescription('List your pending tasks'),
       new SlashCommandBuilder()
+        .setName('pair')
+        .setDescription('Pair your Discord account with MindSpace')
+        .addStringOption((opt) => opt.setName('code').setDescription('6-digit pairing code from Settings').setRequired(true)),
+      new SlashCommandBuilder()
         .setName('task')
         .setDescription('Manage tasks')
         .addSubcommand((sub) =>

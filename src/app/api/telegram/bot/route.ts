@@ -30,14 +30,14 @@ async function getBotCallbackHandler() {
   // Onboarding
   bot.command('start', (ctx) => {
     ctx.reply(
-      `👋 **Welcome to MindSpace Bot Companion!**\n\n` +
+      `👋 <b>Welcome to MindSpace Bot Companion!</b>\n\n` +
       `This bot acts as a remote control for your visual note-taking canvas and tasks.\n\n` +
-      `**How to pair:**\n` +
+      `<b>How to pair:</b>\n` +
       `1. Open the MindSpace Web UI\n` +
       `2. Open the Settings Drawer (click your profile image)\n` +
-      `3. Go to the **Telegram** tab and copy your pairing code\n` +
-      `4. Send here: \`/pair <pairing_code>\``,
-      { parse_mode: 'Markdown' }
+      `3. Go to the <b>Telegram</b> tab and copy your pairing code\n` +
+      `4. Send here: <code>/pair &lt;pairing_code&gt;</code>`,
+      { parse_mode: 'HTML' }
     );
   });
 
@@ -45,13 +45,15 @@ async function getBotCallbackHandler() {
   bot.command('pair', async (ctx) => {
     const code = ctx.match?.trim();
     if (!code) {
-      return ctx.reply('Please specify a pairing code, e.g. `/pair 123456`', { parse_mode: 'Markdown' });
+      return ctx.reply('Please specify a pairing code, e.g. <code>/pair 123456</code>', { parse_mode: 'HTML' });
     }
     try {
       const account = await pairTelegramAccount(code, ctx.chat.id.toString(), ctx.from?.username);
-      ctx.reply(`✅ **Account successfully paired!**\nWelcome to MindSpace, ${account.username || 'user'}!`, { parse_mode: 'Markdown' });
+      const escapedUsername = (account.username || 'user').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      ctx.reply(`✅ <b>Account successfully paired!</b>\nWelcome to MindSpace, ${escapedUsername}!`, { parse_mode: 'HTML' });
     } catch (err) {
-      ctx.reply(`❌ **Pairing failed:** ${(err as Error).message}`, { parse_mode: 'Markdown' });
+      const escapedError = ((err as Error).message || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      ctx.reply(`❌ <b>Pairing failed:</b> ${escapedError}`, { parse_mode: 'HTML' });
     }
   });
 

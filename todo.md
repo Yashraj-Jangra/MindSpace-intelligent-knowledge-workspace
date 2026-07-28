@@ -1,6 +1,13 @@
 # MindSpace - AI-Powered Visual Note-Taking & Mind-Mapping Platform
 
 ## Work Completed
+- [x] **Sleek Premium WhatsApp-Style Chat Overhaul** (Session 2026-07-28 v18):
+  - **Sleek Visual Layout**: Rebuilt `ChatPanel.tsx` with a dual-column layout separating active conversations search and lists from the active chat viewport.
+  - **Read Receipts & Delivery Checkmarks**: Implemented single check (sent) and double blue checks (seen/read) connected dynamically to the `readBy` array column.
+  - **Online Status Tracking**: Integrated Redis-backed online status indicators with real-time `user:online` and `user:offline` WS broadcasts.
+  - **Soft Deletion & Timestamps**: Enabled sender-side message soft-deletion (replacing message content with a placeholder) and corner timestamps.
+  - **Full Screen Toggle**: Added a layout mode toggle to expand the floating community chat into a full screen viewport.
+  - **Details Sidebar Pane**: Implemented collapsible side sheet inside chats to search message keyword history and view participants list.
 - [x] **Hub Dashboard Redesign & Chat Friend Search Fix** (Session 2026-07-28 v17):
   - **Hero Command Deck**: Rebuilt `/` Hub Dashboard into a poster-style command center cockpit featuring a live system telemetry bar (`Canvases`, `Notes`, `Tasks`, `Overdue Reminders`).
   - **Quick Action Launcher**: Built 1-tap quick creation buttons (`+ New Canvas`, `+ New Note`, `+ New Task`) alongside the Quick Thought Capture Inbox.

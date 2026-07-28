@@ -17,8 +17,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
-      <body className="bg-[#0A0A0A] text-[#FAFAFA] antialiased selection:bg-[#FF3D00] selection:text-[#0A0A0A]">
+    <html lang="en" className="dark" suppressHydrationWarning>
+      <body className="bg-[#0A0A0A] text-[#FAFAFA] antialiased selection:bg-[#FF3D00] selection:text-[#0A0A0A]" suppressHydrationWarning>
         <AuthProvider>
           <SocketProvider>
             <PomodoroProvider>

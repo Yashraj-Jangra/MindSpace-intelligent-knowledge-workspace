@@ -23,6 +23,9 @@
     * Configured automated database cleanup to delete/clear expired pairing codes from the DB during both retrieval refreshes and bot validation failures.
   - **Discord Slash Command Registry Expansion**: Added `/pair` to the list of application commands registered with Discord's REST API.
   - **Telegram Entity Parsing Crash Fix**: Switched start and pairing handlers to `parse_mode: 'HTML'` (escaping HTML-unsafe values) to prevent parsing crashes when users have underscores in their names (e.g. `I_Couldnt_Think_a_Better_Name!`).
+  - **Settings Bot Tab Integration Overhaul**:
+    * Redesigned the bot settings tab to display detailed pairing status (including connected usernames and green active connection dots) for both Discord and Telegram.
+    * Implemented secure unlinking operations via POST endpoints, allowing users to disconnect active bot accounts directly from the UI.
 - [x] **Sleek Premium WhatsApp-Style Chat Overhaul** (Session 2026-07-28 v18):
   - **Sleek Visual Layout**: Rebuilt `ChatPanel.tsx` with a dual-column layout separating active conversations search and lists from the active chat viewport.
   - **Read Receipts & Delivery Checkmarks**: Implemented single check (sent) and double blue checks (seen/read) connected dynamically to the `readBy` array column.

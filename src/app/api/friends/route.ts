@@ -8,6 +8,7 @@ import {
 } from '@/lib/chat-storage';
 import { prisma, isDbDisabled } from '@/lib/db';
 import { redis } from '@/lib/redis';
+import { getAllUsers } from '@/lib/auth-storage';
 
 export async function GET() {
   try {
@@ -30,14 +31,25 @@ export async function GET() {
       try {
         const dbUsers = await prisma.user.findMany({
           where: { id: { in: friendUserIds } },
-          select: { id: true, username: true, email: true, role: true },
+          select: { id: true, name: true, username: true, email: true, role: true },
         });
         friends = dbUsers;
-      } catch {
-        friends = friendUserIds.map((id) => ({ id, username: `User_${id.slice(0, 4)}` }));
+      } catch (err) {
+        console.warn('[Friends GET DB Error]:', err);
       }
-    } else {
-      friends = friendUserIds.map((id) => ({ id, username: `User_${id.slice(0, 4)}` }));
+    }
+
+    if (friends.length === 0 && friendUserIds.length > 0) {
+      const allUsers = await getAllUsers();
+      friends = allUsers
+        .filter((u) => friendUserIds.includes(u.id))
+        .map((u) => ({
+          id: u.id,
+          name: u.name || u.username || u.email.split('@')[0],
+          username: u.username || u.name || u.email.split('@')[0],
+          email: u.email,
+          role: u.role,
+        }));
     }
 
     const pendingIncoming = requests.filter((r) => r.receiverId === userId && r.status === 'PENDING');

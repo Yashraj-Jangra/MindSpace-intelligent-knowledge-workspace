@@ -8,6 +8,7 @@ const nextConfig = {
     '*.nip.io:3000',
     '*.nip.io',
   ],
+  serverExternalPackages: ['discord.js', '@discordjs/ws', 'zlib-sync', 'bufferutil', 'utf-8-validate'],
   turbopack: {},
   webpack: (config) => {
     config.resolve.fallback = { fs: false, path: false };

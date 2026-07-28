@@ -103,8 +103,8 @@ export async function getFriendRequests(userId: string): Promise<StoredFriendReq
           OR: [{ senderId: userId }, { receiverId: userId }],
         },
         include: {
-          sender: { select: { username: true, email: true } },
-          receiver: { select: { username: true, email: true } },
+          sender: { select: { name: true, username: true, email: true } },
+          receiver: { select: { name: true, username: true, email: true } },
         },
         orderBy: { createdAt: 'desc' },
       });
@@ -114,12 +114,11 @@ export async function getFriendRequests(userId: string): Promise<StoredFriendReq
         receiverId: r.receiverId,
         status: r.status as any,
         createdAt: r.createdAt.toISOString(),
-        senderName: r.sender.username || r.sender.email,
-        receiverName: r.receiver.username || r.receiver.email,
+        senderName: r.sender.name || r.sender.username || r.sender.email,
+        receiverName: r.receiver.name || r.receiver.username || r.receiver.email,
       }));
     } catch (err) {
       console.warn('[Chat Storage] DB friend request fetch failed:', err);
-      disableDbCircuitBreaker();
     }
   }
 
@@ -133,11 +132,37 @@ export async function createFriendRequest(
 ): Promise<StoredFriendRequest> {
   if (!isDbDisabled()) {
     try {
+      // Check existing request
+      const existing = await prisma.friendRequest.findFirst({
+        where: {
+          OR: [
+            { senderId, receiverId },
+            { senderId: receiverId, receiverId: senderId },
+          ],
+        },
+        include: {
+          sender: { select: { name: true, username: true, email: true } },
+          receiver: { select: { name: true, username: true, email: true } },
+        },
+      });
+
+      if (existing) {
+        return {
+          id: existing.id,
+          senderId: existing.senderId,
+          receiverId: existing.receiverId,
+          status: existing.status as any,
+          createdAt: existing.createdAt.toISOString(),
+          senderName: existing.sender.name || existing.sender.username || existing.sender.email,
+          receiverName: existing.receiver.name || existing.receiver.username || existing.receiver.email,
+        };
+      }
+
       const created = await prisma.friendRequest.create({
         data: { senderId, receiverId, status: 'PENDING' },
         include: {
-          sender: { select: { username: true, email: true } },
-          receiver: { select: { username: true, email: true } },
+          sender: { select: { name: true, username: true, email: true } },
+          receiver: { select: { name: true, username: true, email: true } },
         },
       });
       return {
@@ -146,16 +171,23 @@ export async function createFriendRequest(
         receiverId: created.receiverId,
         status: created.status as any,
         createdAt: created.createdAt.toISOString(),
-        senderName: created.sender.username || created.sender.email,
-        receiverName: created.receiver.username || created.receiver.email,
+        senderName: created.sender.name || created.sender.username || created.sender.email,
+        receiverName: created.receiver.name || created.receiver.username || created.receiver.email,
       };
     } catch (err) {
       console.warn('[Chat Storage] DB friend request create failed:', err);
-      disableDbCircuitBreaker();
     }
   }
 
   const store = readChatStore();
+  const existingLocal = store.friendRequests.find(
+    (r) => (r.senderId === senderId && r.receiverId === receiverId) || (r.senderId === receiverId && r.receiverId === senderId)
+  );
+
+  if (existingLocal) {
+    return existingLocal;
+  }
+
   const newReq: StoredFriendRequest = {
     id: `freq_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
     senderId,

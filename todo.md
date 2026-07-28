@@ -1,6 +1,11 @@
 # MindSpace - AI-Powered Visual Note-Taking & Mind-Mapping Platform
 
 ## Work Completed
+- [x] **Hub Dashboard Redesign & Chat Friend Search Fix** (Session 2026-07-28 v17):
+  - **Hero Command Deck**: Rebuilt `/` Hub Dashboard into a poster-style command center cockpit featuring a live system telemetry bar (`Canvases`, `Notes`, `Tasks`, `Overdue Reminders`).
+  - **Quick Action Launcher**: Built 1-tap quick creation buttons (`+ New Canvas`, `+ New Note`, `+ New Task`) alongside the Quick Thought Capture Inbox.
+  - **Graph-Texture Canvas Cards**: Rebuilt `RecentCanvasesGrid.tsx` with top accent bars, graph preview textures, last updated relative timestamps, and inline rename/delete controls.
+  - **Chat & Friend Search Repair**: Fixed `/api/friends/search` route to search across `name`, `username`, and `email` with dual-path fallback. Handled duplicate friend request constraints in `chat-storage.ts` without tripping the database circuit breaker.
 - [x] **Account & Settings Drawer Redesign & Theme Controls Integration** (Session 2026-07-28 v16):
   - **User Identity Hero Card**: Rebuilt `AccountDrawer.tsx` with a top profile banner displaying avatar initials, full display name, email address, role badge (`ADMIN`/`USER`), and live storage quota progress bar (`MB / MB`).
   - **Integrated Theme Switcher**: Moved `<ThemeToggle />` directly into the Account Drawer header card, removing it from `AppHeader.tsx` and `MobileNavDrawer.tsx` to declutter top navigation bars.

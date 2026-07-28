@@ -448,17 +448,43 @@ export function ChatPanel({ onClose, isSidebar = false }: ChatPanelProps) {
             {searchResults.length > 0 && (
               <div className="space-y-1.5">
                 <span className="font-mono text-[9px] uppercase text-[#737373]">Search Results</span>
-                {searchResults.map((u) => (
-                  <div key={u.id} className="flex items-center justify-between p-2 bg-[#0F0F0F] border border-[#262626]">
-                    <span className="text-xs text-[#FAFAFA]">{u.username || u.email}</span>
-                    <button
-                      onClick={() => handleSendFriendRequest(u.id)}
-                      className="p-1 bg-[#FF3D00] text-[#0A0A0A] font-mono text-[10px] uppercase font-bold"
-                    >
-                      <UserPlus className="w-3 h-3" />
-                    </button>
-                  </div>
-                ))}
+                {searchResults.map((u) => {
+                  const isFriend = friends.some((f) => f.id === u.id);
+                  const isSent = outgoingRequests.some((r) => r.receiverId === u.id);
+                  const displayName = u.name || u.username || u.email.split('@')[0];
+
+                  return (
+                    <div key={u.id} className="flex items-center justify-between p-2.5 bg-[#0F0F0F] border border-[#262626]">
+                      <div className="flex items-center gap-2.5 truncate max-w-[170px]">
+                        <div className="w-6 h-6 bg-[#FF3D00] text-[#0A0A0A] font-bold font-mono text-[10px] flex items-center justify-center shrink-0">
+                          {displayName[0].toUpperCase()}
+                        </div>
+                        <div className="truncate">
+                          <div className="text-xs text-[#FAFAFA] font-bold truncate">{displayName}</div>
+                          <div className="text-[10px] text-[#737373] font-mono truncate">{u.email}</div>
+                        </div>
+                      </div>
+
+                      {isFriend ? (
+                        <span className="font-mono text-[9px] uppercase px-1.5 py-0.5 border border-[#10B981] text-[#10B981] bg-[#10B981]/10 font-bold">
+                          Friend ✓
+                        </span>
+                      ) : isSent ? (
+                        <span className="font-mono text-[9px] uppercase px-1.5 py-0.5 border border-[#262626] text-[#737373]">
+                          Request Sent
+                        </span>
+                      ) : (
+                        <button
+                          onClick={() => handleSendFriendRequest(u.id)}
+                          className="flex items-center gap-1 px-2.5 py-1 bg-[#FF3D00] hover:bg-[#FF5722] text-[#0A0A0A] font-mono text-[10px] uppercase font-bold transition-colors"
+                        >
+                          <UserPlus className="w-3 h-3" />
+                          <span>Add</span>
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             )}
 
@@ -470,20 +496,22 @@ export function ChatPanel({ onClose, isSidebar = false }: ChatPanelProps) {
                 </span>
                 <div className="space-y-1.5">
                   {incomingRequests.map((req) => (
-                    <div key={req.id} className="flex items-center justify-between p-2 bg-[#0F0F0F] border border-[#FF3D00]/40">
-                      <span className="text-xs text-[#FAFAFA]">{req.senderName}</span>
+                    <div key={req.id} className="flex items-center justify-between p-2.5 bg-[#0F0F0F] border border-[#FF3D00]/40">
+                      <span className="text-xs text-[#FAFAFA] font-bold">{req.senderName}</span>
                       <div className="flex items-center gap-1">
                         <button
                           onClick={() => handleRespondFriendRequest(req.id, 'ACCEPTED')}
-                          className="p-1 bg-[#10B981] text-[#0A0A0A]"
+                          className="p-1 bg-[#10B981] text-[#0A0A0A] hover:bg-[#10B981]/80 transition-colors"
+                          title="Accept Request"
                         >
-                          <Check className="w-3 h-3" />
+                          <Check className="w-3.5 h-3.5 stroke-[2.5]" />
                         </button>
                         <button
                           onClick={() => handleRespondFriendRequest(req.id, 'REJECTED')}
-                          className="p-1 bg-[#FF3D00] text-[#0A0A0A]"
+                          className="p-1 bg-[#FF3D00] text-[#0A0A0A] hover:bg-[#FF5722] transition-colors"
+                          title="Reject Request"
                         >
-                          <X className="w-3 h-3" />
+                          <X className="w-3.5 h-3.5 stroke-[2.5]" />
                         </button>
                       </div>
                     </div>
@@ -500,14 +528,19 @@ export function ChatPanel({ onClose, isSidebar = false }: ChatPanelProps) {
               <div className="space-y-1.5">
                 {friends.length === 0 ? (
                   <div className="text-center py-4 font-mono text-xs text-[#737373]">
-                    No friends added yet.
+                    No friends added yet. Search users above to connect!
                   </div>
                 ) : (
                   friends.map((f) => (
-                    <div key={f.id} className="flex items-center justify-between p-2 bg-[#0F0F0F] border border-[#262626]">
-                      <div className="flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-[#10B981]" />
-                        <span className="text-xs text-[#FAFAFA]">{f.username || f.email}</span>
+                    <div key={f.id} className="flex items-center justify-between p-2.5 bg-[#0F0F0F] border border-[#262626]">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-6 h-6 bg-[#1A1A1A] border border-[#262626] font-mono text-[10px] text-[#FAFAFA] font-bold flex items-center justify-center shrink-0">
+                          {(f.name || f.username || f.email)[0].toUpperCase()}
+                        </div>
+                        <div>
+                          <div className="text-xs text-[#FAFAFA] font-bold">{f.name || f.username || f.email}</div>
+                          <div className="text-[9px] text-[#737373] font-mono">{f.email}</div>
+                        </div>
                       </div>
                     </div>
                   ))

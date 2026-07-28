@@ -7,6 +7,7 @@
   - **Direct Command Controls**: Added buttons to register/sync slash commands (`/api/discord/register`) and generate custom invite links using client IDs.
   - **24/7 Persistent Gateway Integration**: Embedded a persistent `discord.js` Client inside the custom Node server (`server.ts`) which automatically connects to the Discord Gateway on startup, keeping the bot online 24/7 and hot-reloading on configuration updates via Redis.
   - **Local Gateway Interaction Forwarding**: Hooked `interactionCreate` event inside the persistent WebSocket client to capture slash commands, buttons, and select-menus locally, forwarding them to `/api/discord/bot` via a secure signature-bypassed HTTP POST pipeline to allow instant localhost bot testing without ngrok.
+  - **Discord Bot Pairing Logic Bugfix**: Fixed execution check order in `src/app/api/discord/bot/route.ts` which previously returned a "Not Paired" block error before checking if the interaction was the `/pair` command itself, enabling Discord pairing to function fully.
   - **Persistent Telegram Long Polling & Status Panel**: 
     * Integrated a long-running Grammy `Bot` runner inside `server.ts` using persistent long-polling (`bot.start()`), matching the lifecycle of the website.
     * Added `/api/admin/telegram/status` endpoint to securely verify and load bot profile metadata.

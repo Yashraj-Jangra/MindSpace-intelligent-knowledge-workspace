@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getSessionFromCookie } from '@/lib/session';
 import { getAllSystemSettings, setSystemSetting } from '@/lib/settings';
+import { redis } from '@/lib/redis';
 
 export async function GET() {
   try {
@@ -34,6 +35,17 @@ export async function POST(req: Request) {
     }
 
     const updated = await getAllSystemSettings();
+
+    try {
+      await redis.publish('socket-emit', JSON.stringify({
+        room: 'admin',
+        event: 'settings:updated',
+        data: { settings: updated },
+      }));
+    } catch (rErr) {
+      console.warn('[Admin Settings Publish Warn]:', rErr);
+    }
+
     return NextResponse.json({ settings: updated, message: 'Settings saved successfully.' });
   } catch (error) {
     console.error('[API /admin/settings POST Error]:', error);

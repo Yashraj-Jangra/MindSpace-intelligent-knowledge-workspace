@@ -3,6 +3,10 @@ import { parse } from 'url';
 import next from 'next';
 import { Server } from 'socket.io';
 import Redis from 'ioredis';
+import { Client as DiscordClient, GatewayIntentBits, ActivityType } from 'discord.js';
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
 
 const dev = process.env.NODE_ENV !== 'production';
 const hostname = '0.0.0.0';
@@ -26,6 +30,58 @@ app.prepare().then(() => {
     },
   });
 
+  // Persistent Discord Bot Gateway Client
+  let discordClient: DiscordClient | null = null;
+
+  async function startDiscordBot() {
+    try {
+      const settingToken = await prisma.systemSetting.findUnique({
+        where: { key: 'DISCORD_BOT_TOKEN' }
+      });
+      const botToken = settingToken?.value;
+
+      const settingStatus = await prisma.systemSetting.findUnique({
+        where: { key: 'DISCORD_BOT_STATUS' }
+      });
+      const statusText = settingStatus?.value || 'Listening to /remind';
+
+      if (!botToken) {
+        console.log('[Discord Bot Manager] No bot token configured. Waiting...');
+        if (discordClient) {
+          await discordClient.destroy();
+          discordClient = null;
+        }
+        return;
+      }
+
+      if (discordClient) {
+        console.log('[Discord Bot Manager] Hot-reloading bot client...');
+        await discordClient.destroy();
+        discordClient = null;
+      }
+
+      console.log('[Discord Bot Manager] Attempting persistent login to Gateway...');
+      discordClient = new DiscordClient({
+        intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages],
+      });
+
+      discordClient.once('ready', () => {
+        console.log(`[Discord Bot Manager] Persistent bot ONLINE: ${discordClient?.user?.tag}`);
+        discordClient?.user?.setPresence({
+          activities: [{ name: statusText, type: ActivityType.Custom }],
+          status: 'online',
+        });
+      });
+
+      await discordClient.login(botToken);
+    } catch (err) {
+      console.error('[Discord Bot Manager] Persistent connection failed:', (err as Error).message);
+    }
+  }
+
+  // Launch bot on server startup
+  startDiscordBot();
+
   // Redis Subscriber Client for inter-process communication
   const subClient = new Redis(redisUrl, { lazyConnect: true });
   subClient.on('error', (err) => {
@@ -44,6 +100,10 @@ app.prepare().then(() => {
     if (channel === 'socket-emit') {
       try {
         const { room, event, data } = JSON.parse(message);
+        if (event === 'settings:updated') {
+          console.log('[Socket.io Redis Sub] Settings updated. Re-initiating Discord Bot Gateway...');
+          startDiscordBot();
+        }
         io.to(room).emit(event, data);
       } catch (e) {
         console.error('[Socket.io Redis Sub] Error processing message:', e);

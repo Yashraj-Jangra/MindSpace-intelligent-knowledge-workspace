@@ -8,8 +8,9 @@
   "SMTP_PASS": "",
   "SMTP_FROM_EMAIL": "",
   "DISCORD_BOT_TOKEN": "ODU4MzI2Mjg1MjM0OTk1MjUx.GL1P8w.9kyo6AmedIBXveCVlryVAGpmn91dgTczZOh7S4",
-  "DISCORD_CLIENT_ID": "",
+  "DISCORD_CLIENT_ID": "858326285234995251",
   "TELEGRAM_BOT_TOKEN": "",
   "GEMINI_API_KEY": "",
-  "MINIO_ENDPOINT": "localhost"
+  "MINIO_ENDPOINT": "localhost",
+  "DISCORD_BOT_STATUS": "loading ultron.exe "
 }

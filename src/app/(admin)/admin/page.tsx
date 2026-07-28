@@ -1,123 +1,184 @@
 import React from 'react';
-import { prisma } from '@/lib/db';
-import { countUsers } from '@/lib/auth-storage';
-import { Users, Network, Bell, Shield, Key } from 'lucide-react';
 import Link from 'next/link';
+import { prisma, isDbDisabled } from '@/lib/db';
+import { countUsers } from '@/lib/auth-storage';
+import { AdminHeader } from '@/components/admin/AdminHeader';
+import { Users, FileText, Network, CheckSquare, Key, Bell, Layers, MessageSquare, ShieldCheck, Server } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
-export default async function AdminDashboard() {
+export default async function AdminDashboardPage() {
   let userCount = 0;
   let canvasCount = 0;
-  let nodeCount = 0;
-  let webhookCount = 0;
-  let discordCount = 0;
+  let noteCount = 0;
+  let taskCount = 0;
+  let dbStatus = 'CONNECTED';
 
-  try {
-    userCount = await prisma.user.count();
-    canvasCount = await prisma.canvas.count();
-    nodeCount = await prisma.node.count();
-    webhookCount = await prisma.webhook.count();
-    discordCount = await prisma.discordAccount.count({ where: { isPaired: true } });
-  } catch (error) {
-    // Database connection or unmigrated fallback
+  if (!isDbDisabled()) {
+    try {
+      userCount = await prisma.user.count();
+      canvasCount = await prisma.canvas.count();
+      noteCount = await prisma.note.count();
+      taskCount = await prisma.task.count();
+    } catch {
+      dbStatus = 'OFFLINE / CIRCUIT BROKEN';
+      userCount = await countUsers();
+    }
+  } else {
+    dbStatus = 'OFFLINE / LOCAL FALLBACK';
     userCount = await countUsers();
   }
 
   return (
-    <div className="p-8 max-w-6xl mx-auto space-y-8 bg-[#0A0A0A] text-[#FAFAFA]">
-      {/* Dashboard Title Header */}
-      <div className="flex items-center justify-between pb-6 border-b border-[#262626]">
+    <div className="min-h-screen bg-[#0A0A0A] text-[#FAFAFA] flex flex-col font-sans">
+      <AdminHeader />
+
+      <main className="flex-1 max-w-7xl w-full mx-auto p-6 space-y-8">
+        {/* System Health Banner */}
+        <div className="p-4 bg-[#0F0F0F] border border-[#262626] flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <Server className="w-5 h-5 text-[#FF3D00]" />
+            <div>
+              <div className="font-mono text-xs uppercase tracking-wider text-[#737373]">
+                System Deployment Environment
+              </div>
+              <div className="font-semibold text-sm text-[#FAFAFA]">
+                Windows 11 + WSL2 (Ubuntu Docker Microservices)
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-4 font-mono text-xs">
+            <div className="flex items-center gap-1.5">
+              <span className={`w-2 h-2 rounded-full ${dbStatus === 'CONNECTED' ? 'bg-[#10B981]' : 'bg-[#FF3D00]'}`} />
+              <span className="text-[#737373]">PostgreSQL:</span>
+              <span className="font-bold text-[#FAFAFA]">{dbStatus}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Metrics Overview Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="bg-[#0F0F0F] border border-[#262626] p-6 relative">
+            <div className="h-1 w-12 bg-[#FF3D00] absolute top-0 left-0" />
+            <div className="flex items-center justify-between text-[#737373] mb-2">
+              <span className="font-mono text-xs uppercase tracking-wider">Total Users</span>
+              <Users className="w-5 h-5 text-[#FF3D00]" />
+            </div>
+            <div className="font-sans font-black text-4xl text-[#FAFAFA]">{userCount}</div>
+          </div>
+
+          <div className="bg-[#0F0F0F] border border-[#262626] p-6 relative">
+            <div className="h-1 w-12 bg-[#4285F4] absolute top-0 left-0" />
+            <div className="flex items-center justify-between text-[#737373] mb-2">
+              <span className="font-mono text-xs uppercase tracking-wider">Mind Map Canvases</span>
+              <Network className="w-5 h-5 text-[#4285F4]" />
+            </div>
+            <div className="font-sans font-black text-4xl text-[#FAFAFA]">{canvasCount}</div>
+          </div>
+
+          <div className="bg-[#0F0F0F] border border-[#262626] p-6 relative">
+            <div className="h-1 w-12 bg-[#10B981] absolute top-0 left-0" />
+            <div className="flex items-center justify-between text-[#737373] mb-2">
+              <span className="font-mono text-xs uppercase tracking-wider">Rich Text Notes</span>
+              <FileText className="w-5 h-5 text-[#10B981]" />
+            </div>
+            <div className="font-sans font-black text-4xl text-[#FAFAFA]">{noteCount}</div>
+          </div>
+
+          <div className="bg-[#0F0F0F] border border-[#262626] p-6 relative">
+            <div className="h-1 w-12 bg-[#8B5CF6] absolute top-0 left-0" />
+            <div className="flex items-center justify-between text-[#737373] mb-2">
+              <span className="font-mono text-xs uppercase tracking-wider">Active Tasks</span>
+              <CheckSquare className="w-5 h-5 text-[#8B5CF6]" />
+            </div>
+            <div className="font-sans font-black text-4xl text-[#FAFAFA]">{taskCount}</div>
+          </div>
+        </div>
+
+        {/* Administration Governance Modules */}
         <div>
-          <div className="flex items-center gap-2 text-[#FF3D00] font-mono text-xs uppercase tracking-widest">
-            <Shield className="w-4 h-4" />
-            <span>SYSTEM CONTROL PANEL</span>
-          </div>
-          <h1 className="font-sans font-black text-4xl tracking-tighter uppercase mt-1">
-            ADMIN DASHBOARD
-          </h1>
-        </div>
+          <h2 className="font-mono text-xs uppercase tracking-wider text-[#737373] mb-4">
+            Governance & Modules
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <Link
+              href="/admin/settings"
+              className="group p-6 bg-[#0F0F0F] hover:bg-[#1A1A1A] border border-[#262626] hover:border-[#FF3D00] transition-colors"
+            >
+              <div className="flex items-center gap-3 mb-2">
+                <Key className="w-5 h-5 text-[#FF3D00]" />
+                <h3 className="font-bold text-base text-[#FAFAFA] group-hover:text-[#FF3D00]">
+                  System Settings
+                </h3>
+              </div>
+              <p className="text-xs text-[#737373] leading-relaxed">
+                Configure global system credentials, SMTP email server, Discord/Telegram bot tokens, and Gemini AI models.
+              </p>
+            </Link>
 
-        <div className="flex items-center gap-3 font-mono text-xs">
-          <Link
-            href="/admin/users"
-            className="px-4 py-2 border border-[#262626] hover:border-[#FF3D00] text-[#FAFAFA] transition-colors"
-          >
-            User Management
-          </Link>
-          <Link
-            href="/admin/settings"
-            className="px-4 py-2 bg-[#FF3D00] text-[#0A0A0A] font-bold hover:bg-[#FAFAFA] transition-colors"
-          >
-            System Settings
-          </Link>
-        </div>
-      </div>
+            <Link
+              href="/admin/users"
+              className="group p-6 bg-[#0F0F0F] hover:bg-[#1A1A1A] border border-[#262626] hover:border-[#FF3D00] transition-colors"
+            >
+              <div className="flex items-center gap-3 mb-2">
+                <Users className="w-5 h-5 text-[#4285F4]" />
+                <h3 className="font-bold text-base text-[#FAFAFA] group-hover:text-[#4285F4]">
+                  User Management
+                </h3>
+              </div>
+              <p className="text-xs text-[#737373] leading-relaxed">
+                Inspect registered user accounts, toggle administrator privileges, view storage quota usage, and check bot pairings.
+              </p>
+            </Link>
 
-      {/* Metric Cards Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-[#0F0F0F] border border-[#262626] p-6 relative">
-          <div className="h-1 w-12 bg-[#FF3D00] absolute top-0 left-0" />
-          <div className="flex items-center justify-between text-[#737373] mb-4">
-            <span className="font-mono text-xs uppercase tracking-wider">Total Users</span>
-            <Users className="w-5 h-5 text-[#FF3D00]" />
-          </div>
-          <div className="font-sans font-black text-4xl text-[#FAFAFA] tracking-tight">{userCount}</div>
-        </div>
+            <Link
+              href="/admin/notifications"
+              className="group p-6 bg-[#0F0F0F] hover:bg-[#1A1A1A] border border-[#262626] hover:border-[#FF3D00] transition-colors"
+            >
+              <div className="flex items-center gap-3 mb-2">
+                <Bell className="w-5 h-5 text-[#10B981]" />
+                <h3 className="font-bold text-base text-[#FAFAFA] group-hover:text-[#10B981]">
+                  Dispatch Logs
+                </h3>
+              </div>
+              <p className="text-xs text-[#737373] leading-relaxed">
+                View central audit logs of all outgoing email, Discord DM, Telegram, in-app, and webhook notifications.
+              </p>
+            </Link>
 
-        <div className="bg-[#0F0F0F] border border-[#262626] p-6 relative">
-          <div className="h-1 w-12 bg-[#3b82f6] absolute top-0 left-0" />
-          <div className="flex items-center justify-between text-[#737373] mb-4">
-            <span className="font-mono text-xs uppercase tracking-wider">Mind Maps</span>
-            <Network className="w-5 h-5 text-[#3b82f6]" />
-          </div>
-          <div className="font-sans font-black text-4xl text-[#FAFAFA] tracking-tight">{canvasCount}</div>
-        </div>
+            <Link
+              href="/admin/queues"
+              className="group p-6 bg-[#0F0F0F] hover:bg-[#1A1A1A] border border-[#262626] hover:border-[#FF3D00] transition-colors"
+            >
+              <div className="flex items-center gap-3 mb-2">
+                <Layers className="w-5 h-5 text-[#8B5CF6]" />
+                <h3 className="font-bold text-base text-[#FAFAFA] group-hover:text-[#8B5CF6]">
+                  Queue Monitor
+                </h3>
+              </div>
+              <p className="text-xs text-[#737373] leading-relaxed">
+                Inspect real-time BullMQ background workers processing reminders, daily digests, and retry jobs.
+              </p>
+            </Link>
 
-        <div className="bg-[#0F0F0F] border border-[#262626] p-6 relative">
-          <div className="h-1 w-12 bg-[#10b981] absolute top-0 left-0" />
-          <div className="flex items-center justify-between text-[#737373] mb-4">
-            <span className="font-mono text-xs uppercase tracking-wider">Total Nodes</span>
-            <Bell className="w-5 h-5 text-[#10b981]" />
-          </div>
-          <div className="font-sans font-black text-4xl text-[#FAFAFA] tracking-tight">{nodeCount}</div>
-        </div>
-
-        <div className="bg-[#0F0F0F] border border-[#262626] p-6 relative">
-          <div className="h-1 w-12 bg-[#8b5cf6] absolute top-0 left-0" />
-          <div className="flex items-center justify-between text-[#737373] mb-4">
-            <span className="font-mono text-xs uppercase tracking-wider">Discord Paired</span>
-            <Key className="w-5 h-5 text-[#8b5cf6]" />
-          </div>
-          <div className="font-sans font-black text-4xl text-[#FAFAFA] tracking-tight">{discordCount}</div>
-        </div>
-      </div>
-
-      {/* Integration Status Table */}
-      <div className="bg-[#0F0F0F] border border-[#262626] p-6">
-        <h3 className="font-mono text-xs uppercase tracking-wider text-[#FF3D00] mb-4">
-          SYSTEM INTEGRATIONS STATUS
-        </h3>
-
-        <div className="space-y-4 font-mono text-sm">
-          <div className="flex items-center justify-between py-2 border-b border-[#262626]">
-            <span>Google OAuth Login</span>
-            <span className="text-[#10b981] font-bold">CONFIGURED</span>
-          </div>
-          <div className="flex items-center justify-between py-2 border-b border-[#262626]">
-            <span>Authentication Engine</span>
-            <span className="text-[#10b981] font-bold">ACTIVE</span>
-          </div>
-          <div className="flex items-center justify-between py-2 border-b border-[#262626]">
-            <span>Outbound Webhooks Active</span>
-            <span className="text-[#FAFAFA]">{webhookCount} Active Endpoints</span>
-          </div>
-          <div className="flex items-center justify-between py-2">
-            <span>MinIO Local S3 Storage</span>
-            <span className="text-[#10b981] font-bold">ONLINE</span>
+            <Link
+              href="/admin/chat"
+              className="group p-6 bg-[#0F0F0F] hover:bg-[#1A1A1A] border border-[#262626] hover:border-[#FF3D00] transition-colors"
+            >
+              <div className="flex items-center gap-3 mb-2">
+                <MessageSquare className="w-5 h-5 text-[#F59E0B]" />
+                <h3 className="font-bold text-base text-[#FAFAFA] group-hover:text-[#F59E0B]">
+                  Chat Moderation
+                </h3>
+              </div>
+              <p className="text-xs text-[#737373] leading-relaxed">
+                Monitor community DMs and group chat messages, review reported content, and moderate message histories.
+              </p>
+            </Link>
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

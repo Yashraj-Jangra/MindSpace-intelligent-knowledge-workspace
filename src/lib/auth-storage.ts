@@ -7,6 +7,7 @@ export interface StoredUser {
   id: string;
   email: string;
   name: string | null;
+  username?: string | null;
   passwordHash?: string | null;
   role: 'USER' | 'ADMIN';
   image?: string | null;
@@ -39,41 +40,69 @@ function saveLocalUser(user: StoredUser) {
   try {
     ensureDataDir();
     const users = getLocalUsers();
-    const existingIdx = users.findIndex((u) => u.email === user.email);
-    if (existingIdx >= 0) {
-      users[existingIdx] = user;
+    const index = users.findIndex((u) => u.id === user.id || u.email === user.email);
+    if (index >= 0) {
+      users[index] = user;
     } else {
       users.push(user);
     }
     fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2), 'utf-8');
   } catch (error) {
-    console.error('[Local Store Error]:', error);
+    console.error('[Local User Store Error]:', error);
   }
 }
 
-export async function findUserByEmail(email: string): Promise<StoredUser | null> {
+export async function getUserByEmail(email: string): Promise<StoredUser | null> {
   const normalizedEmail = email.toLowerCase().trim();
   try {
-    const user = await prisma.user.findUnique({
+    const dbUser = await prisma.user.findUnique({
       where: { email: normalizedEmail },
     });
-    if (user) {
+    if (dbUser) {
       return {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        passwordHash: user.passwordHash,
-        role: user.role as 'USER' | 'ADMIN',
-        image: user.image,
-        createdAt: user.createdAt.toISOString(),
+        id: dbUser.id,
+        email: dbUser.email,
+        name: dbUser.name,
+        username: dbUser.username,
+        passwordHash: dbUser.passwordHash,
+        role: dbUser.role as 'USER' | 'ADMIN',
+        image: dbUser.image,
+        createdAt: dbUser.createdAt.toISOString(),
       };
     }
   } catch (error) {
-    // Database connection fallback
+    console.warn('[DB Fallback]: Querying local fallback store for user.', (error as Error).message);
   }
 
   const localUsers = getLocalUsers();
-  return localUsers.find((u) => u.email === normalizedEmail) || null;
+  return localUsers.find((u) => u.email.toLowerCase() === normalizedEmail) || null;
+}
+
+export const findUserByEmail = getUserByEmail;
+
+export async function getUserById(id: string): Promise<StoredUser | null> {
+  try {
+    const dbUser = await prisma.user.findUnique({
+      where: { id },
+    });
+    if (dbUser) {
+      return {
+        id: dbUser.id,
+        email: dbUser.email,
+        name: dbUser.name,
+        username: dbUser.username,
+        passwordHash: dbUser.passwordHash,
+        role: dbUser.role as 'USER' | 'ADMIN',
+        image: dbUser.image,
+        createdAt: dbUser.createdAt.toISOString(),
+      };
+    }
+  } catch (error) {
+    console.warn('[DB Fallback]: Querying local fallback store for user by ID.', (error as Error).message);
+  }
+
+  const localUsers = getLocalUsers();
+  return localUsers.find((u) => u.id === id) || null;
 }
 
 export async function createUser(data: {
@@ -91,6 +120,7 @@ export async function createUser(data: {
     id,
     email: normalizedEmail,
     name: data.name || normalizedEmail.split('@')[0],
+    username: data.name || normalizedEmail.split('@')[0],
     passwordHash: data.passwordHash || null,
     role,
     image: data.image || null,
@@ -103,6 +133,7 @@ export async function createUser(data: {
         id,
         email: normalizedEmail,
         name: newUser.name,
+        username: newUser.username,
         passwordHash: data.passwordHash,
         role: role as UserRole,
         image: data.image,
@@ -115,6 +146,26 @@ export async function createUser(data: {
 
   saveLocalUser(newUser);
   return newUser;
+}
+
+export async function getAllUsers(): Promise<StoredUser[]> {
+  try {
+    const dbUsers = await prisma.user.findMany({
+      orderBy: { createdAt: 'desc' },
+    });
+    return dbUsers.map((u) => ({
+      id: u.id,
+      email: u.email,
+      name: u.name,
+      username: u.username,
+      passwordHash: u.passwordHash,
+      role: u.role as 'USER' | 'ADMIN',
+      image: u.image,
+      createdAt: u.createdAt.toISOString(),
+    }));
+  } catch (error) {
+    return getLocalUsers();
+  }
 }
 
 export async function countUsers(): Promise<number> {

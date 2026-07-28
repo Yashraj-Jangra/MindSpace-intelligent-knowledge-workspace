@@ -70,6 +70,7 @@ model User {
   conversationMembers    ConversationMember[]
   chatMessages           ChatMessage[]
   canvasCollaborators    CanvasCollaborator[]
+  notificationLogs       NotificationLog[]
 
   @@map("users")
 }
@@ -493,4 +494,22 @@ model CanvasCollaborator {
 
   @@unique([canvasId, userId])
   @@map("canvas_collaborators")
+}
+
+
+model NotificationLog {
+  id        String   @id @default(cuid())
+  userId    String
+  channel   String
+  target    String
+  title     String
+  body      String?  @db.Text
+  status    String   @default("SENT")
+  error     String?  @db.Text
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@map("notification_logs")
 }

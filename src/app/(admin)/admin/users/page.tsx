@@ -1,88 +1,122 @@
-import React from 'react';
-import { prisma } from '@/lib/db';
-import { Users, ArrowLeft } from 'lucide-react';
-import Link from 'next/link';
+'use client';
 
-export const dynamic = 'force-dynamic';
+import React, { useState, useEffect } from 'react';
+import { AdminHeader } from '@/components/admin/AdminHeader';
+import { Users, Shield, ShieldAlert, CheckCircle2 } from 'lucide-react';
 
-export default async function UserManagementPage() {
-  let users: any[] = [];
+export default function AdminUsersPage() {
+  const [users, setUsers] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  try {
-    users = await prisma.user.findMany({
-      include: {
-        _count: {
-          select: { canvases: true, notifications: true, webhooks: true },
-        },
-      },
-      orderBy: { createdAt: 'desc' },
-    });
-  } catch (error) {
-    // Fallback if DB isn't initialized or connected yet
-    users = [
-      {
-        id: 'fallback-admin',
-        name: 'MindSpace Admin',
-        email: 'admin@mindspace.local',
-        role: 'ADMIN',
-        createdAt: new Date(),
-        _count: { canvases: 0, notifications: 0, webhooks: 0 },
-      },
-    ];
-  }
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  const fetchUsers = async () => {
+    setIsLoading(true);
+    try {
+      const res = await fetch('/api/admin/users');
+      if (res.ok) {
+        const data = await res.json();
+        setUsers(data.users || []);
+      }
+    } catch (err) {
+      console.error('[Admin Users Fetch Error]:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleToggleRole = async (userId: string, currentRole: string) => {
+    const newRole = currentRole === 'ADMIN' ? 'USER' : 'ADMIN';
+    if (confirm(`Change user role to ${newRole}?`)) {
+      try {
+        const res = await fetch('/api/admin/users', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId, role: newRole }),
+        });
+
+        if (res.ok) {
+          fetchUsers();
+        }
+      } catch (err) {
+        console.error('[Toggle Role Error]:', err);
+      }
+    }
+  };
 
   return (
-    <div className="p-8 max-w-6xl mx-auto space-y-8 bg-[#0A0A0A] text-[#FAFAFA]">
-      <div className="flex items-center justify-between pb-6 border-b border-[#262626]">
-        <div className="flex items-center gap-4">
-          <Link href="/admin" className="text-[#737373] hover:text-[#FAFAFA] transition-colors">
-            <ArrowLeft className="w-6 h-6 stroke-[1.5]" />
-          </Link>
+    <div className="min-h-screen bg-[#0A0A0A] text-[#FAFAFA] flex flex-col font-sans">
+      <AdminHeader />
+
+      <main className="flex-1 max-w-7xl w-full mx-auto p-6 space-y-6">
+        <div className="flex items-center justify-between pb-4 border-b border-[#262626]">
           <div>
-            <div className="flex items-center gap-2 text-[#FF3D00] font-mono text-xs uppercase tracking-widest">
+            <div className="flex items-center gap-2 text-[#4285F4] font-mono text-xs uppercase tracking-wider">
               <Users className="w-4 h-4" />
-              <span>USER MANAGEMENT</span>
+              <span>User Governance</span>
             </div>
-            <h1 className="font-sans font-black text-3xl tracking-tighter uppercase mt-1">
-              Registered Accounts ({users.length})
+            <h1 className="font-sans font-black text-2xl tracking-tight uppercase mt-1">
+              Registered User Management
             </h1>
           </div>
         </div>
-      </div>
 
-      {/* Users Data Table */}
-      <div className="bg-[#0F0F0F] border border-[#262626] overflow-x-auto">
-        <table className="w-full text-left font-mono text-xs">
-          <thead className="bg-[#1A1A1A] text-[#737373] uppercase tracking-wider border-b border-[#262626]">
-            <tr>
-              <th className="p-4">User</th>
-              <th className="p-4">Email</th>
-              <th className="p-4">Role</th>
-              <th className="p-4">Canvases</th>
-              <th className="p-4">Joined</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-[#262626]">
-            {users.map((u) => (
-              <tr key={u.id} className="hover:bg-[#1A1A1A]/50 transition-colors">
-                <td className="p-4 font-bold text-[#FAFAFA]">{u.name || 'Anonymous User'}</td>
-                <td className="p-4 text-[#737373]">{u.email}</td>
-                <td className="p-4">
-                  <span
-                    className={`inline-block px-2 py-0.5 font-bold ${
-                      u.role === 'ADMIN' ? 'bg-[#FF3D00] text-[#0A0A0A]' : 'bg-[#262626] text-[#FAFAFA]'
-                    }`}
-                  >
-                    {u.role}
-                  </span>
-                </td>
-                <td className="p-4 text-[#FAFAFA]">{u._count?.canvases || 0} maps</td>
-                <td className="p-4 text-[#737373]">{new Date(u.createdAt).toLocaleDateString()}</td>
+        {/* Users Table */}
+        <div className="border border-[#262626] bg-[#0F0F0F] overflow-x-auto">
+          <table className="w-full text-left font-sans text-xs">
+            <thead className="bg-[#141414] border-b border-[#262626] font-mono text-[10px] uppercase tracking-wider text-[#737373]">
+              <tr>
+                <th className="p-3">User</th>
+                <th className="p-3">Email</th>
+                <th className="p-3">Role</th>
+                <th className="p-3">Bot Pairings</th>
+                <th className="p-3">Registered</th>
+                <th className="p-3 text-right">Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody className="divide-y divide-[#262626]">
+              {users.map((u) => (
+                <tr key={u.id} className="hover:bg-[#1A1A1A] transition-colors">
+                  <td className="p-3 font-semibold text-[#FAFAFA]">
+                    {u.username || 'User'}
+                    <div className="font-mono text-[9px] text-[#737373]">{u.id}</div>
+                  </td>
+                  <td className="p-3 font-mono text-[#FAFAFA]">{u.email}</td>
+                  <td className="p-3">
+                    <span
+                      className={`font-mono text-[9px] uppercase px-2 py-0.5 border ${
+                        u.role === 'ADMIN'
+                          ? 'border-[#FF3D00] text-[#FF3D00] bg-[#FF3D00]/10 font-bold'
+                          : 'border-[#262626] text-[#737373]'
+                      }`}
+                    >
+                      {u.role}
+                    </span>
+                  </td>
+                  <td className="p-3 font-mono text-[10px] text-[#737373]">
+                    {u.discordAccount?.isPaired ? 'Discord ✓ ' : ''}
+                    {u.telegramAccount?.isPaired ? 'Telegram ✓' : ''}
+                    {!u.discordAccount?.isPaired && !u.telegramAccount?.isPaired ? 'None' : ''}
+                  </td>
+                  <td className="p-3 font-mono text-[#737373]">
+                    {new Date(u.createdAt).toLocaleDateString()}
+                  </td>
+                  <td className="p-3 text-right">
+                    <button
+                      onClick={() => handleToggleRole(u.id, u.role)}
+                      className="px-3 py-1 border border-[#262626] hover:border-[#FF3D00] font-mono text-[10px] uppercase text-[#FAFAFA] hover:text-[#FF3D00] transition-colors"
+                    >
+                      {u.role === 'ADMIN' ? 'Demote to User' : 'Promote to Admin'}
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </main>
     </div>
   );
 }

@@ -70,6 +70,9 @@ export default async function NotesLibrary({
             <Link href="/tasks" className="text-[#737373] hover:text-[#FAFAFA] uppercase tracking-wider transition-colors">
               Tasks
             </Link>
+            <Link href="/calendar" className="text-[#737373] hover:text-[#FAFAFA] uppercase tracking-wider transition-colors">
+              Calendar
+            </Link>
             <Link href="/reminders" className="text-[#737373] hover:text-[#FAFAFA] uppercase tracking-wider transition-colors">
               Reminders
             </Link>

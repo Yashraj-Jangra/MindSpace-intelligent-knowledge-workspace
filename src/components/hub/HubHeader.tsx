@@ -62,6 +62,14 @@ export function HubHeader() {
               Tasks
             </Link>
             <Link
+              href="/calendar"
+              className={`uppercase tracking-wider transition-colors ${
+                pathname.startsWith('/calendar') ? 'text-[#FF3D00] font-bold' : 'text-[#737373] hover:text-[#FAFAFA]'
+              }`}
+            >
+              Calendar
+            </Link>
+            <Link
               href="/reminders"
               className={`uppercase tracking-wider transition-colors ${
                 pathname.startsWith('/reminders') ? 'text-[#FF3D00] font-bold' : 'text-[#737373] hover:text-[#FAFAFA]'

@@ -1,6 +1,14 @@
 # MindSpace - AI-Powered Visual Note-Taking & Mind-Mapping Platform
 
 ## Work Completed
+- [x] **Native MindSpace Calendar** (Session 2026-07-28 v12):
+  - **Prisma & Schema Setup**: Defined `CalendarEvent` model and `EventRecurrence` enum (`NONE`, `DAILY`, `WEEKLY`, `MONTHLY`, `YEARLY`) in `prisma/schema.prisma`.
+  - **Dual-Path Storage Layer**: Created `calendar-storage.ts` with PostgreSQL database query support and local `.data/calendar-events.json` persistent storage fallback.
+  - **Unified Multi-Source API Routes**: Built `/api/calendar/events` GET & POST and `/api/calendar/events/[id]` PATCH & DELETE endpoints aggregating custom events, tasks (`dueAt`), and note/node deadlines (`reminderAt`).
+  - **HTML5 Draggable Event Cards**: Built `CalendarEventCard.tsx` with multi-layer color indicators (`#FF3D00` Reminders, `#4285F4` Personal, `#10B981` Tasks, `#8B5CF6` Recurring).
+  - **Slide-Over Detail Drawer**: Built `EventDetailSlideOver.tsx` supporting custom event editing, location inputs, color swatches, recurrence selection, task subtask checklists, and note redirection links.
+  - **Calendar Workspace Dashboard**: Built `/calendar` featuring Month, Week, and Day grid views, date navigation (`< Prev`, `Today`, `Next >`), drop target handlers (`onDragOver`, `onDrop`), and real-time Socket.io sync (`calendar:updated`, `calendar:deleted`).
+  - **Header Navigation**: Added `/calendar` navigation link across all main headers.
 - [x] **Sprint 3 & 3.5: Advanced Reminders & Multi-Channel Bots** (Session 2026-07-28 v11):
   - **Redis/Valkey Integration:** Added Valkey container to `docker-compose.yml` on port `6379` and initialized a thread-safe singleton client `redis.ts`.
   - **BullMQ Queue Management:** Setup `reminders`, `digest`, and `webhook-retry` queues with configurable retry policies.
@@ -188,8 +196,8 @@
 - [ ] Validate new Task System page, collapsible macro cards, subtask checkoffs, and the global Pomodoro timer.
 - [ ] Validate Socket.io connections and message routing inside custom server.
 - [ ] Test bot webhook endpoints using tunnels (ngrok) to verify Discord and Telegram interactions.
-- [ ] Launch the background reminder workers and check Cron queue enqueuing.
-- [ ] Plan and prepare for **Sprint 4: Native MindSpace Calendar**.
+- [ ] Validate Calendar month, week, and day grid views and drag-and-drop rescheduling.
+- [ ] Plan and prepare for **Sprint 5: Community Chat, Group System & Canvas Co-Presence**.
 
 ## Future Roadmap (Planned Features)
 - [x] **Personalized Hub Dashboard (`/`):**

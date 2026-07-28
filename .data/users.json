@@ -22,7 +22,7 @@
     "email": "test@cvweb.tech",
     "name": "Test1",
     "passwordHash": "$2a$10$v0jnl1f8aJGemPTzK7d7au.TM2gRd4OBoKZignRmJC0wOpng05gGm",
-    "role": "USER",
+    "role": "ADMIN",
     "image": null,
     "createdAt": "2026-07-24T19:50:44.839Z"
   },

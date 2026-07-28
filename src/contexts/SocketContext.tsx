@@ -32,7 +32,8 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
     const socketInstance = io({
       autoConnect: true,
       reconnectionAttempts: 5,
-      reconnectionDelay: 1000,
+      reconnectionDelay: 2000,
+      transports: ['websocket', 'polling'],
     });
 
     socketRef.current = socketInstance;
@@ -46,6 +47,11 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
       if (user?.id) {
         socketInstance.emit('join-room', `user:${user.id}`);
       }
+    });
+
+    socketInstance.on('connect_error', (err) => {
+      // Suppress 404 noise when dev server is starting up or disconnected
+      setIsConnected(false);
     });
 
     socketInstance.on('disconnect', () => {

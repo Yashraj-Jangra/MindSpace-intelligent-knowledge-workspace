@@ -5,6 +5,7 @@ import { getSessionFromCookie } from '@/lib/session';
 import { Plus, Pin, Bell, Tag, FileText, Search, Network, Clock, Shield } from 'lucide-react';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { redirect } from 'next/navigation';
+import { AppHeader } from '@/components/navigation/AppHeader';
 
 export const dynamic = 'force-dynamic';
 
@@ -32,68 +33,18 @@ export default async function NotesLibrary({
 
   return (
     <div className="min-h-screen w-full bg-[#0A0A0A] text-[#FAFAFA] flex flex-col font-sans">
-      {/* Top Responsive Header Bar */}
-      <header className="min-h-[4rem] border-b border-[#262626] bg-[#0A0A0A]/95 px-4 sm:px-8 py-3 sm:py-0 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4 z-30">
-        <div className="flex items-center justify-between sm:justify-start gap-3 shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-[#FF3D00] flex items-center justify-center font-mono font-bold text-[#0A0A0A] shrink-0">
-              <FileText className="w-5 h-5 stroke-[2.5]" />
-            </div>
-            <div>
-              <h1 className="font-sans font-black text-lg sm:text-xl tracking-tighter uppercase text-[#FAFAFA]">
-                MIND<span className="text-[#FF3D00]">SPACE</span>
-              </h1>
-              <span className="font-mono text-[8px] sm:text-[9px] uppercase tracking-widest text-[#737373] block -mt-1">
-                CLASSIC NOTES DASHBOARD
-              </span>
-            </div>
-          </div>
-
+      <AppHeader
+        title="Notes Workspace"
+        actions={
           <Link
             href="/notes/new"
-            className="sm:hidden flex items-center gap-1.5 px-3 py-1.5 bg-[#FF3D00] text-[#0A0A0A] font-mono text-[11px] uppercase font-bold shrink-0"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-[#FF3D00] text-[#0A0A0A] font-mono text-xs uppercase font-bold hover:bg-[#FF5722] transition-colors"
           >
-            <Plus className="w-3.5 h-3.5 stroke-[2]" />
-            <span>New</span>
+            <Plus className="w-4 h-4 stroke-[2]" />
+            <span className="hidden sm:inline">New Note</span>
           </Link>
-        </div>
-
-        {/* Responsive Header Navigation */}
-        <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4 font-mono text-xs overflow-x-auto py-1 sm:py-0 no-scrollbar">
-          <div className="flex items-center gap-3 shrink-0">
-            <Link href="/notes" className="text-[#FF3D00] font-bold uppercase tracking-wider">
-              Notes
-            </Link>
-            <Link href="/" className="text-[#737373] hover:text-[#FAFAFA] uppercase tracking-wider transition-colors">
-              Hub
-            </Link>
-            <Link href="/tasks" className="text-[#737373] hover:text-[#FAFAFA] uppercase tracking-wider transition-colors">
-              Tasks
-            </Link>
-            <Link href="/calendar" className="text-[#737373] hover:text-[#FAFAFA] uppercase tracking-wider transition-colors">
-              Calendar
-            </Link>
-            <Link href="/reminders" className="text-[#737373] hover:text-[#FAFAFA] uppercase tracking-wider transition-colors">
-              Reminders
-            </Link>
-            <Link href="/admin" className="text-[#737373] hover:text-[#FAFAFA] uppercase tracking-wider transition-colors flex items-center gap-1">
-              <Shield className="w-3.5 h-3.5 text-[#FF3D00]" />
-              <span>Admin</span>
-            </Link>
-          </div>
-
-          <div className="flex items-center gap-3 shrink-0">
-            <ThemeToggle />
-            <Link
-              href="/notes/new"
-              className="hidden sm:flex items-center gap-1.5 px-4 py-2 bg-[#FF3D00] hover:bg-[#FAFAFA] text-[#0A0A0A] font-mono text-xs uppercase tracking-wider font-bold transition-colors"
-            >
-              <Plus className="w-4 h-4 stroke-[2]" />
-              <span>New Note</span>
-            </Link>
-          </div>
-        </div>
-      </header>
+        }
+      />
 
       {/* Main Workspace */}
       <main className="flex-1 max-w-6xl w-full mx-auto p-4 sm:p-8 space-y-6 sm:space-y-8">

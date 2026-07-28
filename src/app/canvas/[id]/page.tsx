@@ -12,6 +12,7 @@ import { DocumentUpload } from '@/components/ui/DocumentUpload';
 import { SearchBar } from '@/components/ui/SearchBar';
 import { ExportMenu } from '@/components/ui/ExportMenu';
 import { AccountDrawer } from '@/components/ui/AccountDrawer';
+import { AppHeader } from '@/components/navigation/AppHeader';
 import { Network, FileText, FileUp, LogIn, UserPlus, LogOut, User, LayoutDashboard, Bell, ArrowLeft, ListTodo } from 'lucide-react';
 import { MindSpaceNodeData } from '@/lib/graph/transformer';
 import { useAuth } from '@/contexts/AuthContext';
@@ -290,103 +291,22 @@ export default function CanvasWorkspace({ params }: { params: Promise<{ id: stri
 
   return (
     <main className="w-screen h-screen relative flex flex-col bg-[#0A0A0A] overflow-hidden">
-      {/* Responsive Header Bar */}
-      <header className="min-h-[4rem] border-b border-[#262626] bg-[#0A0A0A]/90 backdrop-blur-md px-3 sm:px-6 py-2 sm:py-0 flex items-center justify-between gap-2 z-30 overflow-x-auto no-scrollbar">
-        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-          <Link
-            href="/"
-            className="p-1.5 border border-[#262626] hover:border-[#FF3D00] hover:text-[#FF3D00] text-[#737373] transition-colors mr-1 sm:mr-2"
-            title="Back to Hub Dashboard"
-          >
-            <ArrowLeft className="w-4 h-4 stroke-[2]" />
-          </Link>
-          <div className="w-8 h-8 bg-[#FF3D00] flex items-center justify-center font-mono font-bold text-[#0A0A0A] shrink-0">
-            <Network className="w-5 h-5 stroke-[2.5]" />
-          </div>
-          <div>
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="font-sans font-extrabold text-sm sm:text-base tracking-tighter uppercase bg-transparent text-[#FAFAFA] border-b border-transparent hover:border-[#262626] focus:border-[#FF3D00] focus:outline-none px-1"
-            />
-            <span className="font-mono text-[8px] sm:text-[9px] uppercase tracking-widest text-[#737373] block mt-0.5 pl-1">
-              {saveStatus === 'saving' ? 'Saving changes...' : 'Changes saved'}
-            </span>
-          </div>
-        </div>
-
-        {/* Workspace Quick Links & Search Bar */}
-        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-          <Link
-            href="/notes"
-            className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 border border-[#262626] hover:border-[#FF3D00] text-xs font-mono uppercase tracking-wider text-[#FAFAFA] transition-colors"
-          >
-            <LayoutDashboard className="w-3.5 h-3.5 text-[#FF3D00]" />
-            <span className="hidden sm:inline">Notes</span>
-          </Link>
-
-          <Link
-            href="/tasks"
-            className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 border border-[#262626] hover:border-[#FF3D00] text-xs font-mono uppercase tracking-wider text-[#FAFAFA] transition-colors"
-          >
-            <ListTodo className="w-3.5 h-3.5 text-[#3b82f6]" />
-            <span className="hidden sm:inline">Tasks</span>
-          </Link>
-
-          <Link
-            href="/reminders"
-            className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 border border-[#262626] hover:border-[#FF3D00] text-xs font-mono uppercase tracking-wider text-[#FAFAFA] transition-colors"
-          >
-            <Bell className="w-3.5 h-3.5 text-[#10b981]" />
-            <span className="hidden sm:inline">Reminders</span>
-          </Link>
-
-          <SearchBar canvasId={id} onSelectNode={handleSelectSearchNode} />
-
-          <button
-            onClick={() => setIsDocUploadOpen(true)}
-            className="flex items-center gap-2 px-2.5 sm:px-3 py-1.5 border border-[#262626] hover:border-[#FF3D00] text-xs font-mono uppercase tracking-wider text-[#FAFAFA] transition-colors"
-          >
-            <FileUp className="w-3.5 h-3.5 text-[#FF3D00]" />
-            <span className="hidden md:inline">Upload</span>
-          </button>
-
-          <ExportMenu title={title} nodes={nodes} edges={edges} />
-
-          <button
-            onClick={() => setIsOutlineOpen(true)}
-            className="flex items-center gap-2 px-2.5 sm:px-3 py-1.5 border border-[#262626] hover:border-[#FF3D00] text-xs font-mono uppercase tracking-wider text-[#FAFAFA] transition-colors"
-          >
-            <FileText className="w-3.5 h-3.5 text-[#FF3D00]" />
-            <span className="hidden md:inline">Outline</span>
-          </button>
-
-          {/* Auth Navigation & User Profile */}
-          <div className="border-l border-[#262626] pl-2 sm:pl-3 flex items-center gap-2">
-            {user && (
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setIsAccountOpen(true)}
-                  className="flex items-center gap-1.5 bg-[#0F0F0F] border border-[#262626] hover:border-[#FF3D00] px-2.5 py-1.5 text-xs font-mono text-[#FAFAFA] transition-colors"
-                  title="View Profile & Settings"
-                >
-                  <User className="w-3.5 h-3.5 text-[#FF3D00]" />
-                  <span className="max-w-[80px] sm:max-w-[100px] truncate">{user.name || user.email}</span>
-                </button>
-
-                <button
-                  onClick={() => logout()}
-                  className="p-1.5 border border-[#262626] hover:border-[#FF3D00] text-[#737373] hover:text-[#FF3D00] transition-colors"
-                  title="Sign Out"
-                >
-                  <LogOut className="w-4 h-4 stroke-[1.5]" />
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-      </header>
+      <AppHeader
+        title={title}
+        actions={
+          <>
+            <SearchBar canvasId={id} onSelectNode={handleSelectSearchNode} />
+            <button
+              onClick={() => setIsDocUploadOpen(true)}
+              className="flex items-center gap-2 px-2.5 sm:px-3 py-1.5 border border-[#262626] hover:border-[#FF3D00] text-xs font-mono uppercase tracking-wider text-[#FAFAFA] transition-colors"
+            >
+              <FileUp className="w-3.5 h-3.5 text-[#FF3D00]" />
+              <span className="hidden md:inline">Upload</span>
+            </button>
+            <ExportMenu title={title} nodes={nodes} edges={edges} />
+          </>
+        }
+      />
 
       {/* Main Canvas Area */}
       <div className="flex-1 w-full h-full relative">

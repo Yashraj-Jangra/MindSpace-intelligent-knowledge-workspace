@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import { HubHeader } from '@/components/hub/HubHeader';
+import { AppHeader } from '@/components/navigation/AppHeader';
 import { MacroTaskWidget } from '@/components/tasks/MacroTaskWidget';
 import { StoredTask, TaskStatus, TaskPriority } from '@/lib/task-storage';
 import { ListTodo, Plus, Search, ShieldAlert } from 'lucide-react';
@@ -240,7 +240,18 @@ export default function TasksPage() {
 
   return (
     <div className="min-h-screen w-full bg-[#0A0A0A] text-[#FAFAFA] flex flex-col font-sans">
-      <HubHeader />
+      <AppHeader
+        title="Tasks Engine"
+        actions={
+          <button
+            onClick={() => setIsFormOpen(!isFormOpen)}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-[#FF3D00] text-[#0A0A0A] font-mono text-xs uppercase font-bold hover:bg-[#FF5722] transition-colors"
+          >
+            <Plus className="w-4 h-4 stroke-[2]" />
+            <span className="hidden sm:inline">New Macro Objective</span>
+          </button>
+        }
+      />
 
       <main className="flex-1 max-w-6xl w-full mx-auto p-4 sm:p-8 space-y-6 sm:space-y-8">
         

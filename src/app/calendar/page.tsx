@@ -13,6 +13,7 @@ import {
   RefreshCw,
 } from 'lucide-react';
 import { CalendarEventCard } from '@/components/calendar/CalendarEventCard';
+import { AppHeader } from '@/components/navigation/AppHeader';
 import { EventDetailSlideOver } from '@/components/calendar/EventDetailSlideOver';
 import { useSocket } from '@/hooks/useSocket';
 
@@ -196,55 +197,18 @@ export default function CalendarPage() {
 
   return (
     <div className="min-h-screen bg-[#0A0A0A] text-[#FAFAFA] flex flex-col font-sans">
-      {/* Top Header */}
-      <header className="h-14 bg-[#0F0F0F] border-b border-[#262626] px-4 flex items-center justify-between sticky top-0 z-40">
-        <div className="flex items-center gap-4">
-          <Link
-            href="/"
-            className="flex items-center gap-2 p-1.5 hover:bg-[#1A1A1A] border border-transparent hover:border-[#262626] transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4 text-[#737373]" />
-            <span className="font-mono text-xs text-[#737373] uppercase tracking-wider hidden sm:inline">
-              Hub
-            </span>
-          </Link>
-          <div className="h-4 w-px bg-[#262626]" />
-          <div className="flex items-center gap-2">
-            <CalendarIcon className="w-5 h-5 text-[#FF3D00]" />
-            <h1 className="font-semibold text-sm tracking-tight">MindSpace Calendar</h1>
-          </div>
-        </div>
-
-        {/* Global Navigation Links */}
-        <nav className="hidden md:flex items-center gap-6 font-mono text-xs uppercase tracking-wider">
-          <Link href="/" className="text-[#737373] hover:text-[#FAFAFA]">
-            Hub
-          </Link>
-          <Link href="/notes" className="text-[#737373] hover:text-[#FAFAFA]">
-            Notes
-          </Link>
-          <Link href="/tasks" className="text-[#737373] hover:text-[#FAFAFA]">
-            Tasks
-          </Link>
-          <Link href="/calendar" className="text-[#FF3D00] font-bold border-b border-[#FF3D00]">
-            Calendar
-          </Link>
-          <Link href="/reminders" className="text-[#737373] hover:text-[#FAFAFA]">
-            Reminders
-          </Link>
-        </nav>
-
-        {/* Action Controls */}
-        <div className="flex items-center gap-2">
+      <AppHeader
+        title="Calendar Workspace"
+        actions={
           <button
             onClick={() => handleCreateNewEvent()}
             className="flex items-center gap-1.5 px-3 py-1.5 bg-[#FF3D00] text-[#0A0A0A] font-mono text-xs font-bold uppercase tracking-wider hover:bg-[#FF5722] transition-colors"
           >
-            <Plus className="w-4 h-4" />
+            <Plus className="w-4 h-4 stroke-[2]" />
             <span className="hidden sm:inline">New Event</span>
           </button>
-        </div>
-      </header>
+        }
+      />
 
       {/* Control Bar: Month Navigation + View Switcher */}
       <div className="bg-[#0F0F0F] border-b border-[#262626] px-4 py-3 flex flex-wrap items-center justify-between gap-3">

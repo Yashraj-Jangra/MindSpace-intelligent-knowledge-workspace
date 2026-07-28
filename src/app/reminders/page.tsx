@@ -2,6 +2,7 @@ import React from 'react';
 import Link from 'next/link';
 import { getUserNotes } from '@/lib/notes-storage';
 import { getSessionFromCookie } from '@/lib/session';
+import { AppHeader } from '@/components/navigation/AppHeader';
 import { Bell, ArrowLeft, Clock, FileText, CheckCircle2, AlertTriangle, Shield } from 'lucide-react';
 import { redirect } from 'next/navigation';
 
@@ -38,45 +39,7 @@ export default async function RemindersDashboard() {
 
   return (
     <div className="min-h-screen w-full bg-[#0A0A0A] text-[#FAFAFA] flex flex-col font-sans">
-      {/* Responsive Header Bar */}
-      <header className="min-h-[4rem] border-b border-[#262626] bg-[#0A0A0A]/95 px-4 sm:px-8 py-3 sm:py-0 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4 z-30">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-[#FF3D00] flex items-center justify-center font-mono font-bold text-[#0A0A0A] shrink-0">
-            <Bell className="w-5 h-5 stroke-[2.5]" />
-          </div>
-          <div>
-            <h1 className="font-sans font-black text-lg sm:text-xl tracking-tighter uppercase text-[#FAFAFA]">
-              MIND<span className="text-[#FF3D00]">SPACE</span>
-            </h1>
-            <span className="font-mono text-[8px] sm:text-[9px] uppercase tracking-widest text-[#737373] block -mt-1">
-              REMINDERS & DEADLINES
-            </span>
-          </div>
-        </div>
-
-        {/* Responsive Navigation Header */}
-        <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4 font-mono text-xs overflow-x-auto py-1 sm:py-0 no-scrollbar">
-          <Link href="/notes" className="text-[#737373] hover:text-[#FAFAFA] uppercase tracking-wider transition-colors shrink-0">
-            Notes
-          </Link>
-          <Link href="/" className="text-[#737373] hover:text-[#FAFAFA] uppercase tracking-wider transition-colors shrink-0">
-            Hub
-          </Link>
-          <Link href="/tasks" className="text-[#737373] hover:text-[#FAFAFA] uppercase tracking-wider transition-colors shrink-0">
-            Tasks
-          </Link>
-          <Link href="/calendar" className="text-[#737373] hover:text-[#FAFAFA] uppercase tracking-wider transition-colors shrink-0">
-            Calendar
-          </Link>
-          <Link href="/reminders" className="text-[#FF3D00] font-bold uppercase tracking-wider shrink-0">
-            Reminders
-          </Link>
-          <Link href="/admin" className="text-[#737373] hover:text-[#FAFAFA] uppercase tracking-wider transition-colors flex items-center gap-1 shrink-0">
-            <Shield className="w-3.5 h-3.5 text-[#FF3D00]" />
-            <span>Admin</span>
-          </Link>
-        </div>
-      </header>
+      <AppHeader title="Reminders & Deadlines" />
 
       {/* Main Workspace */}
       <main className="flex-1 max-w-5xl w-full mx-auto p-4 sm:p-8 space-y-6 sm:space-y-8">

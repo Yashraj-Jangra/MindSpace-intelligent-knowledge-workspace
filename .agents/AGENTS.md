@@ -62,7 +62,7 @@ Never change these ports without updating both `docker-compose.yml` and `.env.lo
 ### Bot Integrations
 | Bot | Library | Notes |
 |---|---|---|
-| Discord | `discord.js v14` | Slash commands + interactive components. Webhook interactions mode — no gateway process. |
+| Discord | `discord.js v14` | Hybrid Webhook/Gateway mode. Local gateway forwarding bypasses Ed25519 signatures. |
 | Telegram | `grammy` | Conversation state machine. Webhook mode at `/api/telegram/bot`. |
 
 ### Canvas & Editor
@@ -199,7 +199,7 @@ d:/Projects/MindSpace/
 - Never stream AI responses from bot handlers (Discord/Telegram). Buffer to string first.
 
 ### Bot Endpoints
-- `/api/discord/bot` — verify the Discord Ed25519 signature header before processing.
+- `/api/discord/bot` — verify the Discord Ed25519 signature header before processing (bypassed if `x-local-bypass: true` header is set for local gateway client requests).
 - `/api/telegram/bot` — verify the secret token header set during webhook registration.
 - All bot mutations → write to DB → emit Socket.io event to `user:[userId]` room.
 

@@ -46,6 +46,7 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
       // Auto-join personal room if logged in
       if (user?.id) {
         socketInstance.emit('join-room', `user:${user.id}`);
+        socketInstance.emit('user:online', user.id);
       }
     });
 

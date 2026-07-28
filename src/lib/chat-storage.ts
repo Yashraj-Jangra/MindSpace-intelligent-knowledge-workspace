@@ -378,14 +378,14 @@ export async function getConversationMessages(
     try {
       const msgs = await prisma.chatMessage.findMany({
         where: { conversationId },
-        include: { sender: { select: { username: true, email: true } } },
+        include: { sender: { select: { name: true, username: true, email: true } } },
         orderBy: { createdAt: 'asc' },
       });
       return msgs.map((m) => ({
         id: m.id,
         conversationId: m.conversationId,
         senderId: m.senderId,
-        senderName: m.sender.username || m.sender.email,
+        senderName: m.sender.name || m.sender.username || m.sender.email,
         content: m.content,
         type: m.type as any,
         readBy: m.readBy,
@@ -393,7 +393,6 @@ export async function getConversationMessages(
       }));
     } catch (err) {
       console.warn('[Chat Storage] DB messages fetch failed:', err);
-      disableDbCircuitBreaker();
     }
   }
 
@@ -419,14 +418,14 @@ export async function createChatMessage(
           type,
           readBy: [senderId],
         },
-        include: { sender: { select: { username: true, email: true } } },
+        include: { sender: { select: { name: true, username: true, email: true } } },
       });
 
       return {
         id: msg.id,
         conversationId: msg.conversationId,
         senderId: msg.senderId,
-        senderName: msg.sender.username || msg.sender.email,
+        senderName: msg.sender.name || msg.sender.username || msg.sender.email,
         content: msg.content,
         type: msg.type as any,
         readBy: msg.readBy,
@@ -434,7 +433,6 @@ export async function createChatMessage(
       };
     } catch (err) {
       console.warn('[Chat Storage] DB create message failed:', err);
-      disableDbCircuitBreaker();
     }
   }
 
@@ -452,4 +450,95 @@ export async function createChatMessage(
   store.messages.push(newMsg);
   writeChatStore(store);
   return newMsg;
+}
+
+export async function deleteChatMessage(
+  messageId: string,
+  userId: string
+): Promise<StoredChatMessage | null> {
+  if (!isDbDisabled()) {
+    try {
+      const msg = await prisma.chatMessage.findUnique({
+        where: { id: messageId },
+      });
+
+      if (!msg || msg.senderId !== userId) {
+        return null;
+      }
+
+      const updated = await prisma.chatMessage.update({
+        where: { id: messageId },
+        data: {
+          content: 'This message was deleted',
+          type: 'DELETED',
+        },
+        include: { sender: { select: { name: true, username: true, email: true } } },
+      });
+
+      return {
+        id: updated.id,
+        conversationId: updated.conversationId,
+        senderId: updated.senderId,
+        senderName: updated.sender.name || updated.sender.username || updated.sender.email,
+        content: updated.content,
+        type: updated.type as any,
+        readBy: updated.readBy,
+        createdAt: updated.createdAt.toISOString(),
+      };
+    } catch (err) {
+      console.warn('[Chat Storage] DB delete message failed:', err);
+    }
+  }
+
+  const store = readChatStore();
+  const msg = store.messages.find((m) => m.id === messageId);
+  if (!msg || msg.senderId !== userId) return null;
+
+  msg.content = 'This message was deleted';
+  msg.type = 'DELETED';
+  writeChatStore(store);
+  return msg;
+}
+
+export async function markMessagesAsRead(
+  conversationId: string,
+  userId: string
+): Promise<void> {
+  if (!isDbDisabled()) {
+    try {
+      const msgs = await prisma.chatMessage.findMany({
+        where: {
+          conversationId,
+          NOT: {
+            readBy: { has: userId },
+          },
+        },
+      });
+
+      for (const m of msgs) {
+        await prisma.chatMessage.update({
+          where: { id: m.id },
+          data: {
+            readBy: { push: userId },
+          },
+        });
+      }
+    } catch (err) {
+      console.warn('[Chat Storage] DB mark messages as read failed:', err);
+    }
+  }
+
+  const store = readChatStore();
+  let updated = false;
+  store.messages = store.messages.map((m) => {
+    if (m.conversationId === conversationId && !m.readBy.includes(userId)) {
+      updated = true;
+      return { ...m, readBy: [...m.readBy, userId] };
+    }
+    return m;
+  });
+
+  if (updated) {
+    writeChatStore(store);
+  }
 }

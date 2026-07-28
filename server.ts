@@ -51,7 +51,24 @@ app.prepare().then(() => {
     }
   });
 
+  const pubClient = new Redis(redisUrl, { lazyConnect: true });
+  pubClient.on('error', (err) => {
+    console.error('[Socket.io Redis Pub Error]:', err.message);
+  });
+
+  const socketToUser = new Map<string, string>();
+
   io.on('connection', (socket) => {
+    socket.on('user:online', async (userId) => {
+      socketToUser.set(socket.id, userId);
+      try {
+        await pubClient.sadd('online_users', userId);
+        io.emit('user:online', { userId });
+      } catch (err) {
+        console.error('Failed to register user online in Redis:', err);
+      }
+    });
+
     socket.on('join-room', (roomName) => {
       socket.join(roomName);
     });
@@ -84,8 +101,27 @@ app.prepare().then(() => {
       }
     });
 
-    socket.on('disconnect', () => {
-      // Notify canvas rooms that cursor left
+    socket.on('disconnect', async () => {
+      const userId = socketToUser.get(socket.id);
+      if (userId) {
+        socketToUser.delete(socket.id);
+        const sockets = await io.fetchSockets();
+        let stillConnected = false;
+        for (const s of sockets) {
+          if (socketToUser.get(s.id) === userId) {
+            stillConnected = true;
+            break;
+          }
+        }
+        if (!stillConnected) {
+          try {
+            await pubClient.srem('online_users', userId);
+            io.emit('user:offline', { userId });
+          } catch (err) {
+            console.error('Failed to remove user from online users in Redis:', err);
+          }
+        }
+      }
       io.emit('cursor:left', { socketId: socket.id });
     });
   });

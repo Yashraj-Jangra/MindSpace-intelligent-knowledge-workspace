@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getSessionFromCookie } from '@/lib/session';
 import { prisma, isDbDisabled } from '@/lib/db';
-import { getAllUsers } from '@/lib/auth-storage';
+import { getAllUsers, updateUserRole } from '@/lib/auth-storage';
 
 export async function GET() {
   try {
@@ -21,8 +21,6 @@ export async function GET() {
             username: true,
             role: true,
             createdAt: true,
-            discordAccount: { select: { isPaired: true, discordUsername: true } },
-            telegramAccount: { select: { isPaired: true, username: true } },
             _count: {
               select: {
                 notes: true,
@@ -42,25 +40,35 @@ export async function GET() {
     const userMap = new Map<string, any>();
 
     for (const u of dbUsers) {
-      userMap.set(u.email.toLowerCase(), {
-        ...u,
-        name: u.name || u.username || u.email.split('@')[0],
-        username: u.username || u.name || u.email.split('@')[0],
-      });
+      if (u.email) {
+        userMap.set(u.email.toLowerCase(), {
+          ...u,
+          name: u.name || u.username || u.email.split('@')[0],
+          username: u.username || u.name || u.email.split('@')[0],
+        });
+      }
     }
 
     for (const u of localUsers) {
-      const key = u.email.toLowerCase();
-      if (!userMap.has(key)) {
-        userMap.set(key, {
-          id: u.id,
-          name: u.name || u.username || u.email.split('@')[0],
-          username: u.username || u.name || u.email.split('@')[0],
-          email: u.email,
-          role: u.role || 'USER',
-          createdAt: u.createdAt || new Date().toISOString(),
-          _count: { notes: 0, canvases: 0, tasks: 0 },
-        });
+      if (u.email) {
+        const key = u.email.toLowerCase();
+        if (!userMap.has(key)) {
+          userMap.set(key, {
+            id: u.id,
+            name: u.name || u.username || u.email.split('@')[0],
+            username: u.username || u.name || u.email.split('@')[0],
+            email: u.email,
+            role: u.role || 'USER',
+            createdAt: u.createdAt || new Date().toISOString(),
+            _count: { notes: 0, canvases: 0, tasks: 0 },
+          });
+        } else {
+          // Sync role from local if set
+          const existing = userMap.get(key);
+          if (u.role === 'ADMIN' && existing.role !== 'ADMIN') {
+            existing.role = 'ADMIN';
+          }
+        }
       }
     }
 
@@ -90,14 +98,18 @@ export async function PATCH(req: Request) {
         const updated = await prisma.user.update({
           where: { id: userId },
           data: { role: role as 'ADMIN' | 'USER' },
-          select: { id: true, email: true, username: true, role: true },
+          select: { id: true, name: true, email: true, username: true, role: true },
         });
+        
+        // Also update local JSON storage
+        await updateUserRole(userId, role);
         return NextResponse.json({ user: updated });
       } catch (err) {
         console.warn('[Admin Users PATCH DB Error]:', err);
       }
     }
 
+    await updateUserRole(userId, role);
     return NextResponse.json({ success: true, userId, role });
   } catch (error) {
     console.error('[API /admin/users PATCH Error]:', error);

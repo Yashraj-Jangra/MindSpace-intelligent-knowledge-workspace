@@ -80,7 +80,7 @@ export default function AdminUsersPage() {
               {users.map((u) => (
                 <tr key={u.id} className="hover:bg-[#1A1A1A] transition-colors">
                   <td className="p-3 font-semibold text-[#FAFAFA]">
-                    {u.username || 'User'}
+                    {u.name || u.username || 'User'}
                     <div className="font-mono text-[9px] text-[#737373]">{u.id}</div>
                   </td>
                   <td className="p-3 font-mono text-[#FAFAFA]">{u.email}</td>

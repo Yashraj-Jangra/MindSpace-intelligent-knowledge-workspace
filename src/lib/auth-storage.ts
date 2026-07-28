@@ -175,3 +175,26 @@ export async function countUsers(): Promise<number> {
     return getLocalUsers().length;
   }
 }
+
+export async function updateUserRole(id: string, role: 'USER' | 'ADMIN'): Promise<void> {
+  try {
+    await prisma.user.update({
+      where: { id },
+      data: { role },
+    });
+  } catch (error) {
+    console.warn('[DB Fallback]: Updating user role in local store.', (error as Error).message);
+  }
+
+  try {
+    ensureDataDir();
+    const users = getLocalUsers();
+    const userIndex = users.findIndex((u) => u.id === id);
+    if (userIndex >= 0) {
+      users[userIndex].role = role;
+      fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2), 'utf-8');
+    }
+  } catch (error) {
+    console.error('[Local User Role Update Error]:', error);
+  }
+}

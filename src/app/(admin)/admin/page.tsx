@@ -1,7 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { prisma, isDbDisabled } from '@/lib/db';
-import { countUsers } from '@/lib/auth-storage';
+import { countUsers, getAllUsers } from '@/lib/auth-storage';
 import { AdminHeader } from '@/components/admin/AdminHeader';
 import { Users, FileText, Network, CheckSquare, Key, Bell, Layers, MessageSquare, ShieldCheck, Server } from 'lucide-react';
 
@@ -14,20 +14,25 @@ export default async function AdminDashboardPage() {
   let taskCount = 0;
   let dbStatus = 'CONNECTED';
 
+  const localUsers = await getAllUsers();
+  const uniqueUserEmails = new Set<string>();
+
   if (!isDbDisabled()) {
     try {
-      userCount = await prisma.user.count();
+      const dbUsers = await prisma.user.findMany({ select: { email: true } });
+      dbUsers.forEach((u) => u.email && uniqueUserEmails.add(u.email.toLowerCase()));
       canvasCount = await prisma.canvas.count();
       noteCount = await prisma.note.count();
       taskCount = await prisma.task.count();
     } catch {
       dbStatus = 'OFFLINE / CIRCUIT BROKEN';
-      userCount = await countUsers();
     }
   } else {
     dbStatus = 'OFFLINE / LOCAL FALLBACK';
-    userCount = await countUsers();
   }
+
+  localUsers.forEach((u) => u.email && uniqueUserEmails.add(u.email.toLowerCase()));
+  userCount = uniqueUserEmails.size;
 
   return (
     <div className="min-h-screen bg-[#0A0A0A] text-[#FAFAFA] flex flex-col font-sans">

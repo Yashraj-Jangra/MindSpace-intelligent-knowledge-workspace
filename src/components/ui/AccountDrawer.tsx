@@ -264,16 +264,73 @@ export function AccountDrawer({ isOpen, onClose, user }: AccountDrawerProps) {
     }
   };
 
-  const handleGeneratePairCode = async () => {
+  const handleGenerateTelegramCode = async () => {
     try {
       const res = await fetch('/api/telegram/pair', { method: 'POST' });
       if (res.ok) {
         const data = await res.json();
-        setPairingCode(data.code);
-        setDcSuccess('Pairing code generated. Send command to Telegram bot.');
+        setTelegramAccount((prev: any) => ({
+          ...prev,
+          pairingCode: data.code,
+        }));
+        setDcSuccess('Telegram pairing code generated. Send `/pair <code: ' + data.code + '>` to the Telegram bot.');
       }
     } catch (err) {
-      console.error('Failed to generate pairing code:', err);
+      console.error('Failed to generate Telegram code:', err);
+    }
+  };
+
+  const handleGenerateDiscordCode = async () => {
+    try {
+      const res = await fetch('/api/discord/pair', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'generate-code' }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setDiscordAccount((prev: any) => ({
+          ...prev,
+          pairingCode: data.pairingCode,
+        }));
+        setDcSuccess('Discord pairing code generated. Send `/pair code: ' + data.pairingCode + '` to the Discord bot.');
+      }
+    } catch (err) {
+      console.error('Failed to generate Discord code:', err);
+    }
+  };
+
+  const handleUnlinkTelegram = async () => {
+    if (!confirm('Are you sure you want to unlink your Telegram account?')) return;
+    try {
+      const res = await fetch('/api/telegram/pair', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'unlink' }),
+      });
+      if (res.ok) {
+        setTelegramAccount(null);
+        setDcSuccess('Telegram account successfully unlinked.');
+      }
+    } catch (err) {
+      console.error('Failed to unlink Telegram account:', err);
+    }
+  };
+
+  const handleUnlinkDiscord = async () => {
+    if (!confirm('Are you sure you want to unlink your Discord account?')) return;
+    try {
+      const res = await fetch('/api/discord/pair', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'unlink' }),
+      });
+      if (res.ok) {
+        setDiscordAccount(null);
+        setDcSuccess('Discord account successfully unlinked.');
+      }
+    } catch (err) {
+      console.error('Failed to unlink Discord account:', err);
     }
   };
 
@@ -728,10 +785,10 @@ export function AccountDrawer({ isOpen, onClose, user }: AccountDrawerProps) {
           {/* TAB 6: Bot Integrations */}
           {activeTab === 'discord' && (
             <div className="space-y-6 font-mono text-xs">
-              <div className="bg-[#0F0F0F] border border-[#262626] p-5 space-y-4">
-                <h3 className="font-mono text-xs text-[#737373] uppercase tracking-wider flex items-center gap-1.5">
+              <div className="bg-[#0F0F0F] border border-[#262626] p-5 space-y-6">
+                <h3 className="font-mono text-xs text-[#737373] uppercase tracking-wider flex items-center gap-1.5 border-b border-[#262626] pb-3">
                   <Bot className="w-4 h-4 text-[#FF3D00]" />
-                  <span>Discord & Telegram Companion</span>
+                  <span>Bot Companion Integrations</span>
                 </h3>
 
                 {dcSuccess && (
@@ -740,23 +797,88 @@ export function AccountDrawer({ isOpen, onClose, user }: AccountDrawerProps) {
                   </div>
                 )}
 
-                <div className="p-4 bg-[#141414] border border-[#262626] space-y-3">
+                {/* Discord Section */}
+                <div className="space-y-3">
                   <div className="flex justify-between items-center">
-                    <span className="text-[#737373] uppercase">Telegram Pair Code</span>
-                    {pairingCode ? (
-                      <span className="font-bold text-sm text-[#FF3D00] select-all">{pairingCode}</span>
-                    ) : (
-                      <button
-                        onClick={handleGeneratePairCode}
-                        className="px-3 py-1 bg-[#FF3D00] text-[#0A0A0A] font-bold uppercase text-[10px]"
-                      >
-                        Generate Code
-                      </button>
-                    )}
+                    <span className="text-[#FAFAFA] font-bold uppercase tracking-wider">Discord Integration</span>
+                    <span className={`inline-block w-2 h-2 rounded-full ${discordAccount?.isPaired ? 'bg-[#10B981]' : 'bg-[#737373]'}`} />
                   </div>
-                  <p className="text-[10px] text-[#737373] leading-relaxed">
-                    Send <code className="text-[#FAFAFA]">/pair &lt;code&gt;</code> to the Telegram Bot to pair your account.
-                  </p>
+                  
+                  {discordAccount?.isPaired ? (
+                    <div className="p-4 bg-[#141414] border border-[#262626] space-y-3">
+                      <div className="flex justify-between items-center">
+                        <span className="text-[#737373]">Status:</span>
+                        <span className="text-[#FAFAFA] font-bold">Linked as @{discordAccount.discordUsername || 'User'}</span>
+                      </div>
+                      <button
+                        onClick={handleUnlinkDiscord}
+                        className="w-full py-2 bg-[#FF3D00]/10 hover:bg-[#FF3D00] text-[#FF3D00] hover:text-[#0A0A0A] font-bold border border-[#FF3D00] transition-colors uppercase text-[10px] tracking-wider"
+                      >
+                        Unlink Discord Account
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="p-4 bg-[#141414] border border-[#262626] space-y-3">
+                      <div className="flex justify-between items-center">
+                        <span className="text-[#737373] uppercase">Pairing Code</span>
+                        {discordAccount?.pairingCode ? (
+                          <span className="font-bold text-sm text-[#FF3D00] select-all">{discordAccount.pairingCode}</span>
+                        ) : (
+                          <button
+                            onClick={handleGenerateDiscordCode}
+                            className="px-3 py-1 bg-[#FF3D00] text-[#0A0A0A] font-bold uppercase text-[10px] tracking-wider"
+                          >
+                            Generate Code
+                          </button>
+                        )}
+                      </div>
+                      <p className="text-[10px] text-[#737373] leading-relaxed">
+                        Send <code className="text-[#FAFAFA]">/pair code: &lt;your_code&gt;</code> to the Discord Bot to pair.
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Telegram Section */}
+                <div className="space-y-3 border-t border-[#262626] pt-6">
+                  <div className="flex justify-between items-center">
+                    <span className="text-[#FAFAFA] font-bold uppercase tracking-wider">Telegram Integration</span>
+                    <span className={`inline-block w-2 h-2 rounded-full ${telegramAccount?.isPaired ? 'bg-[#10B981]' : 'bg-[#737373]'}`} />
+                  </div>
+
+                  {telegramAccount?.isPaired ? (
+                    <div className="p-4 bg-[#141414] border border-[#262626] space-y-3">
+                      <div className="flex justify-between items-center">
+                        <span className="text-[#737373]">Status:</span>
+                        <span className="text-[#FAFAFA] font-bold">Linked as @{telegramAccount.username || 'User'}</span>
+                      </div>
+                      <button
+                        onClick={handleUnlinkTelegram}
+                        className="w-full py-2 bg-[#FF3D00]/10 hover:bg-[#FF3D00] text-[#FF3D00] hover:text-[#0A0A0A] font-bold border border-[#FF3D00] transition-colors uppercase text-[10px] tracking-wider"
+                      >
+                        Unlink Telegram Account
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="p-4 bg-[#141414] border border-[#262626] space-y-3">
+                      <div className="flex justify-between items-center">
+                        <span className="text-[#737373] uppercase">Pairing Code</span>
+                        {telegramAccount?.pairingCode ? (
+                          <span className="font-bold text-sm text-[#FF3D00] select-all">{telegramAccount.pairingCode}</span>
+                        ) : (
+                          <button
+                            onClick={handleGenerateTelegramCode}
+                            className="px-3 py-1 bg-[#FF3D00] text-[#0A0A0A] font-bold uppercase text-[10px] tracking-wider"
+                          >
+                            Generate Code
+                          </button>
+                        )}
+                      </div>
+                      <p className="text-[10px] text-[#737373] leading-relaxed">
+                        Send <code className="text-[#FAFAFA]">/pair &lt;your_code&gt;</code> to the Telegram Bot to pair.
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

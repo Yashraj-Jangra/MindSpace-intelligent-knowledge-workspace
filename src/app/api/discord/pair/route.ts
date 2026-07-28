@@ -56,6 +56,20 @@ export async function POST(req: Request) {
       return NextResponse.json({ account });
     }
 
+    if (action === 'unlink') {
+      const account = await prisma.discordAccount.update({
+        where: { userId },
+        data: {
+          isPaired: false,
+          discordUserId: null,
+          discordUsername: null,
+          pairingCode: null,
+          codeCreatedAt: null,
+        },
+      });
+      return NextResponse.json({ account, success: true });
+    }
+
     return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
   } catch (error) {
     console.error('[API /discord/pair Error]:', error);

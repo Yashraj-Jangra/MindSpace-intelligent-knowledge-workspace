@@ -21,13 +21,35 @@ export async function GET() {
   }
 }
 
-export async function POST() {
+export async function POST(req: Request) {
   try {
     const session = await getSessionFromCookie();
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     const userId = session.id;
+
+    let action = 'generate-code';
+    try {
+      const body = await req.json();
+      action = body.action || 'generate-code';
+    } catch (e) {
+      // Body may be empty
+    }
+
+    if (action === 'unlink') {
+      const account = await prisma.telegramAccount.update({
+        where: { userId },
+        data: {
+          isPaired: false,
+          telegramChatId: '',
+          username: null,
+          pairingCode: null,
+          codeCreatedAt: null,
+        },
+      });
+      return NextResponse.json({ account, success: true });
+    }
 
     const code = await generateTelegramPairingCode(userId);
     return NextResponse.json({ code });

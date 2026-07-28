@@ -13,6 +13,9 @@
     * Added `/api/admin/telegram/status` endpoint to securely verify and load bot profile metadata.
     * Built a premium Telegram-Style Info Card in the settings dashboard showing real-time status and username details.
   - **Dev Environment Env-Fallback Support**: Updated `getSystemSetting` ([settings.ts](file:///d:/Projects/MindSpace/src/lib/settings.ts)) and custom server token loaders ([server.ts](file:///d:/Projects/MindSpace/server.ts)) to fall back to `process.env` keys loaded from `.env.local` automatically. This allows bots to start on localhost startup when credentials are configured in `.env.local`, bypassing database seeding requirements.
+  - **Profile and Telegram REST Endpoints Implementation**:
+    * Created `/api/telegram/pair` endpoint to generate Telegram pairing codes via the frontend account settings drawer.
+    * Implemented `GET /api/auth/profile` to resolve profile fetch errors in `AccountDrawer.tsx`.
 - [x] **Sleek Premium WhatsApp-Style Chat Overhaul** (Session 2026-07-28 v18):
   - **Sleek Visual Layout**: Rebuilt `ChatPanel.tsx` with a dual-column layout separating active conversations search and lists from the active chat viewport.
   - **Read Receipts & Delivery Checkmarks**: Implemented single check (sent) and double blue checks (seen/read) connected dynamically to the `readBy` array column.

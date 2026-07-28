@@ -7,6 +7,8 @@ import { Client as DiscordClient, GatewayIntentBits, ActivityType } from 'discor
 import { PrismaClient } from '@prisma/client';
 import { Bot as TelegramBot } from 'grammy';
 
+import { getSystemSetting } from './src/lib/settings';
+
 const prisma = new PrismaClient();
 
 const dev = process.env.NODE_ENV !== 'production';
@@ -40,15 +42,8 @@ app.prepare().then(() => {
 
   async function startDiscordBot() {
     try {
-      const settingToken = await prisma.systemSetting.findUnique({
-        where: { key: 'DISCORD_BOT_TOKEN' }
-      });
-      const botToken = settingToken?.value;
-
-      const settingStatus = await prisma.systemSetting.findUnique({
-        where: { key: 'DISCORD_BOT_STATUS' }
-      });
-      const statusText = settingStatus?.value || 'Listening to /remind';
+      const botToken = await getSystemSetting('DISCORD_BOT_TOKEN');
+      const statusText = await getSystemSetting('DISCORD_BOT_STATUS') || 'Listening to /remind';
 
       if (!botToken) {
         console.log('[Discord Bot Manager] No bot token configured. Waiting...');
@@ -178,10 +173,7 @@ app.prepare().then(() => {
 
   async function startTelegramBot() {
     try {
-      const settingToken = await prisma.systemSetting.findUnique({
-        where: { key: 'TELEGRAM_BOT_TOKEN' }
-      });
-      const botToken = settingToken?.value;
+      const botToken = await getSystemSetting('TELEGRAM_BOT_TOKEN');
 
       if (!botToken) {
         console.log('[Telegram Bot Manager] No bot token configured. Waiting...');

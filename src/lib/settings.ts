@@ -54,7 +54,9 @@ export async function getSystemSetting(key: string): Promise<string | null> {
   }
 
   const jsonSettings = readJsonSettings();
-  return jsonSettings[key] || null;
+  if (jsonSettings[key] !== undefined) return jsonSettings[key];
+  if (process.env[key] !== undefined) return process.env[key] || null;
+  return null;
 }
 
 export async function getSystemSettings(keys: string[]): Promise<Record<string, string>> {
@@ -83,21 +85,44 @@ export async function getSystemSettings(keys: string[]): Promise<Record<string, 
 }
 
 export async function getAllSystemSettings(): Promise<Record<string, string>> {
+  const result: Record<string, string> = {};
+
+  const jsonSettings = readJsonSettings();
+  Object.assign(result, jsonSettings);
+
   if (!isDbDisabled()) {
     try {
       const settings = await prisma.systemSetting.findMany();
-      const result: Record<string, string> = {};
       for (const s of settings) {
         result[s.key] = s.value;
       }
-      return result;
     } catch (error) {
       console.warn('[getAllSystemSettings Error]:', error);
       disableDbCircuitBreaker();
     }
   }
 
-  return readJsonSettings();
+  const keysToFallback = [
+    'SMTP_HOST',
+    'SMTP_PORT',
+    'SMTP_USER',
+    'SMTP_PASS',
+    'SMTP_FROM_EMAIL',
+    'DISCORD_BOT_TOKEN',
+    'DISCORD_CLIENT_ID',
+    'TELEGRAM_BOT_TOKEN',
+    'GEMINI_API_KEY',
+    'AI_ENABLED',
+    'MINIO_ENDPOINT',
+    'USER_STORAGE_LIMIT_MB'
+  ];
+  for (const k of keysToFallback) {
+    if (!result[k] && process.env[k]) {
+      result[k] = process.env[k]!;
+    }
+  }
+
+  return result;
 }
 
 export async function setSystemSetting(key: string, value: string): Promise<void> {

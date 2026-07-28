@@ -21,6 +21,8 @@
     * Configured pairing code generators to return the existing code on dashboard refresh if it has been generated less than 15 minutes ago.
     * Implemented validation checks inside the companion bots' pairing pipelines to automatically reject codes older than 15 minutes as expired.
     * Configured automated database cleanup to delete/clear expired pairing codes from the DB during both retrieval refreshes and bot validation failures.
+  - **Discord Slash Command Registry Expansion**: Added `/pair` to the list of application commands registered with Discord's REST API.
+  - **Telegram Entity Parsing Crash Fix**: Switched start and pairing handlers to `parse_mode: 'HTML'` (escaping HTML-unsafe values) to prevent parsing crashes when users have underscores in their names (e.g. `I_Couldnt_Think_a_Better_Name!`).
 - [x] **Sleek Premium WhatsApp-Style Chat Overhaul** (Session 2026-07-28 v18):
   - **Sleek Visual Layout**: Rebuilt `ChatPanel.tsx` with a dual-column layout separating active conversations search and lists from the active chat viewport.
   - **Read Receipts & Delivery Checkmarks**: Implemented single check (sent) and double blue checks (seen/read) connected dynamically to the `readBy` array column.

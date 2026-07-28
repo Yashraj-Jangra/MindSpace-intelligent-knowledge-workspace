@@ -1,6 +1,10 @@
 # MindSpace - AI-Powered Visual Note-Taking & Mind-Mapping Platform
 
 ## Work Completed
+- [x] **Discord Bot Status Telemetry Dashboard** (Session 2026-07-28 v19):
+  - **Discord-Style Info Card**: Embedded a visual profile card styled like Discord's dark-blurple theme, showing bot username, verified badge, pulsing online dot, custom status text, and server count.
+  - **Verification Endpoint**: Created `/api/admin/discord/status` route to query Discord's REST API using the configured bot token and verify status.
+  - **Direct Command Controls**: Added buttons to register/sync slash commands (`/api/discord/register`) and generate custom invite links using client IDs.
 - [x] **Sleek Premium WhatsApp-Style Chat Overhaul** (Session 2026-07-28 v18):
   - **Sleek Visual Layout**: Rebuilt `ChatPanel.tsx` with a dual-column layout separating active conversations search and lists from the active chat viewport.
   - **Read Receipts & Delivery Checkmarks**: Implemented single check (sent) and double blue checks (seen/read) connected dynamically to the `readBy` array column.

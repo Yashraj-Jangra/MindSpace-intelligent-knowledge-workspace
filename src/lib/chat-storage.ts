@@ -35,7 +35,7 @@ export interface StoredChatMessage {
   senderId: string;
   senderName?: string;
   content: string;
-  type: 'TEXT' | 'IMAGE' | 'NOTE_CARD' | 'CANVAS_CARD';
+  type: 'TEXT' | 'IMAGE' | 'NOTE_CARD' | 'CANVAS_CARD' | 'DELETED';
   readBy: string[];
   createdAt: string;
 }

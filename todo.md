@@ -16,6 +16,10 @@
   - **Profile and Telegram REST Endpoints Implementation**:
     * Created `/api/telegram/pair` endpoint to generate Telegram pairing codes via the frontend account settings drawer.
     * Implemented `GET /api/auth/profile` to resolve profile fetch errors in `AccountDrawer.tsx`.
+  - **15-Minute Pairing Code Expiration Flow**:
+    * Added `codeCreatedAt` field to both `DiscordAccount` and `TelegramAccount` tables inside the database schema and synchronized the database.
+    * Configured pairing code generators to return the existing code on dashboard refresh if it has been generated less than 15 minutes ago.
+    * Implemented validation checks inside the companion bots' pairing pipelines to automatically reject codes older than 15 minutes as expired.
 - [x] **Sleek Premium WhatsApp-Style Chat Overhaul** (Session 2026-07-28 v18):
   - **Sleek Visual Layout**: Rebuilt `ChatPanel.tsx` with a dual-column layout separating active conversations search and lists from the active chat viewport.
   - **Read Receipts & Delivery Checkmarks**: Implemented single check (sent) and double blue checks (seen/read) connected dynamically to the `readBy` array column.

@@ -1,3 +1,4 @@
+import { Client, GatewayIntentBits } from 'discord.js';
 import { prisma } from '../db';
 
 export async function generateDiscordPairingCode(userId: string): Promise<string> {
@@ -54,5 +55,33 @@ export async function sendDiscordNotification(webhookUrl: string, title: string,
     });
   } catch (error) {
     console.error('[Discord Webhook Error]:', error);
+  }
+}
+
+let discordClient: Client | null = null;
+async function getDiscordClient(token: string) {
+  if (discordClient) return discordClient;
+  discordClient = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.DirectMessages] });
+  await discordClient.login(token);
+  return discordClient;
+}
+
+export async function sendDiscordDm(token: string, userId: string, title: string, message: string) {
+  try {
+    const client = await getDiscordClient(token);
+    const user = await client.users.fetch(userId);
+    await user.send({
+      embeds: [
+        {
+          title: `[MINDSPACE] ${title}`,
+          description: message,
+          color: 0xff3d00,
+          timestamp: new Date().toISOString(),
+          footer: { text: 'MindSpace AI Platform' },
+        }
+      ]
+    });
+  } catch (error) {
+    console.error(`[Discord DM Error] Failed to send DM to user ${userId}:`, error);
   }
 }

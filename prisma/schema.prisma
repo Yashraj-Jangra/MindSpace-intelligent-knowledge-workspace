@@ -63,6 +63,7 @@ model User {
   smtpConfig     SmtpConfig?
   captures       Capture[]
   tasks          Task[]
+  telegramAccount TelegramAccount?
 
   @@map("users")
 }
@@ -133,6 +134,7 @@ model Note {
 
   user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   canvas      Canvas?      @relation(fields: [canvasId], references: [id], onDelete: SetNull)
+  notifications Notification[]
 
   @@index([userId])
   @@index([reminderAt])
@@ -227,17 +229,38 @@ model Notification {
   id            String             @id @default(cuid())
   userId        String
   nodeId        String?
+  noteId        String?
+  taskId        String?
   title         String
   message       String
   status        NotificationStatus @default(PENDING)
   scheduledFor  DateTime
   dispatchedAt  DateTime?
+  channels      String[]           @default(["in_app"])
+  metadata      Json?
+  retryCount    Int                @default(0)
+  lastError     String?
 
   user          User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   node          Node?              @relation(fields: [nodeId], references: [id], onDelete: Cascade)
+  note          Note?              @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  task          Task?              @relation(fields: [taskId], references: [id], onDelete: Cascade)
 
   @@index([userId, status])
   @@map("notifications")
+}
+
+model TelegramAccount {
+  id             String   @id @default(cuid())
+  userId         String   @unique
+  telegramChatId String
+  username       String?
+  isPaired       Boolean  @default(false)
+  pairingCode    String?  @unique
+  botToken       String?  // user-owned token (overrides global)
+  createdAt      DateTime @default(now())
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@map("telegram_accounts")
 }
 
 model Webhook {
@@ -347,6 +370,7 @@ model Task {
   user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   parent   Task?  @relation("TaskHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
   subtasks Task[] @relation("TaskHierarchy")
+  notifications Notification[]
 
   @@index([userId, status])
   @@index([dueAt])

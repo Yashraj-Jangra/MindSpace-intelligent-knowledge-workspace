@@ -1,1 +1,40 @@
-[]
+[
+  {
+    "id": "task_1phg0x49",
+    "userId": "usr_ouquvbdx",
+    "parentId": null,
+    "title": "Kaushik Ki Gand Marni hai",
+    "description": "es randwe to bich chorahe me choodna h mkl ko",
+    "status": "TODO",
+    "priority": "CRITICAL",
+    "dueAt": "2026-07-28T12:00",
+    "isPinned": false,
+    "tags": [],
+    "notifyEvery": null,
+    "channels": [
+      "in_app"
+    ],
+    "completedAt": null,
+    "createdAt": "2026-07-27T05:23:08.051Z",
+    "updatedAt": "2026-07-27T05:23:57.235Z"
+  },
+  {
+    "id": "task_yrayf3t1",
+    "userId": "usr_ouquvbdx",
+    "parentId": "task_1phg0x49",
+    "title": "systuuum paad dege",
+    "description": null,
+    "status": "TODO",
+    "priority": "MEDIUM",
+    "dueAt": null,
+    "isPinned": false,
+    "tags": [],
+    "notifyEvery": null,
+    "channels": [
+      "in_app"
+    ],
+    "completedAt": null,
+    "createdAt": "2026-07-27T05:23:26.566Z",
+    "updatedAt": "2026-07-27T05:23:57.200Z"
+  }
+]

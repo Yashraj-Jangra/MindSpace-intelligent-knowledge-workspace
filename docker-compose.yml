@@ -28,6 +28,16 @@ services:
       - minio_data:/data
     restart: always
 
+  redis:
+    image: valkey/valkey:7-alpine
+    container_name: mindspace-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: always
+
 volumes:
   postgres_data:
   minio_data:
+  redis_data:

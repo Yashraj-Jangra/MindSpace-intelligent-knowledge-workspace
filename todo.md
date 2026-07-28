@@ -1,6 +1,15 @@
 # MindSpace - AI-Powered Visual Note-Taking & Mind-Mapping Platform
 
 ## Work Completed
+- [x] **Sprint 3 & 3.5: Advanced Reminders & Multi-Channel Bots** (Session 2026-07-28 v11):
+  - **Redis/Valkey Integration:** Added Valkey container to `docker-compose.yml` on port `6379` and initialized a thread-safe singleton client `redis.ts`.
+  - **BullMQ Queue Management:** Setup `reminders`, `digest`, and `webhook-retry` queues with configurable retry policies.
+  - **Reminder Dispatcher Worker:** Created `reminder.worker.ts` worker to process jobs and route notifications via email (Nodemailer SMTP), Discord (channel webhooks or Bot DMs), Telegram, in-app alerts, and outbound webhooks.
+  - **Socket.io Custom Server:** Built a custom Next.js `server.ts` server running Socket.io, integrating a Redis pub/sub mechanism to sync WebSocket events across separate processes.
+  - **React Socket Hooks:** Designed `SocketContext.tsx` with hooks `useSocket.ts` and `useTaskPressure.ts` to seamlessly subscribe/unsubscribe from socket events.
+  - **Reminders Cron Sweeper:** Created `/api/reminders/cron` API to sweep due notifications and push them to the worker queue. Added `snooze-parser.ts` to convert natural phrasing to timestamps.
+  - **Discord Bot Webhook:** Built slash command register route `/api/discord/register` and webhook interaction handler `/api/discord/bot` validating signatures and processing command/button interactions.
+  - **Telegram Bot Webhook:** Built Grammy-based callback route `/api/telegram/bot` supporting pairing commands, task/reminder triggers, and a Redis-backed conversational task builder.
 - [x] **Task System (Macro/Micro + Pomodoro)** (Session 2026-07-27 v10):
   - **Collapsible Macro Cards & Progress**: Built `MacroTaskWidget.tsx` displaying nested subtask rows, priority level badges, relative due times, and real-time completion progress meters (`%` complete).
   - **Subtask Checklist Rows**: Built `TaskCard.tsx` with checklist triggers, priority tracking dots, overdue flags, and Pomodoro focus-run buttons.
@@ -177,7 +186,10 @@
 - [ ] Test live note creation, rich text editing, freehand stylus writing, and mind map canvas drawing in browser.
 - [ ] Verify zoom controls work correctly with stylus pointer coordinate compensation.
 - [ ] Validate new Task System page, collapsible macro cards, subtask checkoffs, and the global Pomodoro timer.
-- [ ] Plan and prepare for **Sprint 3: Advanced Reminders & Multi-Channel Dispatch (BullMQ + Nodemailer + Bots)**.
+- [ ] Validate Socket.io connections and message routing inside custom server.
+- [ ] Test bot webhook endpoints using tunnels (ngrok) to verify Discord and Telegram interactions.
+- [ ] Launch the background reminder workers and check Cron queue enqueuing.
+- [ ] Plan and prepare for **Sprint 4: Native MindSpace Calendar**.
 
 ## Future Roadmap (Planned Features)
 - [x] **Personalized Hub Dashboard (`/`):**

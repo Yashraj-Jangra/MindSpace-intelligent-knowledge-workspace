@@ -1,6 +1,12 @@
 # MindSpace - AI-Powered Visual Note-Taking & Mind-Mapping Platform
 
 ## Work Completed
+- [x] **Sprint 5: Community Chat, Group System & Canvas Co-Presence** (Session 2026-07-28 v13):
+  - **Prisma & Schema Setup**: Defined `FriendRequest`, `Conversation`, `ConversationMember`, `ChatMessage`, and `CanvasCollaborator` models in `prisma/schema.prisma`.
+  - **Dual-Path Storage Layer**: Created `chat-storage.ts` with PostgreSQL database query support and local `.data/chat.json` persistent storage fallback.
+  - **Chat & Social API Routes**: Built `/api/friends` (GET/POST/PATCH), `/api/friends/search` (GET), `/api/chat/conversations` (GET/POST), `/api/chat/messages` (GET/POST), and `/api/invite/[token]` (GET/POST).
+  - **Real-Time Multiplayer Canvas**: Updated `server.ts` to process room events (`cursor:move`, `node:moved`, `node:updated`) and built `MultiplayerCursors.tsx` rendering colored ghost cursors with name labels.
+  - **Chat UI Components**: Built `ChatPanel.tsx`, `ChatBubble.tsx` (floating bottom-right expandable pill button mounted globally in `layout.tsx`), and `ChatSidebar.tsx` (slide-in sidebar for Notes & Canvas).
 - [x] **Native MindSpace Calendar** (Session 2026-07-28 v12):
   - **Prisma & Schema Setup**: Defined `CalendarEvent` model and `EventRecurrence` enum (`NONE`, `DAILY`, `WEEKLY`, `MONTHLY`, `YEARLY`) in `prisma/schema.prisma`.
   - **Dual-Path Storage Layer**: Created `calendar-storage.ts` with PostgreSQL database query support and local `.data/calendar-events.json` persistent storage fallback.
@@ -197,7 +203,8 @@
 - [ ] Validate Socket.io connections and message routing inside custom server.
 - [ ] Test bot webhook endpoints using tunnels (ngrok) to verify Discord and Telegram interactions.
 - [ ] Validate Calendar month, week, and day grid views and drag-and-drop rescheduling.
-- [ ] Plan and prepare for **Sprint 5: Community Chat, Group System & Canvas Co-Presence**.
+- [ ] Validate Community Chat panel, friend requests, DMs, group chats, and multiplayer canvas ghost cursors.
+- [ ] Plan and prepare for **Sprint 6: AI Layer (RAG Semantic Search, Auto-Tagging, AI Task Breakdown)**.
 
 ## Future Roadmap (Planned Features)
 - [x] **Personalized Hub Dashboard (`/`):**

@@ -27,7 +27,11 @@ app.prepare().then(() => {
   });
 
   // Redis Subscriber Client for inter-process communication
-  const subClient = new Redis(redisUrl);
+  const subClient = new Redis(redisUrl, { lazyConnect: true });
+  subClient.on('error', (err) => {
+    console.error('[Socket.io Redis Sub Error]:', err.message);
+  });
+
   subClient.subscribe('socket-emit', (err) => {
     if (err) {
       console.error('[Socket.io Redis Sub] Failed to subscribe to socket-emit:', err);
@@ -40,7 +44,6 @@ app.prepare().then(() => {
     if (channel === 'socket-emit') {
       try {
         const { room, event, data } = JSON.parse(message);
-        console.log(`[Socket.io Redis Sub] Broadcasting event "${event}" to room "${room}"`);
         io.to(room).emit(event, data);
       } catch (e) {
         console.error('[Socket.io Redis Sub] Error processing message:', e);
@@ -49,20 +52,41 @@ app.prepare().then(() => {
   });
 
   io.on('connection', (socket) => {
-    console.log(`[Socket.io] Client connected: ${socket.id}`);
-
     socket.on('join-room', (roomName) => {
-      console.log(`[Socket.io] Client ${socket.id} joining room: ${roomName}`);
       socket.join(roomName);
     });
 
     socket.on('leave-room', (roomName) => {
-      console.log(`[Socket.io] Client ${socket.id} leaving room: ${roomName}`);
       socket.leave(roomName);
     });
 
+    // Canvas Co-Presence Multiplayer Events
+    socket.on('cursor:move', (data) => {
+      if (data?.canvasId) {
+        socket.to(`canvas:${data.canvasId}`).emit('cursor:move', {
+          socketId: socket.id,
+          user: data.user,
+          x: data.x,
+          y: data.y,
+        });
+      }
+    });
+
+    socket.on('node:moved', (data) => {
+      if (data?.canvasId) {
+        socket.to(`canvas:${data.canvasId}`).emit('node:moved', data);
+      }
+    });
+
+    socket.on('node:updated', (data) => {
+      if (data?.canvasId) {
+        socket.to(`canvas:${data.canvasId}`).emit('node:updated', data);
+      }
+    });
+
     socket.on('disconnect', () => {
-      console.log(`[Socket.io] Client disconnected: ${socket.id}`);
+      // Notify canvas rooms that cursor left
+      io.emit('cursor:left', { socketId: socket.id });
     });
   });
 

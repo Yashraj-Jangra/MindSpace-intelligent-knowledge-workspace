@@ -65,6 +65,11 @@ model User {
   tasks          Task[]
   telegramAccount TelegramAccount?
   calendarEvents CalendarEvent[]
+  sentFriendRequests     FriendRequest[]      @relation("SentRequests")
+  receivedFriendRequests FriendRequest[]      @relation("ReceivedRequests")
+  conversationMembers    ConversationMember[]
+  chatMessages           ChatMessage[]
+  canvasCollaborators    CanvasCollaborator[]
 
   @@map("users")
 }
@@ -161,6 +166,7 @@ model Canvas {
   notes         Note[]
   nodes         Node[]
   edges         Edge[]
+  collaborators CanvasCollaborator[]
 
   @@index([userId])
   @@map("canvases")
@@ -406,4 +412,85 @@ model CalendarEvent {
 
   @@index([userId, startAt])
   @@map("calendar_events")
+}
+
+enum FriendRequestStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  BLOCKED
+}
+
+model FriendRequest {
+  id         String              @id @default(cuid())
+  senderId   String
+  receiverId String
+  status     FriendRequestStatus @default(PENDING)
+  createdAt  DateTime            @default(now())
+
+  sender   User @relation("SentRequests", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver User @relation("ReceivedRequests", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  @@unique([senderId, receiverId])
+  @@map("friend_requests")
+}
+
+model Conversation {
+  id           String               @id @default(cuid())
+  name         String?
+  isGroup      Boolean              @default(false)
+  iconUrl      String?
+  inviteToken  String?              @unique
+  inviteExpiry DateTime?
+  createdAt    DateTime             @default(now())
+
+  members  ConversationMember[]
+  messages ChatMessage[]
+
+  @@map("conversations")
+}
+
+model ConversationMember {
+  id             String       @id @default(cuid())
+  conversationId String
+  userId         String
+  role           String       @default("MEMBER")
+  joinedAt       DateTime     @default(now())
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([conversationId, userId])
+  @@map("conversation_members")
+}
+
+model ChatMessage {
+  id             String       @id @default(cuid())
+  conversationId String
+  senderId       String
+  content        String       @db.Text
+  type           String       @default("TEXT")
+  readBy         String[]     @default([])
+  editedAt       DateTime?
+  createdAt      DateTime     @default(now())
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender       User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId, createdAt])
+  @@map("chat_messages")
+}
+
+model CanvasCollaborator {
+  id        String   @id @default(cuid())
+  canvasId  String
+  userId    String
+  role      String   @default("VIEWER")
+  invitedAt DateTime @default(now())
+
+  canvas Canvas @relation(fields: [canvasId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([canvasId, userId])
+  @@map("canvas_collaborators")
 }

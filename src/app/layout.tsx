@@ -4,6 +4,7 @@ import { AuthProvider } from '@/contexts/AuthContext';
 import { SocketProvider } from '@/contexts/SocketContext';
 import { PomodoroProvider } from '@/contexts/PomodoroContext';
 import { PomodoroTimer } from '@/components/tasks/PomodoroTimer';
+import { ChatBubble } from '@/components/chat/ChatBubble';
 
 export const metadata: Metadata = {
   title: 'MindSpace | AI-Powered Visual Note-Taking & Mind-Mapping Platform',
@@ -23,6 +24,7 @@ export default function RootLayout({
             <PomodoroProvider>
               {children}
               <PomodoroTimer />
+              <ChatBubble />
             </PomodoroProvider>
           </SocketProvider>
         </AuthProvider>

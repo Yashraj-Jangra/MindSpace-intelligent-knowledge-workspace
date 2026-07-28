@@ -121,15 +121,18 @@ export function ChatPanel({ onClose, isSidebar = false }: ChatPanelProps) {
     loadConversations();
   });
 
+  useEffect(() => {
+    if (activeTab === 'friends' && searchResults.length === 0 && !searchQuery) {
+      handleSearchUsers('*');
+    }
+  }, [activeTab]);
+
   // Search users
   const handleSearchUsers = async (q: string) => {
-    setSearchQuery(q);
-    if (!q.trim()) {
-      setSearchResults([]);
-      return;
-    }
+    setSearchQuery(q === '*' ? '' : q);
+    const query = q.trim() || '*';
     try {
-      const res = await fetch(`/api/friends/search?q=${encodeURIComponent(q)}`);
+      const res = await fetch(`/api/friends/search?q=${encodeURIComponent(query)}`);
       if (res.ok) {
         const data = await res.json();
         setSearchResults(data.users || []);

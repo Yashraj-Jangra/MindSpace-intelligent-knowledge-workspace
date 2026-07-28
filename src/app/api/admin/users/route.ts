@@ -10,11 +10,13 @@ export async function GET() {
       return NextResponse.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
     }
 
+    let dbUsers: any[] = [];
     if (!isDbDisabled()) {
       try {
-        const users = await prisma.user.findMany({
+        dbUsers = await prisma.user.findMany({
           select: {
             id: true,
+            name: true,
             email: true,
             username: true,
             role: true,
@@ -31,15 +33,39 @@ export async function GET() {
           },
           orderBy: { createdAt: 'desc' },
         });
-
-        return NextResponse.json({ users });
       } catch (err) {
         console.warn('[Admin Users GET DB Error]:', err);
       }
     }
 
-    const jsonUsers = await getAllUsers();
-    return NextResponse.json({ users: jsonUsers });
+    const localUsers = await getAllUsers();
+    const userMap = new Map<string, any>();
+
+    for (const u of dbUsers) {
+      userMap.set(u.email.toLowerCase(), {
+        ...u,
+        name: u.name || u.username || u.email.split('@')[0],
+        username: u.username || u.name || u.email.split('@')[0],
+      });
+    }
+
+    for (const u of localUsers) {
+      const key = u.email.toLowerCase();
+      if (!userMap.has(key)) {
+        userMap.set(key, {
+          id: u.id,
+          name: u.name || u.username || u.email.split('@')[0],
+          username: u.username || u.name || u.email.split('@')[0],
+          email: u.email,
+          role: u.role || 'USER',
+          createdAt: u.createdAt || new Date().toISOString(),
+          _count: { notes: 0, canvases: 0, tasks: 0 },
+        });
+      }
+    }
+
+    const mergedUsers = Array.from(userMap.values());
+    return NextResponse.json({ users: mergedUsers });
   } catch (error) {
     console.error('[API /admin/users GET Error]:', error);
     return NextResponse.json({ error: (error as Error).message }, { status: 500 });

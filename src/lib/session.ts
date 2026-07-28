@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken';
 import { cookies } from 'next/headers';
+import { getUserById } from './auth-storage';
 
 const JWT_SECRET = process.env.BETTER_AUTH_SECRET || 'mindspace_secret_key_2026';
 const COOKIE_NAME = 'mindspace_session';
@@ -40,7 +41,22 @@ export async function getSessionFromCookie(): Promise<SessionUser | null> {
     const cookieStore = await cookies();
     const token = cookieStore.get(COOKIE_NAME)?.value;
     if (!token) return null;
-    return verifySessionToken(token);
+    const decoded = verifySessionToken(token);
+    if (!decoded) return null;
+
+    // Fetch fresh user data from DB/local store to prevent stale role values in JWT token
+    const freshUser = await getUserById(decoded.id);
+    if (!freshUser) {
+      return decoded;
+    }
+
+    return {
+      id: freshUser.id,
+      email: freshUser.email,
+      name: freshUser.name,
+      role: freshUser.role,
+      image: freshUser.image,
+    };
   } catch (error) {
     return null;
   }

@@ -39,7 +39,7 @@ interface WebhookItem {
 }
 
 export function AccountDrawer({ isOpen, onClose, user }: AccountDrawerProps) {
-  const { checkSession } = useAuth();
+  const { checkSession, logout } = useAuth();
   const [activeTab, setActiveTab] = useState<
     'profile' | 'info' | 'security' | 'quota' | 'webhooks' | 'discord'
   >('profile');
@@ -761,6 +761,22 @@ export function AccountDrawer({ isOpen, onClose, user }: AccountDrawerProps) {
               </div>
             </div>
           )}
+        </div>
+
+        {/* Drawer Footer Log Out Action */}
+        <div className="p-4 border-t border-[#262626] bg-[#0F0F0F] shrink-0">
+          <button
+            onClick={async () => {
+              if (confirm('Are you sure you want to log out?')) {
+                await logout();
+                onClose();
+                window.location.href = '/login';
+              }
+            }}
+            className="w-full py-3 bg-[#1A1A1A] hover:bg-[#FF3D00] text-[#737373] hover:text-[#0A0A0A] font-mono text-xs font-bold uppercase tracking-widest border border-[#262626] hover:border-[#FF3D00] transition-all duration-150 flex items-center justify-center gap-2"
+          >
+            <span>Log Out Account</span>
+          </button>
         </div>
       </div>
     </div>

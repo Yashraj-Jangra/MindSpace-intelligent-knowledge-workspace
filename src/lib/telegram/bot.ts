@@ -61,6 +61,10 @@ export async function pairTelegramAccount(pairingCode: string, telegramChatId: s
   if (record.codeCreatedAt) {
     const ageMs = new Date().getTime() - new Date(record.codeCreatedAt).getTime();
     if (ageMs > 15 * 60 * 1000) {
+      await prisma.telegramAccount.update({
+        where: { id: record.id },
+        data: { pairingCode: null, codeCreatedAt: null },
+      });
       throw new Error('Pairing code has expired');
     }
   }

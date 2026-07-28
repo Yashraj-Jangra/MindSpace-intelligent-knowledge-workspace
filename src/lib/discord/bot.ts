@@ -41,6 +41,10 @@ export async function pairDiscordAccount(pairingCode: string, discordUserId: str
   if (record.codeCreatedAt) {
     const ageMs = new Date().getTime() - new Date(record.codeCreatedAt).getTime();
     if (ageMs > 15 * 60 * 1000) {
+      await prisma.discordAccount.update({
+        where: { id: record.id },
+        data: { pairingCode: null, codeCreatedAt: null },
+      });
       throw new Error('Pairing code has expired');
     }
   }

@@ -27,11 +27,16 @@ export async function GET() {
             const ageMs = new Date().getTime() - new Date(dcAcc.codeCreatedAt).getTime();
             if (ageMs > 15 * 60 * 1000) {
               code = null;
+              await prisma.discordAccount.update({
+                where: { id: dcAcc.id },
+                data: { pairingCode: null, codeCreatedAt: null },
+              });
             }
           }
           discordAccount = {
             ...dcAcc,
             pairingCode: code,
+            codeCreatedAt: code ? dcAcc.codeCreatedAt : null,
           };
         }
 
@@ -44,11 +49,16 @@ export async function GET() {
             const ageMs = new Date().getTime() - new Date(tgAcc.codeCreatedAt).getTime();
             if (ageMs > 15 * 60 * 1000) {
               code = null;
+              await prisma.telegramAccount.update({
+                where: { id: tgAcc.id },
+                data: { pairingCode: null, codeCreatedAt: null },
+              });
             }
           }
           telegramAccount = {
             ...tgAcc,
             pairingCode: code,
+            codeCreatedAt: code ? tgAcc.codeCreatedAt : null,
           };
         }
 

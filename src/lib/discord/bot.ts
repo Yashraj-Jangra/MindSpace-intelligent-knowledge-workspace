@@ -2,14 +2,27 @@ import { Client, GatewayIntentBits } from 'discord.js';
 import { prisma } from '../db';
 
 export async function generateDiscordPairingCode(userId: string): Promise<string> {
+  const account = await prisma.discordAccount.findUnique({
+    where: { userId }
+  });
+
+  const now = new Date();
+  if (account?.pairingCode && account.codeCreatedAt) {
+    const ageMs = now.getTime() - new Date(account.codeCreatedAt).getTime();
+    if (ageMs < 15 * 60 * 1000) {
+      return account.pairingCode;
+    }
+  }
+
   const code = Math.floor(100000 + Math.random() * 900000).toString();
 
   await prisma.discordAccount.upsert({
     where: { userId },
-    update: { pairingCode: code },
+    update: { pairingCode: code, codeCreatedAt: now },
     create: {
       userId,
       pairingCode: code,
+      codeCreatedAt: now,
     },
   });
 
@@ -25,6 +38,13 @@ export async function pairDiscordAccount(pairingCode: string, discordUserId: str
     throw new Error('Invalid or expired pairing code');
   }
 
+  if (record.codeCreatedAt) {
+    const ageMs = new Date().getTime() - new Date(record.codeCreatedAt).getTime();
+    if (ageMs > 15 * 60 * 1000) {
+      throw new Error('Pairing code has expired');
+    }
+  }
+
   return await prisma.discordAccount.update({
     where: { id: record.id },
     data: {
@@ -32,6 +52,7 @@ export async function pairDiscordAccount(pairingCode: string, discordUserId: str
       discordUsername,
       isPaired: true,
       pairingCode: null, // Consume code
+      codeCreatedAt: null,
     },
   });
 }

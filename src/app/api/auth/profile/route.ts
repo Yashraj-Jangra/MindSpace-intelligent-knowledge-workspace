@@ -9,11 +9,48 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    let discordAccount = null;
+    let telegramAccount = null;
+
     if (!isDbDisabled()) {
       try {
         const user = await prisma.user.findUnique({
           where: { id: session.id },
         });
+
+        const dcAcc = await prisma.discordAccount.findUnique({
+          where: { userId: session.id },
+        });
+        if (dcAcc) {
+          let code = dcAcc.pairingCode;
+          if (dcAcc.pairingCode && dcAcc.codeCreatedAt) {
+            const ageMs = new Date().getTime() - new Date(dcAcc.codeCreatedAt).getTime();
+            if (ageMs > 15 * 60 * 1000) {
+              code = null;
+            }
+          }
+          discordAccount = {
+            ...dcAcc,
+            pairingCode: code,
+          };
+        }
+
+        const tgAcc = await prisma.telegramAccount.findUnique({
+          where: { userId: session.id },
+        });
+        if (tgAcc) {
+          let code = tgAcc.pairingCode;
+          if (tgAcc.pairingCode && tgAcc.codeCreatedAt) {
+            const ageMs = new Date().getTime() - new Date(tgAcc.codeCreatedAt).getTime();
+            if (ageMs > 15 * 60 * 1000) {
+              code = null;
+            }
+          }
+          telegramAccount = {
+            ...tgAcc,
+            pairingCode: code,
+          };
+        }
 
         if (user) {
           return NextResponse.json({
@@ -24,6 +61,8 @@ export async function GET() {
               name: user.name,
               role: user.role,
             },
+            discordAccount,
+            telegramAccount,
           });
         }
       } catch (err) {
@@ -39,6 +78,8 @@ export async function GET() {
         name: session.name,
         role: session.role || 'USER',
       },
+      discordAccount: null,
+      telegramAccount: null,
       mock: true,
     });
   } catch (error) {

@@ -21,15 +21,28 @@ export async function getTelegramBot(userToken?: string | null): Promise<Bot | n
 }
 
 export async function generateTelegramPairingCode(userId: string): Promise<string> {
+  const account = await prisma.telegramAccount.findUnique({
+    where: { userId }
+  });
+
+  const now = new Date();
+  if (account?.pairingCode && account.codeCreatedAt) {
+    const ageMs = now.getTime() - new Date(account.codeCreatedAt).getTime();
+    if (ageMs < 15 * 60 * 1000) {
+      return account.pairingCode;
+    }
+  }
+
   const code = Math.floor(100000 + Math.random() * 900000).toString();
 
   await prisma.telegramAccount.upsert({
     where: { userId },
-    update: { pairingCode: code },
+    update: { pairingCode: code, codeCreatedAt: now },
     create: {
       userId,
       pairingCode: code,
       telegramChatId: '',
+      codeCreatedAt: now,
     },
   });
 
@@ -45,6 +58,13 @@ export async function pairTelegramAccount(pairingCode: string, telegramChatId: s
     throw new Error('Invalid or expired pairing code');
   }
 
+  if (record.codeCreatedAt) {
+    const ageMs = new Date().getTime() - new Date(record.codeCreatedAt).getTime();
+    if (ageMs > 15 * 60 * 1000) {
+      throw new Error('Pairing code has expired');
+    }
+  }
+
   return await prisma.telegramAccount.update({
     where: { id: record.id },
     data: {
@@ -52,6 +72,7 @@ export async function pairTelegramAccount(pairingCode: string, telegramChatId: s
       username: username || null,
       isPaired: true,
       pairingCode: null, // Consume code
+      codeCreatedAt: null,
     },
   });
 }

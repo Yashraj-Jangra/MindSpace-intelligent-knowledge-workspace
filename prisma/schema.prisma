@@ -265,6 +265,7 @@ model TelegramAccount {
   username       String?
   isPaired       Boolean  @default(false)
   pairingCode    String?  @unique
+  codeCreatedAt  DateTime?
   botToken       String?  // user-owned token (overrides global)
   createdAt      DateTime @default(now())
   user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -290,6 +291,7 @@ model DiscordAccount {
   id              String   @id @default(cuid())
   userId          String   @unique
   pairingCode     String?  @unique
+  codeCreatedAt   DateTime?
   discordUserId   String?  @unique
   discordUsername String?
   webhookUrl      String?

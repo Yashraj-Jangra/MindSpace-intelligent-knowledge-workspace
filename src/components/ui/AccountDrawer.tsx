@@ -1,9 +1,28 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { X, User, Shield, Terminal, Webhook, MessageSquare, Key, Trash2, Plus, Check, Loader2, Database, Info } from 'lucide-react';
+import {
+  X,
+  User,
+  Shield,
+  Terminal,
+  Webhook,
+  MessageSquare,
+  Key,
+  Trash2,
+  Plus,
+  Check,
+  Loader2,
+  Database,
+  Info,
+  Copy,
+  CheckCircle2,
+  Bot,
+  Zap,
+} from 'lucide-react';
 import { SessionUser } from '@/lib/session';
 import { useAuth } from '@/contexts/AuthContext';
+import { ThemeToggle } from '@/components/ui/ThemeToggle';
 
 interface AccountDrawerProps {
   isOpen: boolean;
@@ -21,7 +40,9 @@ interface WebhookItem {
 
 export function AccountDrawer({ isOpen, onClose, user }: AccountDrawerProps) {
   const { checkSession } = useAuth();
-  const [activeTab, setActiveTab] = useState<'profile' | 'info' | 'security' | 'quota' | 'webhooks' | 'discord'>('profile');
+  const [activeTab, setActiveTab] = useState<
+    'profile' | 'info' | 'security' | 'quota' | 'webhooks' | 'discord'
+  >('profile');
   const [copiedText, setCopiedText] = useState(false);
 
   // Edit Info Tab State
@@ -59,20 +80,17 @@ export function AccountDrawer({ isOpen, onClose, user }: AccountDrawerProps) {
   const [whError, setWhError] = useState('');
   const [whSuccess, setWhSuccess] = useState('');
 
-  // Discord Tab State
+  // Discord / Telegram State
   const [discordAccount, setDiscordAccount] = useState<any>(null);
-  const [isDiscordLoading, setIsDiscordLoading] = useState(false);
+  const [telegramAccount, setTelegramAccount] = useState<any>(null);
   const [pairingCode, setPairingCode] = useState('');
-  const [discordWebhookUrl, setDiscordWebhookUrl] = useState('');
   const [dcSuccess, setDcSuccess] = useState('');
 
-  // Update Edit Info inputs when user session shifts
   useEffect(() => {
     setEditName(user.name || '');
     setEditEmail(user.email || '');
   }, [user]);
 
-  // Copy API snippet helper
   const copyApiSnippet = () => {
     const snippet = `curl -X POST http://localhost:3000/api/v1/nodes \\
   -H "Content-Type: application/json" \\
@@ -86,7 +104,6 @@ export function AccountDrawer({ isOpen, onClose, user }: AccountDrawerProps) {
     setTimeout(() => setCopiedText(false), 2000);
   };
 
-  // Fetch Usage Statistics
   const fetchUsageStats = async () => {
     setIsUsageLoading(true);
     try {
@@ -102,7 +119,42 @@ export function AccountDrawer({ isOpen, onClose, user }: AccountDrawerProps) {
     }
   };
 
-  // Save profile info modifications
+  const fetchWebhooks = async () => {
+    setIsWebhooksLoading(true);
+    try {
+      const res = await fetch('/api/webhooks');
+      if (res.ok) {
+        const data = await res.json();
+        setWebhooks(data.webhooks || []);
+      }
+    } catch (err) {
+      console.error('Failed to fetch webhooks:', err);
+    } finally {
+      setIsWebhooksLoading(false);
+    }
+  };
+
+  const fetchBotAccounts = async () => {
+    try {
+      const res = await fetch('/api/auth/profile');
+      if (res.ok) {
+        const data = await res.json();
+        setDiscordAccount(data.discordAccount || null);
+        setTelegramAccount(data.telegramAccount || null);
+      }
+    } catch (err) {
+      console.error('Failed to fetch bot pairing info:', err);
+    }
+  };
+
+  useEffect(() => {
+    if (isOpen) {
+      if (activeTab === 'quota') fetchUsageStats();
+      if (activeTab === 'webhooks') fetchWebhooks();
+      if (activeTab === 'discord') fetchBotAccounts();
+    }
+  }, [isOpen, activeTab]);
+
   const handleSaveInfo = async (e: React.FormEvent) => {
     e.preventDefault();
     setInfoError('');
@@ -111,32 +163,32 @@ export function AccountDrawer({ isOpen, onClose, user }: AccountDrawerProps) {
 
     try {
       const res = await fetch('/api/auth/profile', {
-        method: 'POST',
+        method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: editName, email: editEmail }),
       });
       const data = await res.json();
-      if (res.ok) {
-        setInfoSuccess('Profile information updated successfully!');
-        await checkSession(); // Reload session in context header
+
+      if (!res.ok) {
+        setInfoError(data.error || 'Failed to update profile info');
       } else {
-        setInfoError(data.error || 'Failed to update profile information');
+        setInfoSuccess('Profile updated successfully');
+        await checkSession();
       }
     } catch (err) {
-      setInfoError('Server error while saving info.');
+      setInfoError('A network error occurred.');
     } finally {
       setIsInfoLoading(false);
     }
   };
 
-  // Save password updates
-  const handleSavePassword = async (e: React.FormEvent) => {
+  const handleUpdatePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setSecurityError('');
     setSecuritySuccess('');
 
     if (newPassword !== confirmPassword) {
-      setSecurityError('New passwords do not match');
+      setSecurityError('New passwords do not match.');
       return;
     }
 
@@ -148,280 +200,273 @@ export function AccountDrawer({ isOpen, onClose, user }: AccountDrawerProps) {
         body: JSON.stringify({ currentPassword, newPassword }),
       });
       const data = await res.json();
-      if (res.ok) {
-        setSecuritySuccess('Password updated successfully!');
+
+      if (!res.ok) {
+        setSecurityError(data.error || 'Failed to update password');
+      } else {
+        setSecuritySuccess('Password updated successfully');
         setCurrentPassword('');
         setNewPassword('');
         setConfirmPassword('');
-      } else {
-        setSecurityError(data.error || 'Failed to change password');
       }
     } catch (err) {
-      setSecurityError('Server error while changing password.');
+      setSecurityError('A network error occurred.');
     } finally {
       setIsSecurityLoading(false);
     }
   };
 
-  // Fetch webhooks
-  const fetchWebhooks = async () => {
-    setIsWebhooksLoading(true);
-    try {
-      const res = await fetch('/api/webhooks');
-      if (res.ok) {
-        const data = await res.json();
-        setWebhooks(data.webhooks || []);
-      }
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setIsWebhooksLoading(false);
-    }
-  };
-
-  // Register Webhook
   const handleAddWebhook = async (e: React.FormEvent) => {
     e.preventDefault();
     setWhError('');
     setWhSuccess('');
-    if (!whUrl) return;
+
+    if (!whName.trim() || !whUrl.trim()) {
+      setWhError('Name and Target URL are required');
+      return;
+    }
 
     try {
       const res = await fetch('/api/webhooks', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name: whName,
-          targetUrl: whUrl,
-          secret: whSecret,
+          name: whName.trim(),
+          targetUrl: whUrl.trim(),
+          secret: whSecret.trim() || null,
           events: whEvents,
         }),
       });
-      const data = await res.json();
+
       if (res.ok) {
-        setWhSuccess('Webhook registered successfully!');
+        setWhSuccess('Webhook registered successfully');
         setWhName('');
         setWhUrl('');
         setWhSecret('');
         fetchWebhooks();
       } else {
+        const data = await res.json();
         setWhError(data.error || 'Failed to add webhook');
       }
     } catch (err) {
-      setWhError('Server error while saving webhook.');
+      setWhError('Failed to add webhook');
     }
   };
 
-  // Delete Webhook
   const handleDeleteWebhook = async (id: string) => {
     try {
-      const res = await fetch('/api/webhooks', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id }),
-      });
+      const res = await fetch(`/api/webhooks?id=${id}`, { method: 'DELETE' });
       if (res.ok) {
-        setWebhooks((prev) => prev.filter((w) => w.id !== id));
+        fetchWebhooks();
       }
     } catch (err) {
-      console.error(err);
+      console.error('Failed to delete webhook:', err);
     }
   };
 
-  // Fetch Discord Pairing Status
-  const fetchDiscordStatus = async () => {
-    setIsDiscordLoading(true);
+  const handleGeneratePairCode = async () => {
     try {
-      const res = await fetch('/api/discord/pair');
+      const res = await fetch('/api/telegram/pair', { method: 'POST' });
       if (res.ok) {
         const data = await res.json();
-        setDiscordAccount(data.account || null);
-        if (data.account?.webhookUrl) {
-          setDiscordWebhookUrl(data.account.webhookUrl);
-        }
+        setPairingCode(data.code);
+        setDcSuccess('Pairing code generated. Send command to Telegram bot.');
       }
     } catch (err) {
-      console.error(err);
-    } finally {
-      setIsDiscordLoading(false);
+      console.error('Failed to generate pairing code:', err);
     }
   };
-
-  // Generate Discord pairing code
-  const handleGenerateDiscordCode = async () => {
-    setPairingCode('');
-    try {
-      const res = await fetch('/api/discord/pair', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'generate-code' }),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setPairingCode(data.pairingCode || '');
-        fetchDiscordStatus();
-      }
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  // Save Discord Webhook URL
-  const handleSaveDiscordWebhook = async () => {
-    setDcSuccess('');
-    try {
-      const res = await fetch('/api/discord/pair', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'set-webhook', webhookUrl: discordWebhookUrl }),
-      });
-      if (res.ok) {
-        setDcSuccess('Discord notification webhook saved!');
-        fetchDiscordStatus();
-      }
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  // Trigger loads when active tab changes
-  useEffect(() => {
-    if (!isOpen) return;
-    if (activeTab === 'quota') fetchUsageStats();
-    if (activeTab === 'webhooks') fetchWebhooks();
-    if (activeTab === 'discord') fetchDiscordStatus();
-  }, [activeTab, isOpen]);
 
   if (!isOpen) return null;
 
+  const storagePct = Math.min(
+    100,
+    Math.round((usageStats.storageUsed / usageStats.storageLimit) * 100)
+  );
+
   return (
-    <div className="fixed inset-0 z-50 flex justify-end bg-black/60 backdrop-blur-sm select-none animate-in fade-in duration-200">
-      {/* Background click dismiss */}
-      <div className="absolute inset-0" onClick={onClose} />
+    <div className="fixed inset-0 z-50 overflow-hidden font-sans">
+      {/* Dark Overlay */}
+      <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={onClose} />
 
       {/* Main Drawer Shell */}
-      <div className="relative w-full max-w-lg h-full bg-[#0A0A0A] border-l border-[#262626] flex flex-col shadow-2xl animate-in slide-in-from-right duration-300">
-        
-        {/* Drawer Header */}
-        <header className="p-6 border-b border-[#262626] flex items-center justify-between shrink-0">
+      <div className="absolute right-0 top-0 w-full sm:max-w-lg h-[100dvh] bg-[#0A0A0A] border-l border-[#262626] flex flex-col shadow-2xl animate-in slide-in-from-right duration-200">
+        {/* Header Bar */}
+        <header className="p-4 sm:p-5 border-b border-[#262626] flex items-center justify-between shrink-0 bg-[#0F0F0F]">
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 bg-[#FF3D00] flex items-center justify-center font-mono font-bold text-[#0A0A0A]">
-              <User className="w-3.5 h-3.5" />
+            <div className="w-7 h-7 bg-[#FF3D00] flex items-center justify-center font-mono font-bold text-[#0A0A0A]">
+              <User className="w-4 h-4 stroke-[2.5]" />
             </div>
-            <h2 className="font-sans font-black text-lg tracking-tighter uppercase text-[#FAFAFA]">
-              ACCOUNT & SETTINGS
+            <h2 className="font-sans font-black text-base tracking-tighter uppercase text-[#FAFAFA]">
+              ACCOUNT & GOVERNANCE
             </h2>
           </div>
           <button
             onClick={onClose}
             className="p-1 border border-[#262626] hover:border-[#FF3D00] text-[#737373] hover:text-[#FAFAFA] transition-colors"
           >
-            <X className="w-4 h-4" />
+            <X className="w-5 h-5" />
           </button>
         </header>
 
-        {/* Settings Navigation Tabs */}
-        <nav className="flex border-b border-[#262626] shrink-0 overflow-x-auto no-scrollbar font-mono text-[9px] sm:text-[11px] uppercase font-bold bg-[#0F0F0F]">
+        {/* User Profile Hero Card */}
+        <div className="p-4 sm:p-5 border-b border-[#262626] bg-[#0A0A0A] space-y-4">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-[#FF3D00] font-black text-xl text-[#0A0A0A] flex items-center justify-center font-sans uppercase shrink-0">
+                {user.name ? user.name[0].toUpperCase() : 'U'}
+              </div>
+              <div className="truncate">
+                <div className="font-bold text-sm text-[#FAFAFA] truncate">
+                  {user.name || 'MindSpace User'}
+                </div>
+                <div className="font-mono text-xs text-[#737373] truncate">{user.email}</div>
+                <span className="inline-block mt-1 font-mono text-[9px] uppercase px-1.5 py-0.5 border border-[#262626] text-[#FF3D00] bg-[#FF3D00]/10 font-bold">
+                  {user.role} ROLE
+                </span>
+              </div>
+            </div>
+
+            {/* Integrated Theme Switcher */}
+            <div className="flex flex-col items-end gap-1 shrink-0">
+              <span className="font-mono text-[9px] uppercase tracking-wider text-[#737373]">
+                Appearance
+              </span>
+              <ThemeToggle />
+            </div>
+          </div>
+
+          {/* Quick Storage Quota Bar */}
+          <div className="p-3 bg-[#0F0F0F] border border-[#262626] space-y-1.5">
+            <div className="flex justify-between font-mono text-[10px] uppercase">
+              <span className="text-[#737373]">Storage Capacity</span>
+              <span className="text-[#FAFAFA] font-bold">
+                {usageStats.storageUsed.toFixed(1)} MB / {usageStats.storageLimit} MB ({storagePct}%)
+              </span>
+            </div>
+            <div className="w-full h-1.5 bg-[#1A1A1A] overflow-hidden">
+              <div
+                className="h-full bg-[#FF3D00] transition-all duration-300"
+                style={{ width: `${storagePct}%` }}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Segmented Icon Navigation Control Bar */}
+        <nav className="flex border-b border-[#262626] shrink-0 overflow-x-auto no-scrollbar font-mono text-xs uppercase bg-[#0F0F0F]">
           <button
             onClick={() => setActiveTab('profile')}
-            className={`flex-1 py-3.5 px-2 text-center border-r border-[#262626] transition-colors whitespace-nowrap ${
-              activeTab === 'profile' ? 'text-[#FF3D00] bg-[#0A0A0A]' : 'text-[#737373] hover:text-[#FAFAFA]'
+            className={`flex-1 py-3 px-3 min-h-[44px] flex items-center justify-center gap-1.5 border-r border-[#262626] transition-colors whitespace-nowrap ${
+              activeTab === 'profile'
+                ? 'text-[#FF3D00] bg-[#0A0A0A] font-bold border-b-2 border-b-[#FF3D00]'
+                : 'text-[#737373] hover:text-[#FAFAFA]'
             }`}
           >
-            Profile & API
+            <User className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Profile</span>
           </button>
           <button
             onClick={() => setActiveTab('info')}
-            className={`flex-1 py-3.5 px-2 text-center border-r border-[#262626] transition-colors whitespace-nowrap ${
-              activeTab === 'info' ? 'text-[#FF3D00] bg-[#0A0A0A]' : 'text-[#737373] hover:text-[#FAFAFA]'
+            className={`flex-1 py-3 px-3 min-h-[44px] flex items-center justify-center gap-1.5 border-r border-[#262626] transition-colors whitespace-nowrap ${
+              activeTab === 'info'
+                ? 'text-[#FF3D00] bg-[#0A0A0A] font-bold border-b-2 border-b-[#FF3D00]'
+                : 'text-[#737373] hover:text-[#FAFAFA]'
             }`}
           >
-            Change Info
+            <Info className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Settings</span>
           </button>
           <button
             onClick={() => setActiveTab('security')}
-            className={`flex-1 py-3.5 px-2 text-center border-r border-[#262626] transition-colors whitespace-nowrap ${
-              activeTab === 'security' ? 'text-[#FF3D00] bg-[#0A0A0A]' : 'text-[#737373] hover:text-[#FAFAFA]'
+            className={`flex-1 py-3 px-3 min-h-[44px] flex items-center justify-center gap-1.5 border-r border-[#262626] transition-colors whitespace-nowrap ${
+              activeTab === 'security'
+                ? 'text-[#FF3D00] bg-[#0A0A0A] font-bold border-b-2 border-b-[#FF3D00]'
+                : 'text-[#737373] hover:text-[#FAFAFA]'
             }`}
           >
-            Password
+            <Shield className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Security</span>
           </button>
           <button
             onClick={() => setActiveTab('quota')}
-            className={`flex-1 py-3.5 px-2 text-center border-r border-[#262626] transition-colors whitespace-nowrap ${
-              activeTab === 'quota' ? 'text-[#FF3D00] bg-[#0A0A0A]' : 'text-[#737373] hover:text-[#FAFAFA]'
+            className={`flex-1 py-3 px-3 min-h-[44px] flex items-center justify-center gap-1.5 border-r border-[#262626] transition-colors whitespace-nowrap ${
+              activeTab === 'quota'
+                ? 'text-[#FF3D00] bg-[#0A0A0A] font-bold border-b-2 border-b-[#FF3D00]'
+                : 'text-[#737373] hover:text-[#FAFAFA]'
             }`}
           >
-            Quotas
+            <Database className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Quotas</span>
           </button>
           <button
             onClick={() => setActiveTab('webhooks')}
-            className={`flex-1 py-3.5 px-2 text-center border-r border-[#262626] transition-colors whitespace-nowrap ${
-              activeTab === 'webhooks' ? 'text-[#FF3D00] bg-[#0A0A0A]' : 'text-[#737373] hover:text-[#FAFAFA]'
+            className={`flex-1 py-3 px-3 min-h-[44px] flex items-center justify-center gap-1.5 border-r border-[#262626] transition-colors whitespace-nowrap ${
+              activeTab === 'webhooks'
+                ? 'text-[#FF3D00] bg-[#0A0A0A] font-bold border-b-2 border-b-[#FF3D00]'
+                : 'text-[#737373] hover:text-[#FAFAFA]'
             }`}
           >
-            Webhooks
+            <Webhook className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Hooks</span>
           </button>
           <button
             onClick={() => setActiveTab('discord')}
-            className={`flex-1 py-3.5 px-2 text-center transition-colors whitespace-nowrap ${
-              activeTab === 'discord' ? 'text-[#FF3D00] bg-[#0A0A0A]' : 'text-[#737373] hover:text-[#FAFAFA]'
+            className={`flex-1 py-3 px-3 min-h-[44px] flex items-center justify-center gap-1.5 transition-colors whitespace-nowrap ${
+              activeTab === 'discord'
+                ? 'text-[#FF3D00] bg-[#0A0A0A] font-bold border-b-2 border-b-[#FF3D00]'
+                : 'text-[#737373] hover:text-[#FAFAFA]'
             }`}
           >
-            Discord
+            <Bot className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Bots</span>
           </button>
         </nav>
 
         {/* Content Body */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-6">
-          
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
           {/* TAB 1: Profile & REST API */}
           {activeTab === 'profile' && (
             <div className="space-y-6">
-              {/* Credentials card */}
-              <div className="bg-[#0F0F0F] border border-[#262626] p-5 relative">
-                <div className="h-1 w-12 bg-[#FF3D00] absolute top-0 left-0" />
-                <h3 className="font-mono text-xs text-[#737373] uppercase tracking-wider mb-4 flex items-center gap-1.5">
-                  <Shield className="w-3.5 h-3.5 text-[#FF3D00]" />
-                  <span>User Credentials</span>
+              <div className="bg-[#0F0F0F] border border-[#262626] p-5 space-y-4">
+                <h3 className="font-mono text-xs text-[#737373] uppercase tracking-wider flex items-center gap-1.5">
+                  <Shield className="w-4 h-4 text-[#FF3D00]" />
+                  <span>User Account Credentials</span>
                 </h3>
                 <div className="space-y-3 text-xs font-mono">
                   <div className="flex justify-between pb-2 border-b border-[#1A1A1A]">
-                    <span className="text-[#737373]">NAME</span>
-                    <span className="text-[#FAFAFA] font-bold">{user.name || 'Anonymous User'}</span>
+                    <span className="text-[#737373]">User ID</span>
+                    <span className="text-[#FAFAFA] font-bold select-all">{user.id}</span>
                   </div>
                   <div className="flex justify-between pb-2 border-b border-[#1A1A1A]">
-                    <span className="text-[#737373]">EMAIL</span>
+                    <span className="text-[#737373]">Email Address</span>
                     <span className="text-[#FAFAFA] font-bold">{user.email}</span>
                   </div>
                   <div className="flex justify-between pb-2 border-b border-[#1A1A1A]">
-                    <span className="text-[#737373]">ROLE</span>
+                    <span className="text-[#737373]">Account Role</span>
                     <span className="text-[#FF3D00] font-black">{user.role}</span>
-                  </div>
-                  <div className="flex justify-between pb-1">
-                    <span className="text-[#737373]">USER ID / API KEY</span>
-                    <span className="text-[#FAFAFA] select-all font-bold text-[10px] break-all">{user.id}</span>
                   </div>
                 </div>
               </div>
 
-              {/* REST API integration card */}
+              {/* REST API Integration */}
               <div className="bg-[#0F0F0F] border border-[#262626] p-5 space-y-3">
                 <h3 className="font-mono text-xs text-[#737373] uppercase tracking-wider flex items-center gap-1.5">
-                  <Terminal className="w-3.5 h-3.5 text-[#FF3D00]" />
-                  <span>Public REST API Integration</span>
+                  <Terminal className="w-4 h-4 text-[#FF3D00]" />
+                  <span>Public REST API Snippet</span>
                 </h3>
-                <p className="text-[11px] text-[#737373] leading-relaxed">
-                  Use your credentials to query or inject concept nodes into MindSpace canvases programmatically from terminal scripts.
+                <p className="text-xs text-[#737373] leading-relaxed">
+                  Query or inject concept nodes programmatically into MindSpace canvases from terminal scripts.
                 </p>
-                <div className="bg-black border border-[#262626] p-3 text-[10px] font-mono text-[#FAFAFA] overflow-x-auto relative group">
+                <div className="bg-black border border-[#262626] p-3 text-[11px] font-mono text-[#FAFAFA] overflow-x-auto relative">
                   <button
                     onClick={copyApiSnippet}
-                    className="absolute top-2 right-2 px-2 py-0.5 border border-[#262626] hover:border-[#FF3D00] text-[#737373] hover:text-[#FAFAFA] text-[9px] transition-colors"
+                    className="absolute top-2 right-2 px-2.5 py-1 border border-[#262626] hover:border-[#FF3D00] text-[#737373] hover:text-[#FAFAFA] text-[10px] uppercase font-bold transition-colors flex items-center gap-1"
                   >
-                    {copiedText ? 'Copied!' : 'Copy'}
+                    <Copy className="w-3 h-3 text-[#FF3D00]" />
+                    <span>{copiedText ? 'Copied!' : 'Copy'}</span>
                   </button>
-                  <pre className="pr-12 text-[#10B981]">
+                  <pre className="pr-16 text-[#10B981]">
 {`curl -X POST http://localhost:3000/api/v1/nodes \\
   -H "Content-Type: application/json" \\
   -d '{
@@ -435,358 +480,288 @@ export function AccountDrawer({ isOpen, onClose, user }: AccountDrawerProps) {
             </div>
           )}
 
-          {/* TAB 2: Change Info */}
+          {/* TAB 2: Account Settings */}
           {activeTab === 'info' && (
             <form onSubmit={handleSaveInfo} className="bg-[#0F0F0F] border border-[#262626] p-5 space-y-4">
               <h3 className="font-mono text-xs text-[#737373] uppercase tracking-wider flex items-center gap-1.5">
-                <Info className="w-3.5 h-3.5 text-[#FF3D00]" />
-                <span>Profile Settings</span>
+                <Info className="w-4 h-4 text-[#FF3D00]" />
+                <span>Update Account Information</span>
               </h3>
 
-              {infoError && <div className="p-2 border border-red-500 bg-red-500/10 text-red-500 text-[11px] font-mono">{infoError}</div>}
-              {infoSuccess && <div className="p-2 border border-emerald-500 bg-emerald-500/10 text-emerald-500 text-[11px] font-mono">{infoSuccess}</div>}
+              {infoError && (
+                <div className="p-3 border border-[#FF3D00] bg-[#FF3D00]/10 text-[#FF3D00] text-xs font-mono">
+                  {infoError}
+                </div>
+              )}
+              {infoSuccess && (
+                <div className="p-3 border border-[#10B981] bg-[#10B981]/10 text-[#10B981] text-xs font-mono flex items-center gap-1.5">
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span>{infoSuccess}</span>
+                </div>
+              )}
 
-              <div className="space-y-3 text-xs">
+              <div className="space-y-4 text-xs font-mono">
                 <div>
-                  <label className="block font-mono uppercase text-[#737373] text-[10px] mb-1">Display Name</label>
+                  <label className="block text-[#737373] uppercase tracking-wider mb-1.5">
+                    Display Name
+                  </label>
                   <input
                     type="text"
-                    required
-                    placeholder="e.g. John Doe"
                     value={editName}
                     onChange={(e) => setEditName(e.target.value)}
-                    className="w-full bg-[#1A1A1A] border border-[#262626] focus:border-[#FF3D00] p-2 text-xs font-mono text-[#FAFAFA] outline-none"
+                    className="w-full bg-[#1A1A1A] border border-[#262626] focus:border-[#FF3D00] text-[#FAFAFA] p-3 outline-none min-h-[44px]"
+                    placeholder="Your Display Name"
                   />
                 </div>
+
                 <div>
-                  <label className="block font-mono uppercase text-[#737373] text-[10px] mb-1">Email Address</label>
+                  <label className="block text-[#737373] uppercase tracking-wider mb-1.5">
+                    Email Address
+                  </label>
                   <input
                     type="email"
-                    required
-                    placeholder="e.g. john@doe.com"
                     value={editEmail}
                     onChange={(e) => setEditEmail(e.target.value)}
-                    className="w-full bg-[#1A1A1A] border border-[#262626] focus:border-[#FF3D00] p-2 text-xs font-mono text-[#FAFAFA] outline-none"
+                    className="w-full bg-[#1A1A1A] border border-[#262626] focus:border-[#FF3D00] text-[#FAFAFA] p-3 outline-none min-h-[44px]"
+                    placeholder="your@email.com"
                   />
-                </div>
-              </div>
-
-              <button
-                type="submit"
-                disabled={isInfoLoading}
-                className="w-full bg-[#FF3D00] text-[#0A0A0A] font-mono text-xs uppercase font-bold py-2.5 hover:bg-[#FAFAFA] transition-colors flex items-center justify-center gap-2"
-              >
-                {isInfoLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Save Profile Changes'}
-              </button>
-            </form>
-          )}
-
-          {/* TAB 3: Security (Change Password) */}
-          {activeTab === 'security' && (
-            <form onSubmit={handleSavePassword} className="bg-[#0F0F0F] border border-[#262626] p-5 space-y-4">
-              <h3 className="font-mono text-xs text-[#737373] uppercase tracking-wider flex items-center gap-1.5">
-                <Key className="w-3.5 h-3.5 text-[#FF3D00]" />
-                <span>Security Settings</span>
-              </h3>
-
-              {securityError && <div className="p-2 border border-red-500 bg-red-500/10 text-red-500 text-[11px] font-mono">{securityError}</div>}
-              {securitySuccess && <div className="p-2 border border-emerald-500 bg-emerald-500/10 text-emerald-500 text-[11px] font-mono">{securitySuccess}</div>}
-
-              <div className="space-y-3 text-xs">
-                <div>
-                  <label className="block font-mono uppercase text-[#737373] text-[10px] mb-1">Current Password</label>
-                  <input
-                    type="password"
-                    required
-                    placeholder="••••••••••••"
-                    value={currentPassword}
-                    onChange={(e) => setCurrentPassword(e.target.value)}
-                    className="w-full bg-[#1A1A1A] border border-[#262626] focus:border-[#FF3D00] p-2 text-xs font-mono text-[#FAFAFA] outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block font-mono uppercase text-[#737373] text-[10px] mb-1">New Password</label>
-                  <input
-                    type="password"
-                    required
-                    placeholder="••••••••••••"
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                    className="w-full bg-[#1A1A1A] border border-[#262626] focus:border-[#FF3D00] p-2 text-xs font-mono text-[#FAFAFA] outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block font-mono uppercase text-[#737373] text-[10px] mb-1">Confirm New Password</label>
-                  <input
-                    type="password"
-                    required
-                    placeholder="••••••••••••"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="w-full bg-[#1A1A1A] border border-[#262626] focus:border-[#FF3D00] p-2 text-xs font-mono text-[#FAFAFA] outline-none"
-                  />
-                </div>
-              </div>
-
-              <button
-                type="submit"
-                disabled={isSecurityLoading}
-                className="w-full bg-[#FF3D00] text-[#0A0A0A] font-mono text-xs uppercase font-bold py-2.5 hover:bg-[#FAFAFA] transition-colors flex items-center justify-center gap-2"
-              >
-                {isSecurityLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Change Account Password'}
-              </button>
-            </form>
-          )}
-
-          {/* TAB 4: Quotas & Storage Usage */}
-          {activeTab === 'quota' && (
-            <div className="space-y-6">
-              {/* Storage bar */}
-              <div className="bg-[#0F0F0F] border border-[#262626] p-5 space-y-4">
-                <h3 className="font-mono text-xs text-[#737373] uppercase tracking-wider flex items-center gap-1.5">
-                  <Database className="w-3.5 h-3.5 text-[#FF3D00]" />
-                  <span>Workspace Storage Limit</span>
-                </h3>
-
-                {isUsageLoading ? (
-                  <div className="text-center py-6">
-                    <Loader2 className="w-5 h-5 animate-spin mx-auto text-[#737373]" />
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {/* Visual Meter Bar */}
-                    <div className="w-full h-4 bg-black border border-[#262626] p-0.5 overflow-hidden">
-                      <div
-                        className="h-full bg-[#FF3D00] transition-all duration-500"
-                        style={{ width: `${Math.min(100, (usageStats.storageUsed / usageStats.storageLimit) * 100)}%` }}
-                      />
-                    </div>
-
-                    <div className="flex justify-between font-mono text-[10px] sm:text-xs">
-                      <span className="text-[#FF3D00] font-black">{usageStats.storageUsed} MB USED</span>
-                      <span className="text-[#737373]">{usageStats.storageLimit} MB TOTAL LIMIT</span>
-                    </div>
-
-                    <div className="p-3 border border-[#262626] bg-black text-[11px] font-mono text-[#737373] leading-relaxed">
-                      💡 **Notification Mail Delivery:** Reminders are routed directly through MindSpace notifications. Custom SMTP settings are disabled.
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Statistics Details */}
-              <div className="bg-[#0F0F0F] border border-[#262626] p-5 space-y-3">
-                <h4 className="font-mono text-xs text-[#737373] uppercase tracking-wider">
-                  Database Resource Counts
-                </h4>
-                <div className="space-y-2 text-xs font-mono">
-                  <div className="flex justify-between pb-1.5 border-b border-[#1A1A1A]">
-                    <span className="text-[#737373]">ACTIVE CANVASES</span>
-                    <span className="text-[#FAFAFA] font-bold">{usageStats.canvasCount}</span>
-                  </div>
-                  <div className="flex justify-between pb-1.5 border-b border-[#1A1A1A]">
-                    <span className="text-[#737373]">SAVED NOTES</span>
-                    <span className="text-[#FAFAFA] font-bold">{usageStats.noteCount}</span>
-                  </div>
-                  <div className="flex justify-between pb-1">
-                    <span className="text-[#737373]">CONCEPT NODES</span>
-                    <span className="text-[#FAFAFA] font-bold">{usageStats.nodeCount}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* TAB 5: Outbound Webhooks */}
-          {activeTab === 'webhooks' && (
-            <div className="space-y-6">
-              {/* Webhook form */}
-              <form onSubmit={handleAddWebhook} className="bg-[#0F0F0F] border border-[#262626] p-5 space-y-4">
-                <h3 className="font-mono text-xs text-[#737373] uppercase tracking-wider flex items-center gap-1.5">
-                  <Plus className="w-3.5 h-3.5 text-[#FF3D00]" />
-                  <span>Register Outbound Webhook</span>
-                </h3>
-
-                {whError && <div className="p-2 border border-red-500 bg-red-500/10 text-red-500 text-[11px] font-mono">{whError}</div>}
-                {whSuccess && <div className="p-2 border border-emerald-500 bg-emerald-500/10 text-emerald-500 text-[11px] font-mono">{whSuccess}</div>}
-
-                <div className="space-y-3 text-xs">
-                  <div>
-                    <label className="block font-mono uppercase text-[#737373] text-[10px] mb-1">Webhook Name</label>
-                    <input
-                      type="text"
-                      placeholder="e.g. Local Server Receiver"
-                      value={whName}
-                      onChange={(e) => setWhName(e.target.value)}
-                      className="w-full bg-[#1A1A1A] border border-[#262626] focus:border-[#FF3D00] p-2 text-xs font-mono text-[#FAFAFA] outline-none"
-                    />
-                  </div>
-                  <div>
-                    <label className="block font-mono uppercase text-[#737373] text-[10px] mb-1">Target Endpoint URL</label>
-                    <input
-                      type="url"
-                      required
-                      placeholder="e.g. http://192.168.1.50:4000/webhook"
-                      value={whUrl}
-                      onChange={(e) => setWhUrl(e.target.value)}
-                      className="w-full bg-[#1A1A1A] border border-[#262626] focus:border-[#FF3D00] p-2 text-xs font-mono text-[#FAFAFA] outline-none"
-                    />
-                  </div>
-                  <div>
-                    <label className="block font-mono uppercase text-[#737373] text-[10px] mb-1">HMAC Shared Secret Key</label>
-                    <input
-                      type="text"
-                      placeholder="e.g. secret_signature"
-                      value={whSecret}
-                      onChange={(e) => setWhSecret(e.target.value)}
-                      className="w-full bg-[#1A1A1A] border border-[#262626] focus:border-[#FF3D00] p-2 text-xs font-mono text-[#FAFAFA] outline-none"
-                    />
-                  </div>
                 </div>
 
                 <button
                   type="submit"
-                  className="w-full bg-[#FF3D00] text-[#0A0A0A] font-mono text-xs uppercase font-bold py-2 hover:bg-[#FAFAFA] transition-colors"
+                  disabled={isInfoLoading}
+                  className="w-full py-3 bg-[#FF3D00] text-[#0A0A0A] font-bold uppercase tracking-wider hover:bg-[#FF5722] transition-colors min-h-[44px] flex items-center justify-center gap-2"
                 >
-                  Save Webhook Receiver
+                  {isInfoLoading && <Loader2 className="w-4 h-4 animate-spin" />}
+                  <span>Save Profile Settings</span>
                 </button>
-              </form>
+              </div>
+            </form>
+          )}
 
-              {/* Registered webhooks list */}
-              <div className="space-y-3">
-                <h4 className="font-mono text-xs text-[#737373] uppercase tracking-wider flex items-center gap-1.5">
-                  <Webhook className="w-3.5 h-3.5 text-[#FF3D00]" />
-                  <span>Configured Webhooks ({webhooks.length})</span>
-                </h4>
+          {/* TAB 3: Security */}
+          {activeTab === 'security' && (
+            <form onSubmit={handleUpdatePassword} className="bg-[#0F0F0F] border border-[#262626] p-5 space-y-4">
+              <h3 className="font-mono text-xs text-[#737373] uppercase tracking-wider flex items-center gap-1.5">
+                <Key className="w-4 h-4 text-[#FF3D00]" />
+                <span>Security & Password</span>
+              </h3>
 
-                {isWebhooksLoading ? (
-                  <div className="text-center py-6">
-                    <Loader2 className="w-5 h-5 animate-spin mx-auto text-[#737373]" />
-                  </div>
-                ) : webhooks.length === 0 ? (
-                  <div className="border border-[#262626] border-dashed p-6 text-center text-xs font-mono text-[#737373]">
-                    No outbound webhooks registered.
+              {securityError && (
+                <div className="p-3 border border-[#FF3D00] bg-[#FF3D00]/10 text-[#FF3D00] text-xs font-mono">
+                  {securityError}
+                </div>
+              )}
+              {securitySuccess && (
+                <div className="p-3 border border-[#10B981] bg-[#10B981]/10 text-[#10B981] text-xs font-mono flex items-center gap-1.5">
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span>{securitySuccess}</span>
+                </div>
+              )}
+
+              <div className="space-y-4 text-xs font-mono">
+                <div>
+                  <label className="block text-[#737373] uppercase tracking-wider mb-1.5">
+                    Current Password
+                  </label>
+                  <input
+                    type="password"
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                    className="w-full bg-[#1A1A1A] border border-[#262626] focus:border-[#FF3D00] text-[#FAFAFA] p-3 outline-none min-h-[44px]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[#737373] uppercase tracking-wider mb-1.5">
+                    New Password
+                  </label>
+                  <input
+                    type="password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    className="w-full bg-[#1A1A1A] border border-[#262626] focus:border-[#FF3D00] text-[#FAFAFA] p-3 outline-none min-h-[44px]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[#737373] uppercase tracking-wider mb-1.5">
+                    Confirm New Password
+                  </label>
+                  <input
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className="w-full bg-[#1A1A1A] border border-[#262626] focus:border-[#FF3D00] text-[#FAFAFA] p-3 outline-none min-h-[44px]"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isSecurityLoading}
+                  className="w-full py-3 bg-[#FF3D00] text-[#0A0A0A] font-bold uppercase tracking-wider hover:bg-[#FF5722] transition-colors min-h-[44px] flex items-center justify-center gap-2"
+                >
+                  {isSecurityLoading && <Loader2 className="w-4 h-4 animate-spin" />}
+                  <span>Update Password</span>
+                </button>
+              </div>
+            </form>
+          )}
+
+          {/* TAB 4: Storage Quotas */}
+          {activeTab === 'quota' && (
+            <div className="space-y-4">
+              <div className="bg-[#0F0F0F] border border-[#262626] p-5 space-y-4">
+                <h3 className="font-mono text-xs text-[#737373] uppercase tracking-wider flex items-center gap-1.5">
+                  <Database className="w-4 h-4 text-[#FF3D00]" />
+                  <span>Object Storage & Quotas</span>
+                </h3>
+
+                {isUsageLoading ? (
+                  <div className="py-6 text-center text-[#737373] font-mono text-xs">
+                    Calculating storage metrics...
                   </div>
                 ) : (
-                  <div className="space-y-3">
-                    {webhooks.map((w) => (
-                      <div key={w.id} className="bg-[#0F0F0F] border border-[#262626] p-4 flex items-center justify-between gap-4">
-                        <div className="min-w-0 flex-1 space-y-1">
-                          <h5 className="font-sans font-bold text-xs text-[#FAFAFA] truncate">{w.name}</h5>
-                          <p className="font-mono text-[10px] text-[#737373] truncate select-all">{w.targetUrl}</p>
-                          <div className="flex gap-1.5 overflow-x-auto no-scrollbar pt-1">
-                            {w.events.map((ev) => (
-                              <span key={ev} className="bg-black border border-[#262626] px-1.5 py-0.5 font-mono text-[8px] text-[#FF3D00] uppercase shrink-0">
-                                {ev}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                        <button
-                          onClick={() => handleDeleteWebhook(w.id)}
-                          className="p-1.5 border border-[#262626] hover:border-red-500 hover:text-red-500 text-[#737373] transition-colors shrink-0"
-                          title="Delete Webhook"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    ))}
+                  <div className="grid grid-cols-2 gap-3 text-center font-mono">
+                    <div className="p-3 bg-[#141414] border border-[#262626]">
+                      <div className="text-[10px] text-[#737373] uppercase">Canvases</div>
+                      <div className="font-bold text-base text-[#FAFAFA]">{usageStats.canvasCount}</div>
+                    </div>
+                    <div className="p-3 bg-[#141414] border border-[#262626]">
+                      <div className="text-[10px] text-[#737373] uppercase">Notes</div>
+                      <div className="font-bold text-base text-[#FAFAFA]">{usageStats.noteCount}</div>
+                    </div>
+                    <div className="p-3 bg-[#141414] border border-[#262626]">
+                      <div className="text-[10px] text-[#737373] uppercase">Concept Nodes</div>
+                      <div className="font-bold text-base text-[#FAFAFA]">{usageStats.nodeCount}</div>
+                    </div>
+                    <div className="p-3 bg-[#141414] border border-[#262626]">
+                      <div className="text-[10px] text-[#737373] uppercase">Storage Used</div>
+                      <div className="font-bold text-base text-[#FF3D00]">{usageStats.storageUsed.toFixed(1)} MB</div>
+                    </div>
                   </div>
                 )}
               </div>
             </div>
           )}
 
-          {/* TAB 6: Discord Integration */}
-          {activeTab === 'discord' && (
+          {/* TAB 5: Webhooks */}
+          {activeTab === 'webhooks' && (
             <div className="space-y-6">
-              {/* Pairing Status */}
-              <div className="bg-[#0F0F0F] border border-[#262626] p-5 space-y-4">
+              <form onSubmit={handleAddWebhook} className="bg-[#0F0F0F] border border-[#262626] p-5 space-y-4">
                 <h3 className="font-mono text-xs text-[#737373] uppercase tracking-wider flex items-center gap-1.5">
-                  <MessageSquare className="w-3.5 h-3.5 text-[#FF3D00]" />
-                  <span>Discord Bot Pairing</span>
+                  <Webhook className="w-4 h-4 text-[#FF3D00]" />
+                  <span>Register Outbound Webhook</span>
                 </h3>
 
-                {isDiscordLoading ? (
-                  <div className="text-center py-4">
-                    <Loader2 className="w-5 h-5 animate-spin mx-auto text-[#737373]" />
+                {whError && (
+                  <div className="p-3 border border-[#FF3D00] bg-[#FF3D00]/10 text-[#FF3D00] text-xs font-mono">
+                    {whError}
                   </div>
-                ) : discordAccount?.isPaired ? (
-                  <div className="space-y-3 font-mono text-xs">
-                    <div className="p-3 border border-emerald-500 bg-emerald-500/10 text-emerald-400 flex items-center gap-2">
-                      <Check className="w-4 h-4" />
-                      <span>PAIRED SUCCESSFULLY</span>
-                    </div>
-                    <div className="flex justify-between pb-2 border-b border-[#1A1A1A]">
-                      <span className="text-[#737373]">DISCORD USER</span>
-                      <span className="text-[#FAFAFA] font-bold">{discordAccount.discordUsername}</span>
-                    </div>
-                    <div className="flex justify-between pb-1">
-                      <span className="text-[#737373]">DISCORD USER ID</span>
-                      <span className="text-[#FAFAFA] select-all font-bold">{discordAccount.discordUserId}</span>
-                    </div>
+                )}
+                {whSuccess && (
+                  <div className="p-3 border border-[#10B981] bg-[#10B981]/10 text-[#10B981] text-xs font-mono">
+                    {whSuccess}
+                  </div>
+                )}
+
+                <div className="space-y-3 text-xs font-mono">
+                  <div>
+                    <label className="block text-[#737373] uppercase mb-1">Webhook Name</label>
+                    <input
+                      type="text"
+                      value={whName}
+                      onChange={(e) => setWhName(e.target.value)}
+                      placeholder="e.g. Zapier Trigger"
+                      className="w-full bg-[#1A1A1A] border border-[#262626] text-[#FAFAFA] p-2.5 outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[#737373] uppercase mb-1">Target Endpoint URL</label>
+                    <input
+                      type="url"
+                      value={whUrl}
+                      onChange={(e) => setWhUrl(e.target.value)}
+                      placeholder="https://your-domain.com/webhook"
+                      className="w-full bg-[#1A1A1A] border border-[#262626] text-[#FAFAFA] p-2.5 outline-none"
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="w-full py-2.5 bg-[#FF3D00] text-[#0A0A0A] font-bold uppercase tracking-wider hover:bg-[#FF5722] transition-colors"
+                  >
+                    Add Webhook
+                  </button>
+                </div>
+              </form>
+
+              {/* Webhooks List */}
+              <div className="space-y-3">
+                <h4 className="font-mono text-xs uppercase text-[#737373]">Active Webhooks</h4>
+                {webhooks.length === 0 ? (
+                  <div className="p-4 bg-[#0F0F0F] border border-[#262626] text-center text-[#737373] font-mono text-xs">
+                    No outbound webhooks registered.
                   </div>
                 ) : (
-                  <div className="space-y-4">
-                    <div className="p-3 border border-yellow-500 bg-yellow-500/5 text-yellow-500 text-xs font-mono leading-relaxed">
-                      Your MindSpace account is not paired with a Discord profile. Generate a pairing code below, and message it to your server Discord bot to link them.
-                    </div>
-
-                    {pairingCode ? (
-                      <div className="bg-black border border-[#FF3D00] p-4 text-center space-y-2">
-                        <span className="block font-mono text-[10px] text-[#737373] uppercase">Pairing Code</span>
-                        <div className="font-mono font-black text-2xl tracking-widest text-[#FF3D00] select-all">
-                          {pairingCode}
+                  webhooks.map((wh) => (
+                    <div key={wh.id} className="p-4 bg-[#0F0F0F] border border-[#262626] flex items-center justify-between">
+                      <div>
+                        <div className="font-bold text-xs text-[#FAFAFA]">{wh.name}</div>
+                        <div className="font-mono text-[10px] text-[#737373] truncate max-w-[200px]">
+                          {wh.targetUrl}
                         </div>
-                        <span className="block font-mono text-[8px] text-[#737373] uppercase">Valid for 10 minutes</span>
                       </div>
+                      <button
+                        onClick={() => handleDeleteWebhook(wh.id)}
+                        className="p-1 text-[#737373] hover:text-[#FF3D00] transition-colors"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* TAB 6: Bot Integrations */}
+          {activeTab === 'discord' && (
+            <div className="space-y-6 font-mono text-xs">
+              <div className="bg-[#0F0F0F] border border-[#262626] p-5 space-y-4">
+                <h3 className="font-mono text-xs text-[#737373] uppercase tracking-wider flex items-center gap-1.5">
+                  <Bot className="w-4 h-4 text-[#FF3D00]" />
+                  <span>Discord & Telegram Companion</span>
+                </h3>
+
+                {dcSuccess && (
+                  <div className="p-3 border border-[#10B981] bg-[#10B981]/10 text-[#10B981] text-xs font-mono">
+                    {dcSuccess}
+                  </div>
+                )}
+
+                <div className="p-4 bg-[#141414] border border-[#262626] space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-[#737373] uppercase">Telegram Pair Code</span>
+                    {pairingCode ? (
+                      <span className="font-bold text-sm text-[#FF3D00] select-all">{pairingCode}</span>
                     ) : (
                       <button
-                        onClick={handleGenerateDiscordCode}
-                        className="w-full bg-[#1A1A1A] border border-[#FF3D00] hover:bg-[#FF3D00] hover:text-[#0A0A0A] text-[#FF3D00] font-mono text-xs uppercase font-bold py-2.5 transition-colors"
+                        onClick={handleGeneratePairCode}
+                        className="px-3 py-1 bg-[#FF3D00] text-[#0A0A0A] font-bold uppercase text-[10px]"
                       >
-                        Generate Pairing Code
+                        Generate Code
                       </button>
                     )}
                   </div>
-                )}
-              </div>
-
-              {/* Notification Webhook */}
-              <div className="bg-[#0F0F0F] border border-[#262626] p-5 space-y-4">
-                <h3 className="font-mono text-xs text-[#737373] uppercase tracking-wider flex items-center gap-1.5">
-                  <Webhook className="w-3.5 h-3.5 text-[#FF3D00]" />
-                  <span>Discord Alert Relay Webhook</span>
-                </h3>
-                
-                {dcSuccess && <div className="p-2 border border-emerald-500 bg-emerald-500/10 text-emerald-400 text-[11px] font-mono">{dcSuccess}</div>}
-
-                <div className="space-y-3 text-xs">
-                  <p className="text-[11px] text-[#737373] leading-relaxed">
-                    Paste a Discord Channel Webhook URL here to receive direct visual canvas modification notifications into your Discord channel.
+                  <p className="text-[10px] text-[#737373] leading-relaxed">
+                    Send <code className="text-[#FAFAFA]">/pair &lt;code&gt;</code> to the Telegram Bot to pair your account.
                   </p>
-                  <div>
-                    <input
-                      type="url"
-                      placeholder="https://discord.com/api/webhooks/..."
-                      value={discordWebhookUrl}
-                      onChange={(e) => setDiscordWebhookUrl(e.target.value)}
-                      className="w-full bg-[#1A1A1A] border border-[#262626] focus:border-[#FF3D00] p-2 text-xs font-mono text-[#FAFAFA] outline-none"
-                    />
-                  </div>
-                  <button
-                    onClick={handleSaveDiscordWebhook}
-                    className="w-full bg-[#FF3D00] text-[#0A0A0A] font-mono text-xs uppercase font-bold py-2 hover:bg-[#FAFAFA] transition-colors"
-                  >
-                    Save Discord Webhook URL
-                  </button>
                 </div>
               </div>
             </div>
           )}
-
         </div>
-
       </div>
     </div>
   );

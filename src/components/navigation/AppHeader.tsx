@@ -91,8 +91,6 @@ export function AppHeader({ title, actions }: AppHeaderProps) {
           {actions && <div className="flex items-center gap-2">{actions}</div>}
 
           <div className="hidden sm:flex items-center gap-2">
-            <ThemeToggle />
-
             {/* Account Drawer Trigger */}
             <button
               onClick={() => setIsAccountOpen(true)}

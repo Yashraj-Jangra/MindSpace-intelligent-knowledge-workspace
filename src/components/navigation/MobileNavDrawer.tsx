@@ -109,10 +109,6 @@ export function MobileNavDrawer({ isOpen, onClose, onOpenAccount }: MobileNavDra
                   </div>
                 </div>
               </div>
-
-              <div className="flex items-center gap-2">
-                <ThemeToggle />
-              </div>
             </div>
           )}
 

@@ -1,6 +1,10 @@
 # MindSpace - AI-Powered Visual Note-Taking & Mind-Mapping Platform
 
 ## Work Completed
+- [x] **Account & Settings Drawer Redesign & Theme Controls Integration** (Session 2026-07-28 v16):
+  - **User Identity Hero Card**: Rebuilt `AccountDrawer.tsx` with a top profile banner displaying avatar initials, full display name, email address, role badge (`ADMIN`/`USER`), and live storage quota progress bar (`MB / MB`).
+  - **Integrated Theme Switcher**: Moved `<ThemeToggle />` directly into the Account Drawer header card, removing it from `AppHeader.tsx` and `MobileNavDrawer.tsx` to declutter top navigation bars.
+  - **Segmented Icon Control Bar**: Replaced horizontal text buttons with a touch-friendly segmented icon tab bar (`Profile`, `Settings`, `Security`, `Quotas`, `Webhooks`, `Bots`) optimized for mobile viewports (`100dvh`).
 - [x] **Global Top Bar Redesign & Mobile Optimization System** (Session 2026-07-28 v15):
   - **Unified Component Architecture**: Created `AppHeader.tsx` as the single canonical sticky header across all app routes (`/`, `/notes`, `/tasks`, `/calendar`, `/reminders`, `/canvas/[id]`, `/admin/*`).
   - **Mobile Navigation Drawer**: Built `MobileNavDrawer.tsx` slide-out dark glass navigation sheet with route status badges, quick create action shortcuts (`+ New Note`, `+ New Task`, `+ New Event`), and user account summary.

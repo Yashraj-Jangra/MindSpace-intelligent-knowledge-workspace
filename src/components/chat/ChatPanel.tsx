@@ -21,6 +21,7 @@ import {
   Calendar,
   AlertCircle,
   Hash,
+  ArrowLeft,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
@@ -409,7 +410,7 @@ export function ChatPanel({ onClose, isSidebar = false }: ChatPanelProps) {
       <div className="flex-1 flex overflow-hidden">
         
         {/* LEFT COLUMN: CHATS & FRIENDS DIRECTORY (1/3 width) */}
-        <div className="w-full sm:w-[320px] shrink-0 border-r border-[#262626] bg-[#0A0A0A] flex flex-col overflow-hidden">
+        <div className={`w-full sm:w-[320px] shrink-0 border-r border-[#262626] bg-[#0A0A0A] flex flex-col overflow-hidden ${activeConv ? 'hidden sm:flex' : 'flex'}`}>
           
           {/* Segments tabs selector */}
           <div className="flex border-b border-[#262626] text-center font-mono text-[10px] uppercase shrink-0 bg-[#0F0F0F]">
@@ -702,7 +703,7 @@ export function ChatPanel({ onClose, isSidebar = false }: ChatPanelProps) {
         </div>
 
         {/* RIGHT COLUMN: ACTIVE CONVERSATION MESSAGES CHAT (2/3 width) */}
-        <div className="flex-1 flex overflow-hidden relative bg-[#0D0D0D]">
+        <div className={`flex-1 flex overflow-hidden relative bg-[#0D0D0D] ${activeConv ? 'flex' : 'hidden sm:flex'}`}>
           
           {!activeConv ? (
             <div className="flex-1 flex flex-col items-center justify-center p-8 text-center space-y-3 font-mono text-xs text-[#737373]">
@@ -722,6 +723,13 @@ export function ChatPanel({ onClose, isSidebar = false }: ChatPanelProps) {
                 {/* Active Chat Header */}
                 <div className="p-3 bg-[#0F0F0F] border-b border-[#262626] flex items-center justify-between shrink-0">
                   <div className="flex items-center gap-3">
+                    <button
+                      onClick={() => setActiveConv(null)}
+                      className="sm:hidden p-1.5 border border-[#262626] hover:border-[#FF3D00] text-[#737373] hover:text-[#FAFAFA] rounded-lg transition-colors mr-1"
+                      title="Back to Conversations"
+                    >
+                      <ArrowLeft className="w-4 h-4" />
+                    </button>
                     <div className="w-9 h-9 bg-[#FF3D00] font-black text-xs text-[#0A0A0A] flex items-center justify-center rounded-xl font-mono uppercase">
                       {getInitials(activeConv.name || getChatPartner(activeConv)?.name || getChatPartner(activeConv)?.username || '?')}
                     </div>

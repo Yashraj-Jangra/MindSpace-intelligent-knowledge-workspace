@@ -26,10 +26,10 @@ export default function DedicatedChatPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0A0A0A] text-[#FAFAFA] flex flex-col overflow-hidden font-sans">
+    <div className="h-dvh w-screen bg-[#0A0A0A] text-[#FAFAFA] flex flex-col overflow-hidden font-sans">
       <AppHeader title="Community Chat" />
       
-      <main className="flex-1 h-[calc(100vh-56px)] overflow-hidden">
+      <main className="flex-1 min-h-0 overflow-hidden relative">
         <ChatPanel />
       </main>
     </div>

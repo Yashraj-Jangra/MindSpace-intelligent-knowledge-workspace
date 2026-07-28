@@ -198,3 +198,66 @@ export async function updateUserRole(id: string, role: 'USER' | 'ADMIN'): Promis
     console.error('[Local User Role Update Error]:', error);
   }
 }
+
+export async function updateUserAdmin(
+  id: string,
+  data: { name?: string; email?: string; passwordHash?: string; role?: 'USER' | 'ADMIN' }
+): Promise<void> {
+  const updateData: any = {};
+  if (data.name !== undefined) {
+    updateData.name = data.name;
+    updateData.username = data.name;
+  }
+  if (data.email !== undefined) {
+    updateData.email = data.email.toLowerCase().trim();
+  }
+  if (data.passwordHash !== undefined) {
+    updateData.passwordHash = data.passwordHash;
+  }
+  if (data.role !== undefined) {
+    updateData.role = data.role;
+  }
+
+  try {
+    await prisma.user.update({
+      where: { id },
+      data: updateData,
+    });
+  } catch (error) {
+    console.warn('[DB Fallback]: Updating user details in local store.', (error as Error).message);
+  }
+
+  try {
+    ensureDataDir();
+    const users = getLocalUsers();
+    const userIndex = users.findIndex((u) => u.id === id);
+    if (userIndex >= 0) {
+      users[userIndex] = {
+        ...users[userIndex],
+        ...updateData,
+      };
+      fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2), 'utf-8');
+    }
+  } catch (error) {
+    console.error('[Local User Admin Update Error]:', error);
+  }
+}
+
+export async function deleteUser(id: string): Promise<void> {
+  try {
+    await prisma.user.delete({
+      where: { id },
+    });
+  } catch (error) {
+    console.warn('[DB Fallback]: Deleting user from DB failed, trying local store.', (error as Error).message);
+  }
+
+  try {
+    ensureDataDir();
+    const users = getLocalUsers();
+    const updated = users.filter((u) => u.id !== id);
+    fs.writeFileSync(USERS_FILE, JSON.stringify(updated, null, 2), 'utf-8');
+  } catch (error) {
+    console.error('[Local User Delete Error]:', error);
+  }
+}

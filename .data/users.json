@@ -35,5 +35,15 @@
     "role": "USER",
     "image": null,
     "createdAt": "2026-07-28T16:48:59.598Z"
+  },
+  {
+    "id": "usr_s78rtk8q",
+    "email": "test3@cvweb.tech",
+    "name": "test 3 acc",
+    "username": "test 3 acc",
+    "passwordHash": "$2a$10$daWScX.eX48XF7D4r00iUOPmthf2Q8IOwosInQ99iyhuVwLLOXVjK",
+    "role": "USER",
+    "image": null,
+    "createdAt": "2026-07-28T17:16:03.012Z"
   }
 ]

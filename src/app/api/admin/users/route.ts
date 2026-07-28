@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import { getSessionFromCookie } from '@/lib/session';
 import { prisma, isDbDisabled } from '@/lib/db';
-import { getAllUsers, updateUserRole } from '@/lib/auth-storage';
+import { getAllUsers, updateUserRole, updateUserAdmin, deleteUser } from '@/lib/auth-storage';
+import bcrypt from 'bcryptjs';
 
 export async function GET() {
   try {
@@ -87,32 +88,59 @@ export async function PATCH(req: Request) {
       return NextResponse.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
     }
 
-    const { userId, role } = await req.json();
+    const { userId, role, name, email, password } = await req.json();
 
-    if (!userId || !['ADMIN', 'USER'].includes(role)) {
-      return NextResponse.json({ error: 'Invalid userId or role' }, { status: 400 });
+    if (!userId) {
+      return NextResponse.json({ error: 'Missing userId' }, { status: 400 });
     }
 
-    if (!isDbDisabled()) {
-      try {
-        const updated = await prisma.user.update({
-          where: { id: userId },
-          data: { role: role as 'ADMIN' | 'USER' },
-          select: { id: true, name: true, email: true, username: true, role: true },
-        });
-        
-        // Also update local JSON storage
-        await updateUserRole(userId, role);
-        return NextResponse.json({ user: updated });
-      } catch (err) {
-        console.warn('[Admin Users PATCH DB Error]:', err);
+    const updateData: any = {};
+    if (role !== undefined) {
+      if (!['ADMIN', 'USER'].includes(role)) {
+        return NextResponse.json({ error: 'Invalid role' }, { status: 400 });
       }
+      updateData.role = role;
+    }
+    if (name !== undefined) {
+      updateData.name = name.trim();
+    }
+    if (email !== undefined) {
+      updateData.email = email.toLowerCase().trim();
+    }
+    if (password !== undefined && password.trim() !== '') {
+      updateData.passwordHash = await bcrypt.hash(password, 10);
     }
 
-    await updateUserRole(userId, role);
-    return NextResponse.json({ success: true, userId, role });
+    await updateUserAdmin(userId, updateData);
+    return NextResponse.json({ success: true, message: 'User updated successfully' });
   } catch (error) {
     console.error('[API /admin/users PATCH Error]:', error);
+    return NextResponse.json({ error: (error as Error).message }, { status: 500 });
+  }
+}
+
+export async function DELETE(req: Request) {
+  try {
+    const session = await getSessionFromCookie();
+    if (!session || session.role !== 'ADMIN') {
+      return NextResponse.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
+    }
+
+    const { searchParams } = new URL(req.url);
+    const userId = searchParams.get('userId');
+
+    if (!userId) {
+      return NextResponse.json({ error: 'Missing userId' }, { status: 400 });
+    }
+
+    if (userId === session.id) {
+      return NextResponse.json({ error: 'Self-deletion is blocked for protection.' }, { status: 400 });
+    }
+
+    await deleteUser(userId);
+    return NextResponse.json({ success: true, message: 'User deleted successfully' });
+  } catch (error) {
+    console.error('[API /admin/users DELETE Error]:', error);
     return NextResponse.json({ error: (error as Error).message }, { status: 500 });
   }
 }

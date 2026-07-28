@@ -89,6 +89,40 @@ export async function POST(req: Request) {
     // Check if paired. If not, check if interaction is a pair command.
     const isPairCommand = interaction.type === 2 && interaction.data.name === 'pair';
     
+    if (isPairCommand) {
+      const options = interaction.data.options || [];
+      const code = options.find((o: any) => o.name === 'code')?.value;
+
+      if (!code) {
+        return NextResponse.json({
+          type: 4,
+          data: {
+            flags: 64,
+            content: '❌ Please specify the pairing code, e.g., `/pair 123456`.'
+          }
+        });
+      }
+
+      try {
+        const { pairDiscordAccount } = require('@/lib/discord/bot');
+        const account = await pairDiscordAccount(code, discordUserId, discordUser.username || 'DiscordUser');
+        return NextResponse.json({
+          type: 4,
+          data: {
+            content: `✅ **Account successfully paired!**\nWelcome to MindSpace, ${discordUser.username || 'user'}!`
+          }
+        });
+      } catch (err) {
+        return NextResponse.json({
+          type: 4,
+          data: {
+            flags: 64,
+            content: `❌ **Pairing failed:** ${(err as Error).message}`
+          }
+        });
+      }
+    }
+
     // Also support pairing directly via Discord interaction by letting them pair or showing code instructions
     if (!discordAccount || !discordAccount.isPaired) {
       // If we want to handle pairing code dynamically or prompt user:

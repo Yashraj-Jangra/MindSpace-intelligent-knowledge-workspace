@@ -40,6 +40,10 @@ export default function AdminSettingsPage() {
   const [isBotLoading, setIsBotLoading] = useState(false);
   const [isSyncingCommands, setIsSyncingCommands] = useState(false);
 
+  // Telegram Telemetry states
+  const [tgBotStatus, setTgBotStatus] = useState<any | null>(null);
+  const [isTgBotLoading, setIsTgBotLoading] = useState(false);
+
   useEffect(() => {
     fetchSettings();
   }, []);
@@ -53,6 +57,7 @@ export default function AdminSettingsPage() {
         setSettings((prev) => ({ ...prev, ...(data.settings || {}) }));
         // Trigger bot validation status load immediately
         fetchBotStatus();
+        fetchTgBotStatus();
       }
     } catch (err) {
       console.error('[Admin Settings Fetch Error]:', err);
@@ -76,6 +81,21 @@ export default function AdminSettingsPage() {
     }
   };
 
+  const fetchTgBotStatus = async () => {
+    setIsTgBotLoading(true);
+    try {
+      const res = await fetch('/api/admin/telegram/status');
+      if (res.ok) {
+        const data = await res.json();
+        setTgBotStatus(data);
+      }
+    } catch (err) {
+      console.error('[Telegram Status fetch error]:', err);
+    } finally {
+      setIsTgBotLoading(false);
+    }
+  };
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSaving(true);
@@ -90,6 +110,7 @@ export default function AdminSettingsPage() {
       if (res.ok) {
         setStatusMsg({ type: 'success', text: 'System settings updated successfully.' });
         fetchBotStatus(); // Refresh bot details dynamically
+        fetchTgBotStatus();
       } else {
         const data = await res.json();
         setStatusMsg({ type: 'error', text: data.error || 'Failed to save settings.' });
@@ -436,6 +457,106 @@ export default function AdminSettingsPage() {
                     className="w-full py-1.5 bg-transparent hover:bg-[#2B2D31] text-[#949BA4] hover:text-[#FAFAFA] border border-[#2B2D31] font-mono text-[9px] uppercase font-bold rounded-lg transition-colors flex items-center justify-center gap-1"
                   >
                     <RefreshCw className={`w-3 h-3 ${isBotLoading ? 'animate-spin' : ''}`} />
+                    <span>Refresh Telemetry</span>
+                  </button>
+
+                </div>
+
+              </div>
+            </div>
+
+            {/* Sleek Telegram Bot Profile Card */}
+            <div className="bg-[#182533] border border-[#243343] rounded-2xl overflow-hidden shadow-2xl relative">
+              {/* Profile Top Banner */}
+              <div className="h-16 bg-[#229ED9] w-full relative" />
+              
+              {/* Bot Profile Details Container */}
+              <div className="px-4 pb-4 pt-12 relative">
+                
+                {/* Bot Avatar overlay with pulsing status dot */}
+                <div className="absolute -top-9 left-4 border-6 border-[#182533] rounded-full overflow-hidden bg-[#0e1621] w-20 h-20 flex items-center justify-center text-[#FAFAFA]">
+                  <div className="w-full h-full flex items-center justify-center bg-[#229ED9] text-[#FAFAFA] font-mono text-xl font-bold">
+                    TG
+                  </div>
+                  {/* Status pulsing Dot */}
+                  <span
+                    className={`absolute bottom-0.5 right-0.5 w-4.5 h-4.5 border-3 border-[#182533] rounded-full ${
+                      tgBotStatus?.status === 'ONLINE' ? 'bg-[#35B2F0]' : 'bg-[#80848E]'
+                    }`}
+                  />
+                </div>
+
+                {/* Profile Title info */}
+                <div className="mt-2 flex items-center gap-1.5">
+                  <h3 className="font-sans font-black text-lg text-[#FAFAFA] tracking-tight">
+                    {tgBotStatus?.bot?.firstName || 'Telegram Bot'}
+                  </h3>
+                  {tgBotStatus?.bot?.username && (
+                    <span className="font-mono text-xs text-[#7B8B9A]">
+                      @{tgBotStatus.bot.username}
+                    </span>
+                  )}
+                  <span className="bg-[#229ED9] text-[#FAFAFA] font-mono text-[8px] uppercase tracking-wider font-extrabold px-1 rounded-sm">
+                    BOT
+                  </span>
+                </div>
+
+                <div className="h-px bg-[#243343] my-4" />
+
+                {/* Technical stats breakdown */}
+                <div className="space-y-3 font-sans text-xs text-[#7B8B9A]">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-mono uppercase text-[#7B8B9A]">Status Connection</span>
+                    <span
+                      className={`font-mono text-[10px] uppercase font-black tracking-wider ${
+                        tgBotStatus?.status === 'ONLINE' ? 'text-[#35B2F0]' : 'text-[#F23F43]'
+                      }`}
+                    >
+                      {tgBotStatus?.status || 'OFFLINE'}
+                    </span>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="block text-[10px] font-mono uppercase text-[#7B8B9A]">Telegram Bot Token</label>
+                    <input
+                      type="password"
+                      value={settings.TELEGRAM_BOT_TOKEN || ''}
+                      onChange={(e) => handleChange('TELEGRAM_BOT_TOKEN', e.target.value)}
+                      placeholder="token credentials"
+                      className="w-full bg-[#0e1621] border border-[#243343] text-[11px] text-[#FAFAFA] p-2 outline-none rounded"
+                      required
+                    />
+                  </div>
+                </div>
+
+                {/* Profile Card Footer Action Controls */}
+                <div className="mt-4 pt-3 border-t border-[#243343] space-y-2">
+                  
+                  {/* Chat with bot link */}
+                  {tgBotStatus?.bot?.username ? (
+                    <a
+                      href={`https://t.me/${tgBotStatus.bot.username}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full py-2 bg-[#229ED9] hover:bg-[#1C82B3] text-[#FAFAFA] font-sans text-xs font-bold uppercase tracking-wider rounded-lg transition-colors flex items-center justify-center gap-1.5"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5" />
+                      <span>Start Chat in Telegram</span>
+                    </a>
+                  ) : (
+                    <div className="w-full py-2 bg-[#243343] text-[#7B8B9A] font-sans text-xs text-center rounded-lg select-none italic">
+                      Start Chat (needs username)
+                    </div>
+                  )}
+
+                  {/* Telemetry Refresh */}
+                  <button
+                    type="button"
+                    onClick={fetchTgBotStatus}
+                    disabled={isTgBotLoading}
+                    className="w-full py-1.5 bg-transparent hover:bg-[#243343] text-[#7B8B9A] hover:text-[#FAFAFA] border border-[#243343] font-mono text-[9px] uppercase font-bold rounded-lg transition-colors flex items-center justify-center gap-1"
+                  >
+                    <RefreshCw className={`w-3 h-3 ${isTgBotLoading ? 'animate-spin' : ''}`} />
                     <span>Refresh Telemetry</span>
                   </button>
 

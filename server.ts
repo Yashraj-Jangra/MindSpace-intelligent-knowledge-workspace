@@ -5,6 +5,7 @@ import { Server } from 'socket.io';
 import Redis from 'ioredis';
 import { Client as DiscordClient, GatewayIntentBits, ActivityType } from 'discord.js';
 import { PrismaClient } from '@prisma/client';
+import { Bot as TelegramBot } from 'grammy';
 
 const prisma = new PrismaClient();
 
@@ -16,6 +17,10 @@ const app = next({ dev, hostname, port });
 const handle = app.getRequestHandler();
 
 const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379';
+const redis = new Redis(redisUrl, { lazyConnect: true });
+redis.on('error', (err) => {
+  console.error('[Redis Client Error]:', err.message);
+});
 
 app.prepare().then(() => {
   const server = createServer((req, res) => {
@@ -168,8 +173,321 @@ app.prepare().then(() => {
     }
   }
 
-  // Launch bot on server startup
+  // Persistent Telegram Bot client reference
+  let telegramBot: TelegramBot | null = null;
+
+  async function startTelegramBot() {
+    try {
+      const settingToken = await prisma.systemSetting.findUnique({
+        where: { key: 'TELEGRAM_BOT_TOKEN' }
+      });
+      const botToken = settingToken?.value;
+
+      if (!botToken) {
+        console.log('[Telegram Bot Manager] No bot token configured. Waiting...');
+        if (telegramBot) {
+          await telegramBot.stop();
+          telegramBot = null;
+        }
+        return;
+      }
+
+      if (telegramBot) {
+        console.log('[Telegram Bot Manager] Hot-reloading bot client...');
+        await telegramBot.stop();
+        telegramBot = null;
+      }
+
+      console.log('[Telegram Bot Manager] Attempting persistent login via Long Polling...');
+      telegramBot = new TelegramBot(botToken);
+
+      // Onboarding
+      telegramBot.command('start', (ctx) => {
+        ctx.reply(
+          `👋 **Welcome to MindSpace Bot Companion!**\n\n` +
+          `This bot acts as a remote control for your visual note-taking canvas and tasks.\n\n` +
+          `**How to pair:**\n` +
+          `1. Open the MindSpace Web UI\n` +
+          `2. Open the Settings Drawer (click your profile image)\n` +
+          `3. Go to the **Telegram** tab and copy your pairing code\n` +
+          `4. Send here: \`/pair <pairing_code>\``,
+          { parse_mode: 'Markdown' }
+        );
+      });
+
+      async function getUserIdByChatId(chatId: number) {
+        const acc = await prisma.telegramAccount.findFirst({
+          where: { telegramChatId: chatId.toString(), isPaired: true }
+        });
+        return acc?.userId || null;
+      }
+
+      telegramBot.command('pair', async (ctx) => {
+        const code = ctx.match?.trim();
+        if (!code) {
+          return ctx.reply('Please specify a pairing code, e.g. `/pair 123456`', { parse_mode: 'Markdown' });
+        }
+        try {
+          const { pairTelegramAccount } = require('./src/lib/telegram/bot');
+          const account = await pairTelegramAccount(code, ctx.chat.id.toString(), ctx.from?.username);
+          ctx.reply(`✅ **Account successfully paired!**\nWelcome to MindSpace, ${account.username || 'user'}!`, { parse_mode: 'Markdown' });
+        } catch (err) {
+          ctx.reply(`❌ **Pairing failed:** ${(err as Error).message}`, { parse_mode: 'Markdown' });
+        }
+      });
+
+      telegramBot.command('tasks', async (ctx) => {
+        const userId = await getUserIdByChatId(ctx.chat.id);
+        if (!userId) return ctx.reply('❌ Your Telegram account is not paired. Please run `/pair <code>` first.');
+
+        const tasks = await prisma.task.findMany({
+          where: { userId, status: { in: ['TODO', 'IN_PROGRESS'] } },
+          orderBy: { priority: 'desc' },
+          take: 10,
+        });
+
+        if (tasks.length === 0) {
+          return ctx.reply('✅ You have no pending tasks!');
+        }
+
+        const taskLines = tasks.map((t) => {
+          const priorityBadge = `\`[${t.priority}]\``;
+          const dueStr = t.dueAt ? `(Due: ${new Date(t.dueAt).toLocaleDateString()})` : '';
+          return `- **${t.title}** ${priorityBadge} ${dueStr} \`ID: ${t.id}\``;
+        }).join('\n');
+
+        ctx.reply(`📋 **Your Pending Tasks (Top 10):**\n\n${taskLines}`, { parse_mode: 'Markdown' });
+      });
+
+      telegramBot.command('done', async (ctx) => {
+        const userId = await getUserIdByChatId(ctx.chat.id);
+        if (!userId) return ctx.reply('❌ Account not paired.');
+
+        const taskId = ctx.match?.trim();
+        if (!taskId) {
+          return ctx.reply('Please specify the task ID, e.g. \`/done <id>\`', { parse_mode: 'Markdown' });
+        }
+
+        try {
+          const task = await prisma.task.update({
+            where: { id: taskId, userId },
+            data: { status: 'DONE', completedAt: new Date() },
+          });
+
+          await redis.publish('socket-emit', JSON.stringify({
+            room: `user:${userId}`,
+            event: 'task:done',
+            data: task,
+          }));
+
+          ctx.reply(`✅ Task **${task.title}** marked as done!`, { parse_mode: 'Markdown' });
+        } catch (err) {
+          ctx.reply('❌ Failed to complete task. Make sure the task ID is correct.');
+        }
+      });
+
+      telegramBot.command('capture', async (ctx) => {
+        const userId = await getUserIdByChatId(ctx.chat.id);
+        if (!userId) return ctx.reply('❌ Account not paired.');
+
+        const text = ctx.match?.trim();
+        if (!text) {
+          return ctx.reply('Please specify text to capture, e.g. \`/capture Read research paper\`', { parse_mode: 'Markdown' });
+        }
+
+        await prisma.capture.create({
+          data: {
+            userId,
+            rawText: text,
+            status: 'PENDING',
+          },
+        });
+
+        ctx.reply('📥 Saved message to your **Quick Capture Inbox**!', { parse_mode: 'Markdown' });
+      });
+
+      telegramBot.command('remind', async (ctx) => {
+        const userId = await getUserIdByChatId(ctx.chat.id);
+        if (!userId) return ctx.reply('❌ Account not paired.');
+
+        const arg = ctx.match?.trim();
+        if (!arg) {
+          return ctx.reply('Format: \`/remind message | when\`\nExample: \`/remind Call team | tomorrow at 3pm\`', { parse_mode: 'Markdown' });
+        }
+
+        let message = '';
+        let whenPhrase = '';
+        if (arg.includes('|')) {
+          const parts = arg.split('|');
+          message = parts[0].trim();
+          whenPhrase = parts[1].trim();
+        } else {
+          const parts = arg.split(' ');
+          if (parts.length >= 2) {
+            whenPhrase = parts[parts.length - 1];
+            message = parts.slice(0, -1).join(' ');
+          } else {
+            return ctx.reply('Could not parse arguments. Please use `|` to separate details and date.', { parse_mode: 'Markdown' });
+          }
+        }
+
+        const { parseSnoozePhrase } = require('./src/lib/snooze-parser');
+        const scheduledFor = parseSnoozePhrase(whenPhrase);
+        if (!scheduledFor) {
+          return ctx.reply(`❌ Could not parse date/time offset: \`${whenPhrase}\``, { parse_mode: 'Markdown' });
+        }
+
+        await prisma.notification.create({
+          data: {
+            userId,
+            title: 'Reminder from Telegram',
+            message,
+            scheduledFor,
+            channels: ['telegram', 'in_app'],
+          },
+        });
+
+        ctx.reply(`⏰ **Reminder scheduled!**\n- **Msg:** ${message}\n- **Time:** ${scheduledFor.toLocaleString()}`, { parse_mode: 'Markdown' });
+      });
+
+      telegramBot.command('digest', async (ctx) => {
+        const userId = await getUserIdByChatId(ctx.chat.id);
+        if (!userId) return ctx.reply('❌ Account not paired.');
+
+        const tasks = await prisma.task.findMany({
+          where: { userId, status: { in: ['TODO', 'IN_PROGRESS'] } },
+          orderBy: { priority: 'desc' },
+          take: 5,
+        });
+
+        const now = new Date();
+        const reminders = await prisma.notification.findMany({
+          where: { userId, status: 'PENDING', scheduledFor: { gte: now } },
+          orderBy: { scheduledFor: 'asc' },
+          take: 5,
+        });
+
+        let digestText = `☀️ **MindSpace Briefing:**\n\n📋 **PENDING TASKS:**\n`;
+        if (tasks.length === 0) {
+          digestText += `  No active tasks.\n`;
+        } else {
+          tasks.forEach(t => {
+            digestText += `  - ${t.title} [${t.priority}]\n`;
+          });
+        }
+
+        digestText += `\n⏰ **UPCOMING REMINDERS:**\n`;
+        if (reminders.length === 0) {
+          digestText += `  No active reminders.\n`;
+        } else {
+          reminders.forEach(r => {
+            digestText += `  - ${r.title} on ${new Date(r.scheduledFor).toLocaleString()}\n`;
+          });
+        }
+
+        ctx.reply(digestText);
+      });
+
+      telegramBot.command('add', async (ctx) => {
+        const userId = await getUserIdByChatId(ctx.chat.id);
+        if (!userId) return ctx.reply('❌ Account not paired.');
+
+        const initialTitle = ctx.match?.trim();
+        const sessionKey = `tg:session:${ctx.chat.id}`;
+
+        if (initialTitle) {
+          await redis.setex(sessionKey, 300, JSON.stringify({ userId, title: initialTitle, step: 'WAITING_DUE' }));
+          return ctx.reply(`📅 **Task title set to:** "${initialTitle}"\n\nEnter due date (e.g. tomorrow, 1h, next week, or type 'skip'):`);
+        }
+
+        await redis.setex(sessionKey, 300, JSON.stringify({ userId, step: 'WAITING_TITLE' }));
+        ctx.reply('📋 **Conversational task builder started.**\nPlease enter the task title:');
+      });
+
+      telegramBot.on('message:text', async (ctx) => {
+        const sessionKey = `tg:session:${ctx.chat.id}`;
+        const sessionDataStr = await redis.get(sessionKey);
+        if (!sessionDataStr) return;
+
+        const session = JSON.parse(sessionDataStr);
+        const text = ctx.message.text.trim();
+
+        if (session.step === 'WAITING_TITLE') {
+          session.title = text;
+          session.step = 'WAITING_DUE';
+          await redis.setex(sessionKey, 300, JSON.stringify(session));
+          return ctx.reply(`📅 **Task title set to:** "${text}"\n\nEnter due date (e.g. tomorrow, 1h, next week, or type 'skip'):`);
+        }
+
+        if (session.step === 'WAITING_DUE') {
+          const isSkip = text.toLowerCase() === 'skip';
+          const { parseSnoozePhrase } = require('./src/lib/snooze-parser');
+          const dueAt = isSkip ? null : parseSnoozePhrase(text);
+          
+          if (!isSkip && !dueAt) {
+            return ctx.reply('❌ Could not parse date format. Please try again or type "skip":');
+          }
+
+          session.dueAt = dueAt ? dueAt.toISOString() : null;
+          session.step = 'WAITING_PRIORITY';
+          await redis.setex(sessionKey, 300, JSON.stringify(session));
+          return ctx.reply(`🎯 **Select Priority:**\nType LOW, MEDIUM, HIGH, or CRITICAL:`);
+        }
+
+        if (session.step === 'WAITING_PRIORITY') {
+          const prio = text.toUpperCase();
+          const validPrios = ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'];
+          if (!validPrios.includes(prio)) {
+            return ctx.reply('❌ Invalid priority. Please type LOW, MEDIUM, HIGH, or CRITICAL:');
+          }
+
+          const task = await prisma.task.create({
+            data: {
+              userId: session.userId,
+              title: session.title,
+              dueAt: session.dueAt ? new Date(session.dueAt) : null,
+              priority: prio as any,
+              status: 'TODO',
+            }
+          });
+
+          await redis.del(sessionKey);
+
+          await redis.publish('socket-emit', JSON.stringify({
+            room: `user:${session.userId}`,
+            event: 'task:updated',
+            data: task,
+          }));
+
+          return ctx.reply(
+            `✅ **Task successfully created!**\n\n` +
+            `- **Title:** ${task.title}\n` +
+            `- **Priority:** \`[${task.priority}]\`\n` +
+            `- **Due:** ${task.dueAt ? task.dueAt.toLocaleString() : 'No deadline'}`
+          );
+        }
+      });
+
+      telegramBot.catch((err) => {
+        console.error('[Telegram Bot Error Handler]:', err);
+      });
+
+      telegramBot.start();
+
+      telegramBot.api.getMe().then((me) => {
+        console.log(`[Telegram Bot Manager] Bot logged in and ONLINE as @${me.username}`);
+      }).catch((e) => {
+        console.error('[Telegram Bot Manager] Failed to load metadata:', e.message);
+      });
+
+    } catch (err) {
+      console.error('[Telegram Bot Manager] Long polling start failed:', (err as Error).message);
+    }
+  }
+
+  // Launch bots on server startup
   startDiscordBot();
+  startTelegramBot();
 
   // Redis Subscriber Client for inter-process communication
   const subClient = new Redis(redisUrl, { lazyConnect: true });
@@ -190,8 +508,9 @@ app.prepare().then(() => {
       try {
         const { room, event, data } = JSON.parse(message);
         if (event === 'settings:updated') {
-          console.log('[Socket.io Redis Sub] Settings updated. Re-initiating Discord Bot Gateway...');
+          console.log('[Socket.io Redis Sub] Settings updated. Re-initiating Discord & Telegram Bot Gateways...');
           startDiscordBot();
+          startTelegramBot();
         }
         io.to(room).emit(event, data);
       } catch (e) {

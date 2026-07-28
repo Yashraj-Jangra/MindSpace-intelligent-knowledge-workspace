@@ -12,5 +12,5 @@
   "TELEGRAM_BOT_TOKEN": "",
   "GEMINI_API_KEY": "",
   "MINIO_ENDPOINT": "localhost",
-  "DISCORD_BOT_STATUS": "loading ultron.exe "
+  "DISCORD_BOT_STATUS": "loading ultron.exe"
 }

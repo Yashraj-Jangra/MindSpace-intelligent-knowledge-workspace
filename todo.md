@@ -7,6 +7,10 @@
   - **Direct Command Controls**: Added buttons to register/sync slash commands (`/api/discord/register`) and generate custom invite links using client IDs.
   - **24/7 Persistent Gateway Integration**: Embedded a persistent `discord.js` Client inside the custom Node server (`server.ts`) which automatically connects to the Discord Gateway on startup, keeping the bot online 24/7 and hot-reloading on configuration updates via Redis.
   - **Local Gateway Interaction Forwarding**: Hooked `interactionCreate` event inside the persistent WebSocket client to capture slash commands, buttons, and select-menus locally, forwarding them to `/api/discord/bot` via a secure signature-bypassed HTTP POST pipeline to allow instant localhost bot testing without ngrok.
+  - **Persistent Telegram Long Polling & Status Panel**: 
+    * Integrated a long-running Grammy `Bot` runner inside `server.ts` using persistent long-polling (`bot.start()`), matching the lifecycle of the website.
+    * Added `/api/admin/telegram/status` endpoint to securely verify and load bot profile metadata.
+    * Built a premium Telegram-Style Info Card in the settings dashboard showing real-time status and username details.
 - [x] **Sleek Premium WhatsApp-Style Chat Overhaul** (Session 2026-07-28 v18):
   - **Sleek Visual Layout**: Rebuilt `ChatPanel.tsx` with a dual-column layout separating active conversations search and lists from the active chat viewport.
   - **Read Receipts & Delivery Checkmarks**: Implemented single check (sent) and double blue checks (seen/read) connected dynamically to the `readBy` array column.

@@ -32,9 +32,10 @@ type Tab = 'conversations' | 'friends';
 interface ChatPanelProps {
   onClose?: () => void;
   isSidebar?: boolean;
+  isFloating?: boolean;
 }
 
-export function ChatPanel({ onClose, isSidebar = false }: ChatPanelProps) {
+export function ChatPanel({ onClose, isSidebar = false, isFloating = false }: ChatPanelProps) {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<Tab>('conversations');
   const [conversations, setConversations] = useState<any[]>([]);
@@ -64,6 +65,8 @@ export function ChatPanel({ onClose, isSidebar = false }: ChatPanelProps) {
 
   // Conversation list filter query
   const [convFilter, setConvFilter] = useState('');
+
+  const showDualColumn = !isFloating || isFullScreen;
 
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
@@ -410,7 +413,11 @@ export function ChatPanel({ onClose, isSidebar = false }: ChatPanelProps) {
       <div className="flex-1 flex overflow-hidden">
         
         {/* LEFT COLUMN: CHATS & FRIENDS DIRECTORY (1/3 width) */}
-        <div className={`w-full sm:w-[320px] shrink-0 border-r border-[#262626] bg-[#0A0A0A] flex flex-col overflow-hidden ${activeConv ? 'hidden sm:flex' : 'flex'}`}>
+        <div className={`bg-[#0A0A0A] flex flex-col overflow-hidden ${
+          showDualColumn
+            ? 'w-full sm:w-[320px] shrink-0 border-r border-[#262626] ' + (activeConv ? 'hidden sm:flex' : 'flex')
+            : 'w-full ' + (activeConv ? 'hidden' : 'flex')
+        }`}>
           
           {/* Segments tabs selector */}
           <div className="flex border-b border-[#262626] text-center font-mono text-[10px] uppercase shrink-0 bg-[#0F0F0F]">
@@ -703,7 +710,11 @@ export function ChatPanel({ onClose, isSidebar = false }: ChatPanelProps) {
         </div>
 
         {/* RIGHT COLUMN: ACTIVE CONVERSATION MESSAGES CHAT (2/3 width) */}
-        <div className={`flex-1 flex overflow-hidden relative bg-[#0D0D0D] ${activeConv ? 'flex' : 'hidden sm:flex'}`}>
+        <div className={`flex-1 flex overflow-hidden relative bg-[#0D0D0D] ${
+          showDualColumn
+            ? activeConv ? 'flex' : 'hidden sm:flex'
+            : activeConv ? 'flex' : 'hidden'
+        }`}>
           
           {!activeConv ? (
             <div className="flex-1 flex flex-col items-center justify-center p-8 text-center space-y-3 font-mono text-xs text-[#737373]">
@@ -725,7 +736,7 @@ export function ChatPanel({ onClose, isSidebar = false }: ChatPanelProps) {
                   <div className="flex items-center gap-3">
                     <button
                       onClick={() => setActiveConv(null)}
-                      className="sm:hidden p-1.5 border border-[#262626] hover:border-[#FF3D00] text-[#737373] hover:text-[#FAFAFA] rounded-lg transition-colors mr-1"
+                      className={`${showDualColumn ? 'sm:hidden' : 'flex'} p-1.5 border border-[#262626] hover:border-[#FF3D00] text-[#737373] hover:text-[#FAFAFA] rounded-lg transition-colors mr-1`}
                       title="Back to Conversations"
                     >
                       <ArrowLeft className="w-4 h-4" />

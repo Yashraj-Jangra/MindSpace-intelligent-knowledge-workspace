@@ -17,7 +17,7 @@ export function ChatBubble() {
     <div className="fixed bottom-6 left-6 z-50 font-sans">
       {isOpen ? (
         <div className="w-[360px] sm:w-[400px] h-[520px] shadow-2xl animate-in slide-in-from-bottom-5 duration-200">
-          <ChatPanel onClose={() => setIsOpen(false)} />
+          <ChatPanel onClose={() => setIsOpen(false)} isFloating={true} />
         </div>
       ) : (
         <button

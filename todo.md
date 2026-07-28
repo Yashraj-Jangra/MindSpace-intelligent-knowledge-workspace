@@ -9,6 +9,7 @@
   - **Full Screen Toggle**: Added a layout mode toggle to expand the floating community chat into a full screen viewport.
   - **Details Sidebar Pane**: Implemented collapsible side sheet inside chats to search message keyword history and view participants list.
   - **Dedicated Route & Layout Separation**: Created dedicated full-screen `/chat` page, added it to navigation header and drawer, and moved the floating trigger button to the bottom-left corner (suppressed on the `/chat` route itself to prevent duplicate triggers).
+  - **Mobile Responsive Optimizations**: Implemented dynamic viewport-height `h-dvh` layout sizing, stacked column visibility for single-column chat flows on mobile screens, and integrated header back buttons.
 - [x] **Hub Dashboard Redesign & Chat Friend Search Fix** (Session 2026-07-28 v17):
   - **Hero Command Deck**: Rebuilt `/` Hub Dashboard into a poster-style command center cockpit featuring a live system telemetry bar (`Canvases`, `Notes`, `Tasks`, `Overdue Reminders`).
   - **Quick Action Launcher**: Built 1-tap quick creation buttons (`+ New Canvas`, `+ New Note`, `+ New Task`) alongside the Quick Thought Capture Inbox.

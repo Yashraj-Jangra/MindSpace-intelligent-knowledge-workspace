@@ -76,7 +76,7 @@ export function StylusDock({
   const [showPenMenu, setShowPenMenu] = useState(false);
 
   return (
-    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 bg-[#0F0F0F] border border-[#262626] px-5 py-2.5 shadow-2xl flex items-center gap-4 font-sans select-none animate-in slide-in-from-bottom duration-200">
+    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 bg-[#0F0F0F] border border-[#262626] px-5 py-2.5 flex items-center gap-4 font-sans select-none animate-in slide-in-from-bottom duration-200">
       {/* Stylus Mode Quick Toggle */}
       <button
         onClick={onToggleStylusMode}
@@ -134,7 +134,7 @@ export function StylusDock({
 
           {/* Pen Subtype Dropdown Popover */}
           {showPenMenu && (
-            <div className="absolute bottom-12 left-0 z-50 bg-[#0F0F0F] border border-[#262626] shadow-2xl p-1.5 w-44 space-y-1 font-mono text-xs">
+            <div className="absolute bottom-12 left-0 z-50 bg-[#0F0F0F] border border-[#262626] p-1.5 w-44 space-y-1 font-mono text-xs">
               <button
                 onClick={() => {
                   onSelectPenSubtype('ballpoint');

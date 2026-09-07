@@ -309,7 +309,7 @@ export default function AdminSettingsPage() {
           <div className="space-y-6">
             
             {/* Sleek Discord Bot Profile Card */}
-            <div className="bg-[#1E1F22] border border-[#2B2D31] rounded-2xl overflow-hidden shadow-2xl relative">
+            <div className="bg-[#1E1F22] border border-[#2B2D31] overflow-hidden relative">
               {/* Profile Top Banner */}
               <div className="h-16 bg-[#5865F2] w-full relative" />
               
@@ -347,7 +347,7 @@ export default function AdminSettingsPage() {
                       #{botStatus.bot.discriminator}
                     </span>
                   )}
-                  <span className="bg-[#5865F2] text-[#FAFAFA] font-mono text-[8px] uppercase tracking-wider font-extrabold px-1 rounded-sm">
+                  <span className="bg-[#5865F2] text-[#FAFAFA] font-mono text-[8px] uppercase tracking-wider font-extrabold px-1">
                     BOT
                   </span>
                 </div>
@@ -426,7 +426,7 @@ export default function AdminSettingsPage() {
                     type="button"
                     onClick={handleSyncCommands}
                     disabled={isSyncingCommands || !settings.DISCORD_BOT_TOKEN}
-                    className="w-full py-2 bg-[#5865F2] hover:bg-[#4752C4] text-[#FAFAFA] font-sans text-xs font-bold uppercase tracking-wider rounded-lg transition-colors flex items-center justify-center gap-1.5 disabled:opacity-50"
+                    className="w-full py-2 bg-[#5865F2] hover:bg-[#4752C4] text-[#FAFAFA] font-sans text-xs font-bold uppercase tracking-wider transition-colors flex items-center justify-center gap-1.5 disabled:opacity-50"
                   >
                     <RefreshCw className={`w-3.5 h-3.5 ${isSyncingCommands ? 'animate-spin' : ''}`} />
                     <span>Sync Slash Commands</span>
@@ -438,13 +438,13 @@ export default function AdminSettingsPage() {
                       href={`https://discord.com/api/oauth2/authorize?client_id=${settings.DISCORD_CLIENT_ID}&permissions=8&scope=bot%20applications.commands`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="w-full py-2 bg-[#23A55A] hover:bg-[#1A7F43] text-[#FAFAFA] font-sans text-xs font-bold uppercase tracking-wider rounded-lg transition-colors flex items-center justify-center gap-1.5"
+                      className="w-full py-2 bg-[#23A55A] hover:bg-[#1A7F43] text-[#FAFAFA] font-sans text-xs font-bold uppercase tracking-wider transition-colors flex items-center justify-center gap-1.5"
                     >
                       <ExternalLink className="w-3.5 h-3.5" />
                       <span>Generate Invite Link</span>
                     </a>
                   ) : (
-                    <div className="w-full py-2 bg-[#2B2D31] text-[#949BA4] font-sans text-xs text-center rounded-lg select-none italic">
+                    <div className="w-full py-2 bg-[#2B2D31] text-[#949BA4] font-sans text-xs text-center select-none italic">
                       Generate Invite Link (needs Client ID)
                     </div>
                   )}
@@ -454,7 +454,7 @@ export default function AdminSettingsPage() {
                     type="button"
                     onClick={fetchBotStatus}
                     disabled={isBotLoading}
-                    className="w-full py-1.5 bg-transparent hover:bg-[#2B2D31] text-[#949BA4] hover:text-[#FAFAFA] border border-[#2B2D31] font-mono text-[9px] uppercase font-bold rounded-lg transition-colors flex items-center justify-center gap-1"
+                    className="w-full py-1.5 bg-transparent hover:bg-[#2B2D31] text-[#949BA4] hover:text-[#FAFAFA] border border-[#2B2D31] font-mono text-[9px] uppercase font-bold transition-colors flex items-center justify-center gap-1"
                   >
                     <RefreshCw className={`w-3 h-3 ${isBotLoading ? 'animate-spin' : ''}`} />
                     <span>Refresh Telemetry</span>
@@ -466,7 +466,7 @@ export default function AdminSettingsPage() {
             </div>
 
             {/* Sleek Telegram Bot Profile Card */}
-            <div className="bg-[#182533] border border-[#243343] rounded-2xl overflow-hidden shadow-2xl relative">
+            <div className="bg-[#182533] border border-[#243343] overflow-hidden relative">
               {/* Profile Top Banner */}
               <div className="h-16 bg-[#229ED9] w-full relative" />
               
@@ -496,7 +496,7 @@ export default function AdminSettingsPage() {
                       @{tgBotStatus.bot.username}
                     </span>
                   )}
-                  <span className="bg-[#229ED9] text-[#FAFAFA] font-mono text-[8px] uppercase tracking-wider font-extrabold px-1 rounded-sm">
+                  <span className="bg-[#229ED9] text-[#FAFAFA] font-mono text-[8px] uppercase tracking-wider font-extrabold px-1">
                     BOT
                   </span>
                 </div>
@@ -538,13 +538,13 @@ export default function AdminSettingsPage() {
                       href={`https://t.me/${tgBotStatus.bot.username}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="w-full py-2 bg-[#229ED9] hover:bg-[#1C82B3] text-[#FAFAFA] font-sans text-xs font-bold uppercase tracking-wider rounded-lg transition-colors flex items-center justify-center gap-1.5"
+                      className="w-full py-2 bg-[#229ED9] hover:bg-[#1C82B3] text-[#FAFAFA] font-sans text-xs font-bold uppercase tracking-wider transition-colors flex items-center justify-center gap-1.5"
                     >
                       <ExternalLink className="w-3.5 h-3.5" />
                       <span>Start Chat in Telegram</span>
                     </a>
                   ) : (
-                    <div className="w-full py-2 bg-[#243343] text-[#7B8B9A] font-sans text-xs text-center rounded-lg select-none italic">
+                    <div className="w-full py-2 bg-[#243343] text-[#7B8B9A] font-sans text-xs text-center select-none italic">
                       Start Chat (needs username)
                     </div>
                   )}
@@ -554,7 +554,7 @@ export default function AdminSettingsPage() {
                     type="button"
                     onClick={fetchTgBotStatus}
                     disabled={isTgBotLoading}
-                    className="w-full py-1.5 bg-transparent hover:bg-[#243343] text-[#7B8B9A] hover:text-[#FAFAFA] border border-[#243343] font-mono text-[9px] uppercase font-bold rounded-lg transition-colors flex items-center justify-center gap-1"
+                    className="w-full py-1.5 bg-transparent hover:bg-[#243343] text-[#7B8B9A] hover:text-[#FAFAFA] border border-[#243343] font-mono text-[9px] uppercase font-bold transition-colors flex items-center justify-center gap-1"
                   >
                     <RefreshCw className={`w-3 h-3 ${isTgBotLoading ? 'animate-spin' : ''}`} />
                     <span>Refresh Telemetry</span>

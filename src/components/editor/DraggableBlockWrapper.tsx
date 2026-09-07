@@ -109,7 +109,7 @@ export function DraggableBlockWrapper({
   return (
     <div
       ref={containerRef}
-      className="relative group border border-[#262626] hover:border-[#FF3D00] transition-all my-4 bg-[#0F0F0F] shadow-xl select-none"
+      className="relative group border border-[#262626] hover:border-[#FF3D00] transition-all my-4 bg-[#0F0F0F] select-none"
       style={{
         transform: `translate3d(${position.x}px, ${position.y}px, 0)`,
         width: typeof size.width === 'number' ? `${size.width}px` : size.width,

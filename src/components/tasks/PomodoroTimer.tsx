@@ -1,12 +1,18 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Play, Pause, RotateCcw, ArrowRight, X, Maximize2, Minimize2 } from 'lucide-react';
+import { usePathname } from 'next/navigation';
+import { Play, Pause, RotateCcw, ArrowRight, X, Maximize2, Minimize2, Timer } from 'lucide-react';
 import { usePomodoro } from '@/contexts/PomodoroContext';
 
 export function PomodoroTimer() {
   const { state, pause, resume, reset, skipBreak } = usePomodoro();
   const [isExpanded, setIsExpanded] = useState(false);
+  const pathname = usePathname();
+
+  // Offset bottom position on note editor pages to avoid collision with canvas zoom controls
+  const isNoteEditor = pathname?.startsWith('/notes/') && pathname !== '/notes';
+  const bottomClass = isNoteEditor ? 'bottom-20 right-6' : 'bottom-6 right-6';
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -30,12 +36,12 @@ export function PomodoroTimer() {
     return (
       <button
         onClick={() => setIsExpanded(true)}
-        className={`fixed bottom-6 right-6 z-[80] flex items-center gap-2 bg-[#0F0F0F] border p-3 font-mono text-xs uppercase tracking-wider text-[#FAFAFA] hover:text-[#FF3D00] transition-colors shadow-2xl ${getBorderColor()}`}
+        className={`fixed ${bottomClass} z-[80] flex items-center gap-2 bg-[#0F0F0F] border px-3 py-2.5 font-mono text-xs uppercase tracking-wider text-[#FAFAFA] hover:text-[#FF3D00] transition-colors ${getBorderColor()}`}
       >
-        <span className="animate-pulse">🍅</span>
-        <span>
+        <span className="w-2 h-2 rounded-full bg-[#FF3D00] animate-pulse" />
+        <span className="font-bold">
           {state.mode === 'idle'
-            ? 'Idle'
+            ? 'Timer'
             : `${state.mode === 'focus' ? 'Focus' : 'Break'} [${formatTime(state.secondsRemaining)}]`}
         </span>
         <Maximize2 className="w-3 h-3 text-[#737373]" />
@@ -45,7 +51,7 @@ export function PomodoroTimer() {
 
   return (
     <div
-      className={`fixed bottom-6 right-6 z-[80] w-[260px] bg-[#0F0F0F] border p-4 flex flex-col justify-between font-sans shadow-2xl transition-all ${getBorderColor()}`}
+      className={`fixed ${bottomClass} z-[80] w-[260px] bg-[#0F0F0F] border p-4 flex flex-col justify-between font-sans transition-all ${getBorderColor()}`}
     >
       {/* Accent Bar */}
       <div

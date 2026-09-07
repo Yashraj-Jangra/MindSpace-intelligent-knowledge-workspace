@@ -89,7 +89,7 @@ export function MultiplayerCursors({ canvasId }: { canvasId: string }) {
             style={{ color: c.color, fill: c.color }}
           />
           <span
-            className="font-mono text-[10px] font-bold text-white px-1.5 py-0.5 shadow-md"
+            className="font-mono text-[10px] font-bold text-white px-1.5 py-0.5"
             style={{ backgroundColor: c.color }}
           >
             {c.user.username || c.user.email || 'Collaborator'}

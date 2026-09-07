@@ -23,7 +23,7 @@ export function PinnedItemsRail({ pinnedItems }: PinnedItemsRailProps) {
 
   return (
     <div className="space-y-4 font-sans">
-      <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-[#3b82f6]">
+      <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-[#FF3D00]">
         <Pin className="w-4 h-4 text-[#FF3D00]" />
         <span>PINNED SHELF</span>
       </div>
@@ -33,9 +33,7 @@ export function PinnedItemsRail({ pinnedItems }: PinnedItemsRailProps) {
           <Link
             key={item.id}
             href={item.url}
-            className={`flex-shrink-0 w-[240px] bg-[#0F0F0F] border p-4 relative group transition-colors flex flex-col justify-between ${
-              item.type === 'task' ? 'border-[#3b82f6]/40 hover:border-[#FF3D00]' : 'border-[#262626] hover:border-[#FF3D00]'
-            }`}
+            className="flex-shrink-0 w-[240px] bg-[#0F0F0F] border border-[#262626] hover:border-[#FF3D00] p-4 relative group transition-colors flex flex-col justify-between"
           >
             <div className="h-1 w-8 bg-[#FF3D00] absolute top-0 left-0" />
             <div>
@@ -53,7 +51,7 @@ export function PinnedItemsRail({ pinnedItems }: PinnedItemsRailProps) {
                   {item.content || 'Empty note...'}
                 </p>
               ) : (
-                <p className="text-[11px] font-mono text-[#3b82f6] uppercase tracking-wider mb-3">
+                <p className="text-[11px] font-mono text-[#FF3D00] uppercase tracking-wider mb-3">
                   Checklist Objective
                 </p>
               )}

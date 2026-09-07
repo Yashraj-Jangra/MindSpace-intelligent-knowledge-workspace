@@ -20,7 +20,7 @@ export function PromptInput({ onGenerate, isLoading = false }: PromptInputProps)
   return (
     <form
       onSubmit={handleSubmit}
-      className="w-full max-w-2xl bg-[#0F0F0F] border border-[#262626] p-3 shadow-2xl transition-all duration-150 focus-within:border-[#FF3D00]"
+      className="w-full max-w-2xl bg-[#0F0F0F] border border-[#262626] p-3 transition-all duration-150 focus-within:border-[#FF3D00]"
     >
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
         <div className="relative flex-1">

@@ -63,7 +63,7 @@ export function MobileNavDrawer({ isOpen, onClose, onOpenAccount }: MobileNavDra
 
   return (
     <div className="fixed inset-0 z-50 overflow-hidden bg-black/70 backdrop-blur-md flex justify-end font-sans">
-      <div className="w-full max-w-sm bg-[#0A0A0A] border-l border-[#262626] h-full flex flex-col justify-between p-6 shadow-2xl animate-in slide-in-from-right duration-200">
+      <div className="w-full max-w-sm bg-[#0A0A0A] border-l border-[#262626] h-full flex flex-col justify-between p-6 animate-in slide-in-from-right duration-200">
         <div>
           {/* Header Bar */}
           <div className="flex items-center justify-between pb-4 border-b border-[#262626] mb-6">

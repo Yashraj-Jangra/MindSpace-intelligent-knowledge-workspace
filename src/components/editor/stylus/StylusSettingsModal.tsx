@@ -38,7 +38,7 @@ export function StylusSettingsModal({
 
   return (
     <div className="fixed inset-0 z-50 bg-[#0A0A0A]/80 backdrop-blur-sm flex justify-end animate-in fade-in duration-150 font-sans select-none">
-      <div className="w-full max-w-md bg-[#0F0F0F] border-l border-[#262626] h-full flex flex-col justify-between shadow-2xl p-6 overflow-y-auto">
+      <div className="w-full max-w-md bg-[#0F0F0F] border-l border-[#262626] h-full flex flex-col justify-between p-6 overflow-y-auto">
         {/* Header */}
         <div className="space-y-4">
           <div className="flex items-center justify-between border-b border-[#262626] pb-4">

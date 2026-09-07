@@ -65,7 +65,7 @@ export function SearchBar({ canvasId, onSelectNode }: SearchBarProps) {
 
       {/* Search Results Dropdown */}
       {isOpen && results.length > 0 && (
-        <div className="absolute top-full left-0 right-0 mt-2 z-50 bg-[#0F0F0F] border border-[#FF3D00] p-2 shadow-2xl space-y-1 max-h-72 overflow-y-auto">
+        <div className="absolute top-full left-0 right-0 mt-2 z-50 bg-[#0F0F0F] border border-[#FF3D00] p-2 space-y-1 max-h-72 overflow-y-auto">
           <div className="flex items-center justify-between px-2 py-1 border-b border-[#262626] mb-1">
             <span className="font-mono text-[10px] uppercase tracking-widest text-[#FF3D00]">
               Semantic Matches ({results.length})

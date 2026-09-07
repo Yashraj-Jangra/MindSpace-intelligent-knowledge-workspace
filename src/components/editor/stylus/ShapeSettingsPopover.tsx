@@ -58,7 +58,7 @@ export function ShapeSettingsPopover({
   return (
     <div
       ref={popoverRef}
-      className="fixed top-14 left-16 z-[80] w-[320px] bg-[#0A0A0A]/95 backdrop-blur-xl border border-[#262626] rounded-none shadow-2xl p-4 text-[#FAFAFA] font-sans select-none animate-in fade-in zoom-in-95 duration-150"
+      className="fixed top-14 left-16 z-[80] w-[320px] bg-[#0A0A0A]/95 backdrop-blur-xl border border-[#262626] rounded-none p-4 text-[#FAFAFA] font-sans select-none animate-in fade-in zoom-in-95 duration-150"
     >
       {/* Top Header */}
       <div className="flex items-center justify-between border-b border-[#262626] pb-2.5 mb-3">

@@ -1033,7 +1033,7 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
           <div className="w-12 h-14 shrink-0 flex items-center justify-center border-r border-[#262626] bg-[#0F0F0F]">
             <button
               onClick={() => router.push('/notes')}
-              className="p-2 text-[#737373] hover:text-[#FAFAFA] hover:bg-[#1E1E1E] rounded-md transition-colors flex items-center justify-center"
+              className="p-2 text-[#737373] hover:text-[#FAFAFA] hover:bg-[#1E1E1E] transition-colors flex items-center justify-center"
               title="Back to Notes Library"
             >
               <ArrowLeft className="w-4 h-4 stroke-[1.5]" />
@@ -1087,14 +1087,14 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
                     handleDeactivateStylusMode();
                   }
                 }}
-                className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 rounded-full border text-[10px] sm:text-[11px] font-mono uppercase tracking-widest font-bold transition-all duration-200 ${isSidebarVisible
-                    ? 'border-[#FF3D00] bg-[#FF3D00]/10 text-[#FF3D00] shadow-lg shadow-[#FF3D00]/15'
+                className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 border text-[10px] sm:text-[11px] font-mono uppercase tracking-widest font-bold transition-all duration-200 ${isSidebarVisible
+                    ? 'border-[#FF3D00] bg-[#FF3D00]/10 text-[#FF3D00]'
                     : 'border-[#262626] bg-[#0F0F0F] text-[#737373] hover:text-[#FAFAFA] hover:border-[#404040]'
                   }`}
                 title="Toggle Stylus Sidebar Dock Visibility"
               >
                 <span
-                  className={`w-1.5 h-1.5 rounded-full transition-all ${isSidebarVisible ? 'bg-[#FF3D00] shadow-sm shadow-[#FF3D00]' : 'bg-[#737373]'
+                  className={`w-1.5 h-1.5 rounded-full transition-all ${isSidebarVisible ? 'bg-[#FF3D00]' : 'bg-[#737373]'
                     }`}
                 />
                 <PenTool className="w-3 h-3" />
@@ -1192,7 +1192,7 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
       {isZenMode && (
         <button
           onClick={toggleFullScreen}
-          className="fixed top-4 right-6 z-[55] flex items-center gap-2 px-3 py-1.5 bg-[#0A0A0A]/90 border border-[#FF3D00] text-[#FF3D00] hover:bg-[#FF3D00] hover:text-[#0A0A0A] text-xs font-mono uppercase tracking-wider font-bold transition-all shadow-xl"
+          className="fixed top-4 right-6 z-[55] flex items-center gap-2 px-3 py-1.5 bg-[#0A0A0A]/90 border border-[#FF3D00] text-[#FF3D00] hover:bg-[#FF3D00] hover:text-[#0A0A0A] text-xs font-mono uppercase tracking-wider font-bold transition-all"
           title="Exit Full Screen Mode (or press Esc)"
         >
           <Minimize2 className="w-3.5 h-3.5" />
@@ -1249,7 +1249,7 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
         {editor && (
           <RichTextProvider editor={editor}>
             {/* ── Row 1: Page Controls ──────────────────────── */}
-            <div className="note-editor-toolbar-row1 sticky top-14 z-[41] bg-[#111111] border-b border-[#1E1E1E] px-3 flex items-center gap-0 shadow-sm select-none overflow-x-auto no-scrollbar">
+            <div className="note-editor-toolbar-row1 sticky top-14 z-[41] bg-[#111111] border-b border-[#1E1E1E] px-3 flex items-center gap-0 select-none overflow-x-auto no-scrollbar">
               <PageNavigationBar
                 pages={pages}
                 activePageIndex={activePageIndex}
@@ -1268,7 +1268,7 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
             {/* ── Row 2: Text Formatting Toolbar ───────────── */}
             <div
               onClickCapture={handleDeactivateStylusMode}
-              className="note-editor-toolbar-row2 sticky top-[calc(3.5rem+2.25rem)] z-[39] bg-[#0F0F0F] border-b border-[#1E1E1E] px-3 py-1 flex items-center gap-1 overflow-x-auto no-scrollbar shadow-md select-none"
+              className="note-editor-toolbar-row2 sticky top-[calc(3.5rem+2.25rem)] z-[39] bg-[#0F0F0F] border-b border-[#1E1E1E] px-3 py-1 flex items-center gap-1 overflow-x-auto no-scrollbar select-none"
             >
               {/* HISTORY group */}
               <span className="text-[8px] font-mono uppercase tracking-widest text-[#3a3a3a] px-1 shrink-0 hidden lg:inline">History</span>
@@ -1372,7 +1372,7 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
               >
                 {/* Pure Clean Notebook Paper Canvas Sheet (Fixed A4 Boundaries: 850px x 1100px) */}
                 <div
-                  className="note-editor-paper border border-[#262626] bg-[#0F0F0F] shadow-2xl relative text-[#FAFAFA] overflow-hidden shrink-0"
+                  className="note-editor-paper border border-[#262626] bg-[#0F0F0F] relative text-[#FAFAFA] overflow-hidden shrink-0"
                   style={{ width: '850px', height: '1100px' }}
                 >
                   {/* Tiptap Core Editor Content (Layered dynamically based on mode & layerOrder) */}
@@ -1411,7 +1411,7 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
               </div>
 
               {/* Floating Zoom Controls Pill */}
-              <div className="fixed bottom-6 right-6 z-[45] flex items-center gap-0 bg-[#0A0A0A]/95 backdrop-blur-md border border-[#262626] shadow-2xl">
+              <div className="fixed bottom-6 right-6 z-[45] flex items-center gap-0 bg-[#0A0A0A]/95 backdrop-blur-md border border-[#262626]">
                 {/* Zoom Out */}
                 <button
                   onClick={() => setCanvasZoom((z) => Math.max(0.4, parseFloat((z - 0.1).toFixed(1))))}

@@ -64,10 +64,10 @@ export default async function RemindersDashboard() {
           </div>
 
           <div className="bg-[#0F0F0F] border border-[#262626] p-6 relative">
-            <div className="h-1 w-12 bg-[#ef4444] absolute top-0 left-0" />
+            <div className="h-1 w-12 bg-[#FF3D00] absolute top-0 left-0" />
             <div className="flex items-center justify-between text-[#737373] mb-2">
               <span className="font-mono text-xs uppercase tracking-wider">Overdue</span>
-              <AlertTriangle className="w-4 h-4 text-[#ef4444]" />
+              <AlertTriangle className="w-4 h-4 text-[#FF3D00]" />
             </div>
             <div className="font-sans font-black text-3xl text-[#FAFAFA]">{overdue.length}</div>
           </div>

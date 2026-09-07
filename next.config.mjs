@@ -2,8 +2,8 @@
 const nextConfig = {
   reactStrictMode: true,
   allowedDevOrigins: [
-    '192.168.1.39:3000',
-    '192.168.1.39',
+    '192.168.1.50:3000',
+    '192.168.1.50',
     'localhost:3000',
     '*.nip.io:3000',
     '*.nip.io',

@@ -64,7 +64,7 @@ export function MacroTaskWidget({
     <div
       className={`bg-[#0F0F0F] border p-5 relative flex flex-col justify-between transition-all ${
         isOverdue()
-          ? 'border-[#FF3D00] animate-pulse shadow-[0_0_15px_rgba(255,61,0,0.15)]'
+          ? 'border-[#FF3D00] animate-pulse'
           : 'border-[#262626]'
       }`}
     >

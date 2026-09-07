@@ -72,7 +72,7 @@ export function StickerPicker({ isOpen, onClose, onSelectSticker }: StickerPicke
 
   return (
     <div className="fixed inset-0 z-50 bg-[#0A0A0A]/80 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="w-full max-w-lg bg-[#0F0F0F] border border-[#262626] shadow-2xl flex flex-col font-sans animate-in fade-in zoom-in-95 duration-150">
+      <div className="w-full max-w-lg bg-[#0F0F0F] border border-[#262626] flex flex-col font-sans animate-in fade-in zoom-in-95 duration-150">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-[#262626]">
           <div className="flex items-center gap-2">

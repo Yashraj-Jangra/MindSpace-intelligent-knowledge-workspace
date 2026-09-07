@@ -16,7 +16,7 @@ export function OutlineView({ isOpen, nodes, onClose, onUpdateNodeText }: Outlin
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-y-0 right-0 z-40 w-full max-w-lg bg-[#0F0F0F] border-l border-[#262626] p-6 shadow-2xl flex flex-col animate-in slide-in-from-right duration-200">
+    <div className="fixed inset-y-0 right-0 z-40 w-full max-w-lg bg-[#0F0F0F] border-l border-[#262626] p-6 flex flex-col animate-in slide-in-from-right duration-200">
       <div className="flex items-center justify-between pb-4 border-b border-[#262626] mb-6">
         <div className="flex items-center gap-2 text-[#FF3D00]">
           <FileText className="w-5 h-5 stroke-[1.5]" />

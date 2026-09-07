@@ -11,7 +11,6 @@ import { OutlineView } from '@/components/ui/OutlineView';
 import { DocumentUpload } from '@/components/ui/DocumentUpload';
 import { SearchBar } from '@/components/ui/SearchBar';
 import { ExportMenu } from '@/components/ui/ExportMenu';
-import { AccountDrawer } from '@/components/ui/AccountDrawer';
 import { AppHeader } from '@/components/navigation/AppHeader';
 import { Network, FileText, FileUp, LogIn, UserPlus, LogOut, User, LayoutDashboard, Bell, ArrowLeft, ListTodo } from 'lucide-react';
 import { MindSpaceNodeData } from '@/lib/graph/transformer';
@@ -35,7 +34,6 @@ export default function CanvasWorkspace({ params }: { params: Promise<{ id: stri
   const [isDocUploadOpen, setIsDocUploadOpen] = useState(false);
   const [reminderTarget, setReminderTarget] = useState<{ id: string; label: string } | null>(null);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
-  const [isAccountOpen, setIsAccountOpen] = useState(false);
 
   // Hook: Load canvas from API on mount
   useEffect(() => {
@@ -351,13 +349,6 @@ export default function CanvasWorkspace({ params }: { params: Promise<{ id: stri
         nodeLabel={reminderTarget?.label || ''}
         onClose={() => setReminderTarget(null)}
         onConfirm={handleConfirmReminder}
-      />
-
-      {/* Account Settings & Integrations Panel Drawer */}
-      <AccountDrawer
-        isOpen={isAccountOpen}
-        onClose={() => setIsAccountOpen(false)}
-        user={user}
       />
 
       {/* Notification Toast Alert Manager */}

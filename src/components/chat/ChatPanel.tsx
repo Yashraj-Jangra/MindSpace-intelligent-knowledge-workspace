@@ -374,7 +374,7 @@ export function ChatPanel({ onClose, isSidebar = false, isFloating = false }: Ch
       {/* Redesigned Sleek Header */}
       <header className="p-3 bg-[#0F0F0F] border-b border-[#262626] flex items-center justify-between shrink-0">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-[#FF3D00] text-[#0A0A0A] font-black text-sm flex items-center justify-center rounded-lg">
+          <div className="w-8 h-8 bg-[#FF3D00] text-[#0A0A0A] font-black text-sm flex items-center justify-center">
             <MessageSquare className="w-4 h-4 stroke-[2.5]" />
           </div>
           <div>
@@ -392,7 +392,7 @@ export function ChatPanel({ onClose, isSidebar = false, isFloating = false }: Ch
           {/* Full Screen Mode Toggle */}
           <button
             onClick={() => setIsFullScreen(!isFullScreen)}
-            className="p-1.5 border border-[#262626] hover:border-[#FF3D00] text-[#737373] hover:text-[#FAFAFA] transition-all rounded"
+            className="p-1.5 border border-[#262626] hover:border-[#FF3D00] text-[#737373] hover:text-[#FAFAFA] transition-colors"
             title={isFullScreen ? 'Minimize Chat' : 'Expand Full Screen'}
           >
             {isFullScreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
@@ -401,7 +401,7 @@ export function ChatPanel({ onClose, isSidebar = false, isFloating = false }: Ch
           {onClose && (
             <button
               onClick={onClose}
-              className="p-1.5 border border-[#262626] hover:border-[#FF3D00] text-[#737373] hover:text-[#FAFAFA] transition-colors rounded"
+              className="p-1.5 border border-[#262626] hover:border-[#FF3D00] text-[#737373] hover:text-[#FAFAFA] transition-colors"
             >
               <X className="w-4 h-4" />
             </button>
@@ -449,7 +449,7 @@ export function ChatPanel({ onClose, isSidebar = false, isFloating = false }: Ch
               
               {/* Conversations Search */}
               <div className="p-3 border-b border-[#262626] bg-[#0A0A0A]">
-                <div className="flex items-center bg-[#1A1A1A] border border-[#262626] focus-within:border-[#FF3D00] px-2.5 py-1.5 rounded-lg">
+                <div className="flex items-center bg-[#1A1A1A] border border-[#262626] focus-within:border-[#FF3D00] px-2.5 py-1.5">
                   <Search className="w-3.5 h-3.5 text-[#737373] mr-2" />
                   <input
                     type="text"
@@ -480,7 +480,7 @@ export function ChatPanel({ onClose, isSidebar = false, isFloating = false }: Ch
                     placeholder="Group Name"
                     value={groupName}
                     onChange={(e) => setGroupName(e.target.value)}
-                    className="w-full bg-[#1A1A1A] border border-[#262626] focus:border-[#FF3D00] text-xs text-[#FAFAFA] p-2 outline-none rounded-lg"
+                    className="w-full bg-[#1A1A1A] border border-[#262626] focus:border-[#FF3D00] text-xs text-[#FAFAFA] p-2 outline-none"
                   />
                   <div className="space-y-1.5 max-h-[100px] overflow-y-auto">
                     {friends.map((f) => (
@@ -503,7 +503,7 @@ export function ChatPanel({ onClose, isSidebar = false, isFloating = false }: Ch
                   </div>
                   <button
                     onClick={handleCreateGroup}
-                    className="w-full py-1.5 bg-[#FF3D00] text-[#0A0A0A] font-mono text-xs font-bold uppercase tracking-wider rounded-lg"
+                    className="w-full py-1.5 bg-[#FF3D00] text-[#0A0A0A] font-mono text-xs font-bold uppercase tracking-wider hover:bg-[#FF5722] transition-colors"
                   >
                     Launch Group
                   </button>
@@ -527,20 +527,20 @@ export function ChatPanel({ onClose, isSidebar = false, isFloating = false }: Ch
                       <div
                         key={c.id}
                         onClick={() => setActiveConv(c)}
-                        className={`p-3 border rounded-xl cursor-pointer transition-all flex items-center gap-3 ${
+                        className={`p-3 border cursor-pointer transition-colors flex items-center gap-3 ${
                           isActive
-                            ? 'bg-[#FF3D00]/5 border-[#FF3D00] shadow-sm'
-                            : 'bg-[#0F0F0F] border-[#262626] hover:bg-[#1A1A1A]'
+                            ? 'bg-[#FF3D00]/10 border-[#FF3D00]'
+                            : 'bg-[#0F0F0F] border-[#262626] hover:bg-[#141414] hover:border-[#404040]'
                         }`}
                       >
                         {/* PFP block with live online dot */}
                         <div className="relative shrink-0">
-                          <div className="w-10 h-10 bg-[#1A1A1A] border border-[#262626] font-bold text-xs text-[#FAFAFA] flex items-center justify-center rounded-xl font-mono">
+                          <div className="w-10 h-10 bg-[#1A1A1A] border border-[#262626] font-bold text-xs text-[#FAFAFA] flex items-center justify-center font-mono">
                             {initials}
                           </div>
                           {!c.isGroup && (
                             <span
-                              className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 border-2 border-[#0A0A0A] rounded-full ${
+                              className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 border border-[#0A0A0A] rounded-full ${
                                 isOnline ? 'bg-[#10B981]' : 'bg-[#737373]'
                               }`}
                             />
@@ -554,7 +554,7 @@ export function ChatPanel({ onClose, isSidebar = false, isFloating = false }: Ch
                               {c.name || partner?.name || partner?.username || 'Private Chat'}
                             </span>
                             {c.isGroup && (
-                              <span className="font-mono text-[8px] px-1 border border-[#FF3D00] text-[#FF3D00] rounded">
+                              <span className="font-mono text-[8px] px-1.5 py-0.5 border border-[#FF3D00] text-[#FF3D00] uppercase">
                                 GROUP
                               </span>
                             )}
@@ -580,7 +580,7 @@ export function ChatPanel({ onClose, isSidebar = false, isFloating = false }: Ch
                 <label className="block font-mono text-[10px] uppercase text-[#737373] tracking-wider mb-1">
                   Find Creators
                 </label>
-                <div className="flex items-center bg-[#1A1A1A] border border-[#262626] focus-within:border-[#FF3D00] px-2.5 py-1.5 rounded-lg">
+                <div className="flex items-center bg-[#1A1A1A] border border-[#262626] focus-within:border-[#FF3D00] px-2.5 py-1.5">
                   <Search className="w-3.5 h-3.5 text-[#737373] mr-2" />
                   <input
                     type="text"
@@ -602,9 +602,9 @@ export function ChatPanel({ onClose, isSidebar = false, isFloating = false }: Ch
                     const displayName = u.name || u.username || u.email.split('@')[0];
 
                     return (
-                      <div key={u.id} className="flex items-center justify-between p-2.5 bg-[#0F0F0F] border border-[#262626] rounded-xl">
+                      <div key={u.id} className="flex items-center justify-between p-2.5 bg-[#0F0F0F] border border-[#262626]">
                         <div className="flex items-center gap-2 truncate max-w-[170px]">
-                          <div className="w-6 h-6 bg-[#FF3D00] text-[#0A0A0A] font-bold font-mono text-[10px] flex items-center justify-center shrink-0 rounded-md">
+                          <div className="w-6 h-6 bg-[#FF3D00] text-[#0A0A0A] font-bold font-mono text-[10px] flex items-center justify-center shrink-0">
                             {displayName[0].toUpperCase()}
                           </div>
                           <div className="truncate">
@@ -614,17 +614,17 @@ export function ChatPanel({ onClose, isSidebar = false, isFloating = false }: Ch
                         </div>
 
                         {isFriend ? (
-                          <span className="font-mono text-[9px] uppercase px-1.5 py-0.5 border border-[#10B981] text-[#10B981] bg-[#10B981]/10 font-bold rounded">
+                          <span className="font-mono text-[9px] uppercase px-1.5 py-0.5 border border-[#10B981] text-[#10B981] bg-[#10B981]/10 font-bold">
                             Friend ✓
                           </span>
                         ) : isSent ? (
-                          <span className="font-mono text-[9px] uppercase px-1.5 py-0.5 border border-[#262626] text-[#737373] rounded">
+                          <span className="font-mono text-[9px] uppercase px-1.5 py-0.5 border border-[#262626] text-[#737373]">
                             Sent
                           </span>
                         ) : (
                           <button
                             onClick={() => handleSendFriendRequest(u.id)}
-                            className="flex items-center gap-1 px-2.5 py-1 bg-[#FF3D00] hover:bg-[#FF5722] text-[#0A0A0A] font-mono text-[10px] uppercase font-bold rounded-lg transition-colors"
+                            className="flex items-center gap-1 px-2.5 py-1 bg-[#FF3D00] hover:bg-[#FF5722] text-[#0A0A0A] font-mono text-[10px] uppercase font-bold transition-colors"
                           >
                             <UserPlus className="w-3 h-3" />
                             <span>Add</span>
@@ -644,19 +644,19 @@ export function ChatPanel({ onClose, isSidebar = false, isFloating = false }: Ch
                   </span>
                   <div className="space-y-1.5">
                     {incomingRequests.map((req) => (
-                      <div key={req.id} className="flex items-center justify-between p-2.5 bg-[#0F0F0F] border border-[#FF3D00]/40 rounded-xl animate-pulse">
+                      <div key={req.id} className="flex items-center justify-between p-2.5 bg-[#0F0F0F] border border-[#FF3D00]/40 animate-pulse">
                         <span className="text-xs text-[#FAFAFA] font-bold">{req.senderName}</span>
                         <div className="flex items-center gap-1">
                           <button
                             onClick={() => handleRespondFriendRequest(req.id, 'ACCEPTED')}
-                            className="p-1 bg-[#10B981] text-[#0A0A0A] rounded hover:bg-[#10B981]/80 transition-colors"
+                            className="p-1 bg-[#10B981] text-[#0A0A0A] hover:bg-[#10B981]/80 transition-colors"
                             title="Accept"
                           >
                             <Check className="w-3.5 h-3.5" />
                           </button>
                           <button
                             onClick={() => handleRespondFriendRequest(req.id, 'REJECTED')}
-                            className="p-1 bg-[#FF3D00] text-[#0A0A0A] rounded hover:bg-[#FF5722] transition-colors"
+                            className="p-1 bg-[#FF3D00] text-[#0A0A0A] hover:bg-[#FF5722] transition-colors"
                             title="Reject"
                           >
                             <X className="w-3.5 h-3.5" />
@@ -682,10 +682,10 @@ export function ChatPanel({ onClose, isSidebar = false, isFloating = false }: Ch
                     friends.map((f) => {
                       const isOnline = onlineUsers.has(f.id);
                       return (
-                        <div key={f.id} className="flex items-center justify-between p-2.5 bg-[#0F0F0F] border border-[#262626] rounded-xl">
+                        <div key={f.id} className="flex items-center justify-between p-2.5 bg-[#0F0F0F] border border-[#262626]">
                           <div className="flex items-center gap-2.5">
                             <div className="relative">
-                              <div className="w-7 h-7 bg-[#1A1A1A] border border-[#262626] font-mono text-[10px] text-[#FAFAFA] font-bold flex items-center justify-center rounded-lg">
+                              <div className="w-7 h-7 bg-[#1A1A1A] border border-[#262626] font-mono text-[10px] text-[#FAFAFA] font-bold flex items-center justify-center">
                                 {(f.name || f.username || f.email)[0].toUpperCase()}
                               </div>
                               <span
@@ -718,7 +718,7 @@ export function ChatPanel({ onClose, isSidebar = false, isFloating = false }: Ch
           
           {!activeConv ? (
             <div className="flex-1 flex flex-col items-center justify-center p-8 text-center space-y-3 font-mono text-xs text-[#737373]">
-              <div className="w-16 h-16 bg-[#141414] border border-[#262626] rounded-2xl flex items-center justify-center text-[#FF3D00] shadow-sm mb-2">
+              <div className="w-16 h-16 bg-[#141414] border border-[#262626] flex items-center justify-center text-[#FF3D00] mb-2">
                 <MessageSquare className="w-8 h-8" />
               </div>
               <p className="uppercase max-w-sm leading-relaxed">
@@ -736,12 +736,12 @@ export function ChatPanel({ onClose, isSidebar = false, isFloating = false }: Ch
                   <div className="flex items-center gap-3">
                     <button
                       onClick={() => setActiveConv(null)}
-                      className={`${showDualColumn ? 'sm:hidden' : 'flex'} p-1.5 border border-[#262626] hover:border-[#FF3D00] text-[#737373] hover:text-[#FAFAFA] rounded-lg transition-colors mr-1`}
+                      className={`${showDualColumn ? 'sm:hidden' : 'flex'} p-1.5 border border-[#262626] hover:border-[#FF3D00] text-[#737373] hover:text-[#FAFAFA] transition-colors mr-1`}
                       title="Back to Conversations"
                     >
                       <ArrowLeft className="w-4 h-4" />
                     </button>
-                    <div className="w-9 h-9 bg-[#FF3D00] font-black text-xs text-[#0A0A0A] flex items-center justify-center rounded-xl font-mono uppercase">
+                    <div className="w-9 h-9 bg-[#FF3D00] font-black text-xs text-[#0A0A0A] flex items-center justify-center font-mono uppercase">
                       {getInitials(activeConv.name || getChatPartner(activeConv)?.name || getChatPartner(activeConv)?.username || '?')}
                     </div>
                     <div>
@@ -757,7 +757,7 @@ export function ChatPanel({ onClose, isSidebar = false, isFloating = false }: Ch
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => setShowDetails(!showDetails)}
-                      className="p-1.5 border border-[#262626] hover:border-[#FF3D00] text-[#737373] hover:text-[#FAFAFA] rounded-lg transition-colors"
+                      className="p-1.5 border border-[#262626] hover:border-[#FF3D00] text-[#737373] hover:text-[#FAFAFA] transition-colors"
                       title="Inspect Chat Information"
                     >
                       <Info className="w-4 h-4" />
@@ -798,12 +798,12 @@ export function ChatPanel({ onClose, isSidebar = false, isFloating = false }: Ch
                           )}
 
                           <div
-                            className={`p-3 text-xs shadow-md ${
+                            className={`p-3 text-xs border ${
                               isDeleted
-                                ? 'bg-transparent border border-[#262626] text-[#737373] italic rounded-2xl'
+                                ? 'bg-transparent border-[#262626] text-[#737373] italic'
                                 : isMe
-                                ? 'bg-[#FF3D00]/10 border border-[#FF3D00] text-[#FAFAFA] rounded-2xl rounded-tr-none'
-                                : 'bg-[#0F0F0F] border border-[#262626] text-[#FAFAFA] rounded-2xl rounded-tl-none'
+                                ? 'bg-[#FF3D00]/10 border-[#FF3D00] text-[#FAFAFA]'
+                                : 'bg-[#141414] border-[#262626] text-[#FAFAFA]'
                             }`}
                           >
                             <p className="break-words whitespace-pre-wrap">{m.content}</p>
@@ -837,11 +837,11 @@ export function ChatPanel({ onClose, isSidebar = false, isFloating = false }: Ch
                     value={inputContent}
                     onChange={(e) => setInputContent(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
-                    className="flex-1 bg-[#1A1A1A] border border-[#262626] focus:border-[#FF3D00] text-xs text-[#FAFAFA] px-3.5 py-2.5 outline-none rounded-xl"
+                    className="flex-1 bg-[#1A1A1A] border border-[#262626] focus:border-[#FF3D00] text-xs text-[#FAFAFA] px-3.5 py-2.5 outline-none"
                   />
                   <button
                     onClick={() => handleSendMessage()}
-                    className="p-2.5 bg-[#FF3D00] text-[#0A0A0A] font-bold hover:bg-[#FF5722] rounded-xl transition-all duration-150 active:scale-95 shrink-0"
+                    className="p-2.5 bg-[#FF3D00] text-[#0A0A0A] font-bold hover:bg-[#FF5722] transition-colors shrink-0"
                   >
                     <Send className="w-4 h-4 stroke-[2]" />
                   </button>
@@ -875,7 +875,7 @@ export function ChatPanel({ onClose, isSidebar = false, isFloating = false }: Ch
                   {/* Search message query */}
                   <div className="space-y-2 border-t border-[#262626] pt-4">
                     <span className="text-[#737373] uppercase text-[9px] block">Query Message History</span>
-                    <div className="flex items-center bg-[#1A1A1A] border border-[#262626] px-2 py-1 rounded">
+                    <div className="flex items-center bg-[#1A1A1A] border border-[#262626] px-2 py-1">
                       <Search className="w-3 h-3 text-[#737373] mr-1.5" />
                       <input
                         type="text"
@@ -892,7 +892,7 @@ export function ChatPanel({ onClose, isSidebar = false, isFloating = false }: Ch
                           <div className="text-center text-[#737373]">No matching keyword matches.</div>
                         ) : (
                           filteredMessages.map((m) => (
-                            <div key={m.id} className="p-1.5 bg-[#141414] border border-[#262626] rounded">
+                            <div key={m.id} className="p-1.5 bg-[#141414] border border-[#262626]">
                               <span className="font-bold text-[#FF3D00] block text-[8px]">{m.senderName}</span>
                               <p className="text-[#FAFAFA] line-clamp-2 mt-0.5">{m.content}</p>
                             </div>

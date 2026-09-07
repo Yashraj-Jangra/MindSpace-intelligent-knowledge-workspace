@@ -1,6 +1,15 @@
 # MindSpace - AI-Powered Visual Note-Taking & Mind-Mapping Platform
 
 ## Work Completed
+- [x] **UI Consistency & Bold Typography Overhaul** (Session 2026-09-07 v20):
+  - **Global CSS Reset Refinement (`globals.css`)**: Replaced destructive universal `* { border-radius: 0px !important; }` reset with selective styling that enforces sharp edges (`0px`) across all cards, containers, inputs, buttons, and popovers, while explicitly permitting `.rounded-full` for circular status indicators, priority dots, and avatar chips. Enforced `box-shadow: none !important` across all standard Tailwind shadow utilities (`.shadow-sm` through `.shadow-2xl`).
+  - **Eliminated All Drop Shadows App-Wide**: Systematically cleaned lingering `shadow-` utility classes across Note Editor, Canvas controls, Stylus docks, SearchBar, ExportMenu, PromptInput, NotificationToast, OutlineView, AccountDrawer, MobileNavDrawer, and Bot settings cards.
+  - **Unified Navigation Header (`AppHeader.tsx`)**: Replaced `if (!user) return null` layout shift flash on page refresh with consistent navigation bar and skeleton sign-in button.
+  - **Duplicate AccountDrawer Cleaned (`canvas/[id]/page.tsx`)**: Eliminated duplicate `AccountDrawer` mounting bug in canvas dynamic route and pruned unused imports.
+  - **Community Chat High-Contrast Refresh (`ChatPanel.tsx`, `ChatBubble.tsx`, `ChatSidebar.tsx`)**: Removed generic rounded chat bubbles (`rounded-2xl`, `rounded-xl`), replaced iOS-like styling with sharp high-contrast Bold Typography components (`#0F0F0F` cards, `#262626` hairline borders, `#FF3D00` vermillion accents, and JetBrains Mono badges).
+  - **Pomodoro Floating Timer Re-alignment (`PomodoroTimer.tsx`)**: Removed shadows, converted tomato icon to pulsing vermillion dot, and added pathname-aware positioning offset (`bottom-20 right-6` on note editor pages) to prevent collision with editor floating zoom controls.
+  - **Hub Dashboard & Workspaces Color Harmonization (`page.tsx`, `PinnedItemsRail.tsx`, `notes/page.tsx`, `reminders/page.tsx`)**: Aligned cards with uniform `#FF3D00` top accent bars and removed scattered generic Tailwind blues (`#3b82f6`) and reds (`#ef4444`).
+  - **Admin Settings & Bot Cards Refinement (`admin/settings/page.tsx`)**: Replaced rounded bot profile cards (`rounded-2xl`) and buttons (`rounded-lg`, `rounded-sm`) with crisp sharp-edged cards adhering to the design system.
 - [x] **Discord Bot Status Telemetry Dashboard** (Session 2026-07-28 v19):
   - **Discord-Style Info Card**: Embedded a visual profile card styled like Discord's dark-blurple theme, showing bot username, verified badge, pulsing online dot, custom status text, and server count.
   - **Verification Endpoint**: Created `/api/admin/discord/status` route to query Discord's REST API using the configured bot token and verify status.

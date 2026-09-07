@@ -347,7 +347,7 @@ export function AccountDrawer({ isOpen, onClose, user }: AccountDrawerProps) {
       <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={onClose} />
 
       {/* Main Drawer Shell */}
-      <div className="absolute right-0 top-0 w-full sm:max-w-lg h-[100dvh] bg-[#0A0A0A] border-l border-[#262626] flex flex-col shadow-2xl animate-in slide-in-from-right duration-200">
+      <div className="absolute right-0 top-0 w-full sm:max-w-lg h-[100dvh] bg-[#0A0A0A] border-l border-[#262626] flex flex-col animate-in slide-in-from-right duration-200">
         {/* Header Bar */}
         <header className="p-4 sm:p-5 border-b border-[#262626] flex items-center justify-between shrink-0 bg-[#0F0F0F]">
           <div className="flex items-center gap-2">

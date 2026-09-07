@@ -157,7 +157,7 @@ export function StylusAnnotationCanvas({
   return (
     <div className="fixed inset-0 z-50 bg-[#0A0A0A]/90 backdrop-blur-md flex flex-col justify-between p-4 font-sans select-none animate-in fade-in duration-200">
       {/* Top Controls Overlay */}
-      <div className="flex items-center justify-between bg-[#0F0F0F] border border-[#262626] px-6 py-3 shadow-2xl z-10">
+      <div className="flex items-center justify-between bg-[#0F0F0F] border border-[#262626] px-6 py-3 z-10">
         <div className="flex items-center gap-3">
           <Paintbrush className="w-5 h-5 text-[#FF3D00]" />
           <span className="font-mono text-xs uppercase tracking-widest text-[#FAFAFA] font-bold">
@@ -202,7 +202,7 @@ export function StylusAnnotationCanvas({
       </div>
 
       {/* Bottom Floating Stylus Dock */}
-      <div className="self-center bg-[#0F0F0F] border border-[#262626] px-6 py-3 flex items-center gap-6 shadow-2xl z-10">
+      <div className="self-center bg-[#0F0F0F] border border-[#262626] px-6 py-3 flex items-center gap-6 z-10">
         {/* Tool Selectors */}
         <div className="flex items-center gap-2 border-r border-[#262626] pr-4">
           <button

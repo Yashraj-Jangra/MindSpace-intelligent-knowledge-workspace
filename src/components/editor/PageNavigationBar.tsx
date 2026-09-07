@@ -156,7 +156,7 @@ export function PageNavigationBar({
           </button>
 
           {isTemplateMenuOpen && (
-            <div className="absolute left-0 top-full mt-0 z-[80] w-32 bg-[#0A0A0A] border border-[#262626] border-t-[#FF3D00] shadow-2xl overflow-hidden">
+            <div className="absolute left-0 top-full mt-0 z-[80] w-32 bg-[#0A0A0A] border border-[#262626] border-t-[#FF3D00] overflow-hidden">
               {(['blank', 'ruled', 'grid', 'dots'] as PaperTemplate[]).map((tmpl) => (
                 <button
                   key={tmpl}
@@ -205,7 +205,7 @@ export function PageNavigationBar({
           />
 
           {/* Slide-in panel */}
-          <div className="fixed left-0 top-0 bottom-0 z-[70] w-72 bg-[#0A0A0A]/98 border-r border-[#262626] shadow-2xl flex flex-col animate-in slide-in-from-left duration-200">
+          <div className="fixed left-0 top-0 bottom-0 z-[70] w-72 bg-[#0A0A0A]/98 border-r border-[#262626] flex flex-col animate-in slide-in-from-left duration-200">
             {/* Panel Header */}
             <div className="flex items-center justify-between px-4 py-3 border-b border-[#262626] shrink-0">
               <div className="flex items-center gap-2">
@@ -247,7 +247,7 @@ export function PageNavigationBar({
                   }}
                   className={`relative cursor-pointer border transition-all duration-150 group ${
                     idx === activePageIndex
-                      ? 'border-[#FF3D00] bg-[#0F0F0F] shadow-lg shadow-[#FF3D00]/10'
+                      ? 'border-[#FF3D00] bg-[#0F0F0F]'
                       : 'border-[#262626] bg-[#0D0D0D] hover:border-[#404040] hover:bg-[#0F0F0F]'
                   }`}
                 >

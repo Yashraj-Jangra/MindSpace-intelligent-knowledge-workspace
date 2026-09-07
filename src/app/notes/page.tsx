@@ -60,19 +60,19 @@ export default async function NotesLibrary({
           </div>
 
           <div className="bg-[#0F0F0F] border border-[#262626] p-6 relative">
-            <div className="h-1 w-12 bg-[#3b82f6] absolute top-0 left-0" />
+            <div className="h-1 w-12 bg-[#FF3D00] absolute top-0 left-0" />
             <div className="flex items-center justify-between text-[#737373] mb-2">
               <span className="font-mono text-xs uppercase tracking-wider">Pinned Notes</span>
-              <Pin className="w-4 h-4 text-[#3b82f6]" />
+              <Pin className="w-4 h-4 text-[#FF3D00]" />
             </div>
             <div className="font-sans font-black text-3xl text-[#FAFAFA]">{pinnedNotes.length}</div>
           </div>
 
           <div className="bg-[#0F0F0F] border border-[#262626] p-6 relative">
-            <div className="h-1 w-12 bg-[#10b981] absolute top-0 left-0" />
+            <div className="h-1 w-12 bg-[#FF3D00] absolute top-0 left-0" />
             <div className="flex items-center justify-between text-[#737373] mb-2">
               <span className="font-mono text-xs uppercase tracking-wider">Active Reminders</span>
-              <Bell className="w-4 h-4 text-[#10b981]" />
+              <Bell className="w-4 h-4 text-[#FF3D00]" />
             </div>
             <div className="font-sans font-black text-3xl text-[#FAFAFA]">{reminderNotes.length}</div>
           </div>
@@ -121,7 +121,7 @@ export default async function NotesLibrary({
         {/* Pinned Shelf */}
         {pinnedNotes.length > 0 && !search && !tag && (
           <div className="space-y-4">
-            <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-[#3b82f6]">
+            <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-[#FF3D00]">
               <Pin className="w-4 h-4" />
               <span>PINNED NOTES</span>
             </div>
@@ -131,11 +131,11 @@ export default async function NotesLibrary({
                 <Link
                   key={n.id}
                   href={`/notes/${n.id}`}
-                  className="bg-[#0F0F0F] border border-[#3b82f6] p-6 hover:border-[#FF3D00] transition-colors group relative"
+                  className="bg-[#0F0F0F] border border-[#262626] hover:border-[#FF3D00] p-6 transition-colors group relative"
                 >
-                  <div className="h-1 w-12 bg-[#3b82f6] absolute top-0 left-0" />
+                  <div className="h-1 w-12 bg-[#FF3D00] absolute top-0 left-0" />
                   <div className="flex items-center justify-between mb-2">
-                    <span className="font-mono text-[10px] uppercase text-[#3b82f6]">PINNED</span>
+                    <span className="font-mono text-[10px] uppercase text-[#FF3D00]">PINNED</span>
                     <Clock className="w-3.5 h-3.5 text-[#737373]" />
                   </div>
                   <h3 className="font-sans font-bold text-lg text-[#FAFAFA] group-hover:text-[#FF3D00] transition-colors mb-2">
@@ -205,7 +205,7 @@ export default async function NotesLibrary({
                     <div className="flex items-center gap-2">
                       {n.canvasId && (
                         <span title="Has Mind Map">
-                          <Network className="w-3.5 h-3.5 text-[#3b82f6]" />
+                          <Network className="w-3.5 h-3.5 text-[#FF3D00]" />
                         </span>
                       )}
                       {n.tags.length > 0 && <span>#{n.tags[0]}</span>}

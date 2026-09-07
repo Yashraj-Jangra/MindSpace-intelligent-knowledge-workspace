@@ -20,8 +20,6 @@ export function AppHeader({ title, actions }: AppHeaderProps) {
   const [isAccountOpen, setIsAccountOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  if (!user) return null;
-
   const navLinks = [
     { href: '/', label: 'Hub', exact: true },
     { href: '/notes', label: 'Notes', exact: false },
@@ -29,7 +27,7 @@ export function AppHeader({ title, actions }: AppHeaderProps) {
     { href: '/calendar', label: 'Calendar', exact: false },
     { href: '/reminders', label: 'Reminders', exact: false },
     { href: '/chat', label: 'Chat', exact: false },
-    ...(user.role === 'ADMIN'
+    ...(user?.role === 'ADMIN'
       ? [{ href: '/admin', label: 'Admin', exact: false, isAdmin: true }]
       : []),
   ];
@@ -91,20 +89,29 @@ export function AppHeader({ title, actions }: AppHeaderProps) {
           {/* Custom Page Action Slot */}
           {actions && <div className="flex items-center gap-2">{actions}</div>}
 
-          <div className="hidden sm:flex items-center gap-2">
-            {/* Account Drawer Trigger */}
-            <button
-              onClick={() => setIsAccountOpen(true)}
-              className="flex items-center gap-2 px-2.5 py-1.5 border border-[#262626] hover:border-[#FF3D00] bg-[#0F0F0F] hover:bg-[#1A1A1A] transition-colors"
+          {user ? (
+            <div className="hidden sm:flex items-center gap-2">
+              {/* Account Drawer Trigger */}
+              <button
+                onClick={() => setIsAccountOpen(true)}
+                className="flex items-center gap-2 px-2.5 py-1.5 border border-[#262626] hover:border-[#FF3D00] bg-[#0F0F0F] hover:bg-[#1A1A1A] transition-colors"
+              >
+                <div className="w-4 h-4 bg-[#FF3D00] flex items-center justify-center font-mono font-bold text-[9px] text-[#0A0A0A]">
+                  {user.name ? user.name[0].toUpperCase() : 'U'}
+                </div>
+                <span className="font-mono text-xs text-[#FAFAFA] hidden lg:inline truncate max-w-[100px]">
+                  {user.name || user.email.split('@')[0]}
+                </span>
+              </button>
+            </div>
+          ) : (
+            <Link
+              href="/login"
+              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 border border-[#262626] hover:border-[#FF3D00] bg-[#0F0F0F] font-mono text-xs text-[#FAFAFA] uppercase transition-colors"
             >
-              <div className="w-4 h-4 bg-[#FF3D00] flex items-center justify-center font-mono font-bold text-[9px] text-[#0A0A0A]">
-                {user.name ? user.name[0].toUpperCase() : 'U'}
-              </div>
-              <span className="font-mono text-xs text-[#FAFAFA] hidden lg:inline truncate max-w-[100px]">
-                {user.name || user.email.split('@')[0]}
-              </span>
-            </button>
-          </div>
+              Sign In
+            </Link>
+          )}
 
           {/* Mobile Menu Hamburger Button */}
           <button
@@ -118,7 +125,9 @@ export function AppHeader({ title, actions }: AppHeaderProps) {
       </header>
 
       {/* Account Drawer */}
-      <AccountDrawer isOpen={isAccountOpen} onClose={() => setIsAccountOpen(false)} user={user} />
+      {user && (
+        <AccountDrawer isOpen={isAccountOpen} onClose={() => setIsAccountOpen(false)} user={user} />
+      )}
 
       {/* Mobile Navigation Drawer */}
       <MobileNavDrawer

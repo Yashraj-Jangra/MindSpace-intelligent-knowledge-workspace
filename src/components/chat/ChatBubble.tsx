@@ -16,17 +16,17 @@ export function ChatBubble() {
   return (
     <div className="fixed bottom-6 left-6 z-50 font-sans">
       {isOpen ? (
-        <div className="w-[360px] sm:w-[400px] h-[520px] shadow-2xl animate-in slide-in-from-bottom-5 duration-200">
+        <div className="w-[360px] sm:w-[420px] h-[540px] border border-[#262626] bg-[#0A0A0A] animate-in slide-in-from-bottom-2 duration-150">
           <ChatPanel onClose={() => setIsOpen(false)} isFloating={true} />
         </div>
       ) : (
         <button
           onClick={() => setIsOpen(true)}
-          className="group relative flex items-center justify-center w-12 h-12 bg-[#FF3D00] text-[#0A0A0A] hover:bg-[#FF5722] shadow-xl transition-all duration-150 active:scale-95"
+          className="group relative flex items-center justify-center w-11 h-11 bg-[#FF3D00] text-[#0A0A0A] hover:bg-[#FF5722] border border-[#FF3D00] transition-colors"
           title="Open Community Chat"
         >
-          <MessageSquare className="w-6 h-6 stroke-[2]" />
-          <span className="absolute -top-1 -right-1 w-3 h-3 bg-[#10B981] border-2 border-[#0A0A0A] rounded-full" />
+          <MessageSquare className="w-5 h-5 stroke-[2.2]" />
+          <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-[#10B981] border border-[#0A0A0A] rounded-full" />
         </button>
       )}
     </div>

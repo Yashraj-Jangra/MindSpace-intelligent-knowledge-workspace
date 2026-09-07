@@ -38,7 +38,7 @@ export function ExportMenu({ title, nodes, edges }: ExportMenuProps) {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 top-full mt-2 z-50 w-48 bg-[#0F0F0F] border border-[#FF3D00] p-1 shadow-2xl space-y-1">
+        <div className="absolute right-0 top-full mt-2 z-50 w-48 bg-[#0F0F0F] border border-[#FF3D00] p-1 space-y-1">
           <button
             onClick={handleExportMarkdown}
             className="w-full text-left flex items-center gap-2 px-3 py-2 text-xs font-mono text-[#FAFAFA] hover:bg-[#FF3D00] hover:text-[#0A0A0A] transition-colors"

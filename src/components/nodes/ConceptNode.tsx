@@ -99,7 +99,7 @@ export const ConceptNode = memo(({ id, data, selected }: NodeProps) => {
             </button>
 
             {showCopilotMenu && (
-              <div className="absolute right-0 bottom-6 z-50 w-44 bg-[#0F0F0F] border border-[#FF3D00] p-1 shadow-2xl space-y-1">
+              <div className="absolute right-0 bottom-6 z-50 w-44 bg-[#0F0F0F] border border-[#FF3D00] p-1 space-y-1">
                 <button
                   onClick={() => {
                     setShowCopilotMenu(false);

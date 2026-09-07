@@ -866,7 +866,7 @@ export function NativeStylusCanvas({
             top: `${Math.max(10, selectionBbox.minY - 45)}px`,
             transform: 'translateX(-50%)',
           }}
-          className="z-40 flex items-center gap-1 bg-[#0A0A0A]/95 border border-[#FF3D00] p-1 shadow-2xl backdrop-blur-md font-mono text-xs text-[#FAFAFA] select-none animate-in fade-in duration-150"
+          className="z-40 flex items-center gap-1 bg-[#0A0A0A]/95 border border-[#FF3D00] p-1 backdrop-blur-md font-mono text-xs text-[#FAFAFA] select-none animate-in fade-in duration-150"
         >
           <button
             onClick={handleDuplicateSelection}

@@ -23,7 +23,7 @@ export function NotificationToast({ toasts, onDismiss }: NotificationToastProps)
       {toasts.map((t) => (
         <div
           key={t.id}
-          className="bg-[#0F0F0F] border-2 border-[#FF3D00] p-4 text-[#FAFAFA] shadow-2xl relative animate-in slide-in-from-bottom duration-200"
+          className="bg-[#0F0F0F] border-2 border-[#FF3D00] p-4 text-[#FAFAFA] relative animate-in slide-in-from-bottom duration-200"
         >
           <button
             onClick={() => onDismiss(t.id)}

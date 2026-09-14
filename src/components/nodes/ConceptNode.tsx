@@ -1,24 +1,51 @@
-import React, { memo, useState } from 'react';
-import { Handle, Position, NodeProps } from '@xyflow/react';
-import { Sparkles, AlarmClock, ChevronDown, ChevronUp, BellRing, Wand2, FileText, Link2 } from 'lucide-react';
-import { MindSpaceNodeData } from '@/lib/graph/transformer';
+import React, { memo, useState } from "react";
+import { Handle, Position, NodeProps } from "@xyflow/react";
+import {
+  Sparkles,
+  AlarmClock,
+  ChevronDown,
+  ChevronUp,
+  BellRing,
+  Wand2,
+  FileText,
+  Link2,
+  Lock,
+} from "lucide-react";
+import { MindSpaceNodeData } from "@/lib/graph/transformer";
 
 export const ConceptNode = memo(({ id, data, selected }: NodeProps) => {
-  const nodeData = data as unknown as MindSpaceNodeData;
+  // SAFETY: Node data passed from React Flow runtime conforms to MindSpaceNodeData
+  const nodeData = (data || {}) as unknown as MindSpaceNodeData;
 
   const [isExpanded, setIsExpanded] = useState(false);
   const [showCopilotMenu, setShowCopilotMenu] = useState(false);
-  const accentColor = nodeData.color || '#FF3D00';
+  const accentColor = nodeData.color || "#FF3D00";
 
   return (
     <div
-      className={`group relative min-w-[260px] max-w-[340px] bg-[#0F0F0F] text-[#FAFAFA] border transition-colors duration-150 ${
-        selected ? 'border-[#FF3D00] ring-2 ring-[#FF3D00] ring-offset-2 ring-offset-[#0A0A0A]' : 'border-[#262626] hover:border-[#737373]'
+      className={`group relative min-w-[260px] max-w-[340px] bg-[#0F0F0F] text-[#FAFAFA] border ${
+        selected
+          ? "border-[#FF3D00] ring-2 ring-[#FF3D00] ring-offset-2 ring-offset-[#0A0A0A]"
+          : "border-[#262626] hover:border-[#737373]"
       }`}
-      style={{ borderRadius: '0px' }}
+      style={{
+        borderRadius: "0px",
+        transform: "translateZ(0)",
+        willChange: "transform",
+      }}
     >
       {/* Top Accent Anchor Bar */}
       <div className="h-1 w-16" style={{ backgroundColor: accentColor }} />
+
+      {/* Multi-User Collaboration Lock Indicator */}
+      {(nodeData as any).lockedBy && (
+        <div className="absolute -top-6 right-0 flex items-center gap-1.5 px-2 py-0.5 bg-[#FF3D00] text-[#0A0A0A] font-mono text-[9px] uppercase font-bold shadow-lg animate-in fade-in">
+          <Lock className="w-2.5 h-2.5" />
+          <span>
+            Editing: {(nodeData as any).lockedBy.name || "Collaborator"}
+          </span>
+        </div>
+      )}
 
       {/* Target & Source Connection Handles */}
       <Handle
@@ -38,7 +65,7 @@ export const ConceptNode = memo(({ id, data, selected }: NodeProps) => {
         {/* Monospace Badge & Reminder Marker */}
         <div className="flex items-center justify-between mb-2">
           <span className="font-mono text-[11px] uppercase tracking-wider text-[#737373]">
-            {nodeData.type || 'CONCEPT'}
+            {nodeData.type || "CONCEPT"}
           </span>
           {nodeData.reminderAt && (
             <div className="flex items-center gap-1 text-[11px] font-mono text-[#FF3D00] border border-[#FF3D00]/30 px-1.5 py-0.5">
@@ -56,7 +83,9 @@ export const ConceptNode = memo(({ id, data, selected }: NodeProps) => {
         {/* Collapsible Body Content */}
         {nodeData.markdown && (
           <div>
-            <div className={`text-sm text-[#737373] leading-normal font-sans ${isExpanded ? 'block' : 'line-clamp-2'}`}>
+            <div
+              className={`text-sm text-[#737373] leading-normal font-sans ${isExpanded ? "block" : "line-clamp-2"}`}
+            >
               {nodeData.markdown}
             </div>
             <button
@@ -81,7 +110,13 @@ export const ConceptNode = memo(({ id, data, selected }: NodeProps) => {
         {/* Action Toolbar */}
         <div className="mt-3 pt-3 border-t border-[#262626] flex items-center justify-between gap-2 relative">
           <button
-            onClick={() => nodeData.onExpandTopic?.(id, nodeData.label, nodeData.markdown || '')}
+            onClick={() =>
+              nodeData.onExpandTopic?.(
+                id,
+                nodeData.label,
+                nodeData.markdown || "",
+              )
+            }
             className="flex items-center gap-1.5 text-xs font-mono uppercase tracking-wider text-[#FF3D00] hover:text-[#FAFAFA] transition-colors"
           >
             <Sparkles className="w-3.5 h-3.5 stroke-[1.5]" />
@@ -103,7 +138,12 @@ export const ConceptNode = memo(({ id, data, selected }: NodeProps) => {
                 <button
                   onClick={() => {
                     setShowCopilotMenu(false);
-                    nodeData.onCopilotAction?.('summarize', id, nodeData.label, nodeData.markdown);
+                    nodeData.onCopilotAction?.(
+                      "summarize",
+                      id,
+                      nodeData.label,
+                      nodeData.markdown,
+                    );
                   }}
                   className="w-full text-left flex items-center gap-2 px-2.5 py-1.5 text-xs font-mono text-[#FAFAFA] hover:bg-[#FF3D00] hover:text-[#0A0A0A] transition-colors"
                 >
@@ -114,7 +154,12 @@ export const ConceptNode = memo(({ id, data, selected }: NodeProps) => {
                 <button
                   onClick={() => {
                     setShowCopilotMenu(false);
-                    nodeData.onCopilotAction?.('rewrite', id, nodeData.label, nodeData.markdown);
+                    nodeData.onCopilotAction?.(
+                      "rewrite",
+                      id,
+                      nodeData.label,
+                      nodeData.markdown,
+                    );
                   }}
                   className="w-full text-left flex items-center gap-2 px-2.5 py-1.5 text-xs font-mono text-[#FAFAFA] hover:bg-[#FF3D00] hover:text-[#0A0A0A] transition-colors"
                 >
@@ -125,7 +170,12 @@ export const ConceptNode = memo(({ id, data, selected }: NodeProps) => {
                 <button
                   onClick={() => {
                     setShowCopilotMenu(false);
-                    nodeData.onCopilotAction?.('auto-link', id, nodeData.label, nodeData.markdown);
+                    nodeData.onCopilotAction?.(
+                      "auto-link",
+                      id,
+                      nodeData.label,
+                      nodeData.markdown,
+                    );
                   }}
                   className="w-full text-left flex items-center gap-2 px-2.5 py-1.5 text-xs font-mono text-[#FAFAFA] hover:bg-[#FF3D00] hover:text-[#0A0A0A] transition-colors"
                 >
@@ -149,4 +199,4 @@ export const ConceptNode = memo(({ id, data, selected }: NodeProps) => {
   );
 });
 
-ConceptNode.displayName = 'ConceptNode';
+ConceptNode.displayName = "ConceptNode";

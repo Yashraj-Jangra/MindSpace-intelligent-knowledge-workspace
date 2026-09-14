@@ -8,8 +8,12 @@ node_modules/
 /out/
 
 # Environment files
-.env*.local
 .env
+.env.*
+!.env.example
+
+# Local Data Storage
+.data/
 
 # Prisma
 /prisma/*.db

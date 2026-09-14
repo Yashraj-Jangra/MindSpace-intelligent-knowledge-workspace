@@ -1,37 +1,62 @@
-import { NextResponse } from 'next/server';
-import { generateObject } from 'ai';
-import { openai } from '@ai-sdk/openai';
-import { AiGraphResponseSchema } from '@/lib/schemas/graph';
-import { transformAiResponseToReactFlow, MindSpaceNodeData } from '@/lib/graph/transformer';
-import { calculateElkLayout } from '@/lib/graph/layout';
-import { prisma } from '@/lib/db';
-import { dispatchWebhookEvent } from '@/lib/webhooks/dispatcher';
-import { NodeType } from '@prisma/client';
-import { getSessionFromCookie } from '@/lib/session';
+import { NextResponse } from "next/server";
+import { generateObject } from "ai";
+import { openai } from "@ai-sdk/openai";
+import { AiGraphResponseSchema } from "@/lib/schemas/graph";
+import {
+  transformAiResponseToReactFlow,
+  MindSpaceNodeData,
+} from "@/lib/graph/transformer";
+import { calculateElkLayout } from "@/lib/graph/layout";
+import { prisma } from "@/lib/db";
+import { dispatchWebhookEvent } from "@/lib/webhooks/dispatcher";
+import { NodeType } from "@prisma/client";
+import { getSessionFromCookie } from "@/lib/session";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 export async function POST(req: Request) {
   try {
     const session = await getSessionFromCookie();
     if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
     const userId = session.id;
+
+    // Rate Limiting (15 requests per minute for AI graph generation)
+    const rateLimit = await checkRateLimit({
+      identifier: `generate:${userId}`,
+      limit: 15,
+      windowSeconds: 60,
+    });
+    if (!rateLimit.success) {
+      return NextResponse.json(
+        {
+          error: "Rate limit exceeded for AI generation. Please wait a moment.",
+        },
+        { status: 429 },
+      );
+    }
     const { prompt, canvasId } = await req.json();
 
-    if (!prompt || typeof prompt !== 'string') {
-      return NextResponse.json({ error: 'Prompt text is required' }, { status: 400 });
+    if (!prompt || typeof prompt !== "string") {
+      return NextResponse.json(
+        { error: "Prompt text is required" },
+        { status: 400 },
+      );
     }
 
     let aiGraph: { title: string; nodes: any[]; edges: any[] };
 
     try {
-      if (!process.env.OPENAI_API_KEY || process.env.OPENAI_API_KEY.includes('your-openai-api-key')) {
-        throw new Error('No valid OpenAI API key configured');
+      if (
+        !process.env.OPENAI_API_KEY ||
+        process.env.OPENAI_API_KEY.includes("your-openai-api-key")
+      ) {
+        throw new Error("No valid OpenAI API key configured");
       }
 
       // Generate Structured Graph using OpenAI Vercel AI SDK
       const { object } = await generateObject({
-        model: openai('gpt-4o-mini'),
+        model: openai("gpt-4o-mini"),
         schema: AiGraphResponseSchema,
         prompt: `You are an expert mind-mapping and knowledge structuring assistant.
 Analyze the following text input and generate an interconnected visual node graph.
@@ -42,57 +67,69 @@ User Input:
       });
       aiGraph = object;
     } catch (aiErr) {
-      console.warn('[AI Generate Fallback]: Generating fallback graph nodes.', (aiErr as Error).message);
+      console.warn(
+        "[AI Generate Fallback]: Generating fallback graph nodes.",
+        (aiErr as Error).message,
+      );
       aiGraph = {
-        title: prompt.slice(0, 30) || 'Visual Graph Map',
+        title: prompt.slice(0, 30) || "Visual Graph Map",
         nodes: [
           {
-            id: 'root-1',
+            id: "root-1",
             label: prompt.length > 35 ? `${prompt.slice(0, 35)}...` : prompt,
             markdown: prompt,
-            type: 'CONCEPT',
-            color: '#FF3D00',
+            type: "CONCEPT",
+            color: "#FF3D00",
           },
           {
-            id: 'node-2',
-            label: 'Core Architecture',
-            markdown: 'High-level system design, data flow, and fundamental components.',
-            type: 'CONCEPT',
-            color: '#3B82F6',
-            parentId: 'root-1',
+            id: "node-2",
+            label: "Core Architecture",
+            markdown:
+              "High-level system design, data flow, and fundamental components.",
+            type: "CONCEPT",
+            color: "#3B82F6",
+            parentId: "root-1",
           },
           {
-            id: 'node-3',
-            label: 'Implementation Tasks',
-            markdown: 'Actionable steps, technical prerequisites, and dev deliverables.',
-            type: 'TASK',
-            color: '#10B981',
-            parentId: 'root-1',
+            id: "node-3",
+            label: "Implementation Tasks",
+            markdown:
+              "Actionable steps, technical prerequisites, and dev deliverables.",
+            type: "TASK",
+            color: "#10B981",
+            parentId: "root-1",
           },
           {
-            id: 'node-4',
-            label: 'Research & Notes',
-            markdown: 'Contextual references, API documentation, and key notes.',
-            type: 'NOTE',
-            color: '#F59E0B',
-            parentId: 'node-2',
+            id: "node-4",
+            label: "Research & Notes",
+            markdown:
+              "Contextual references, API documentation, and key notes.",
+            type: "NOTE",
+            color: "#F59E0B",
+            parentId: "node-2",
           },
         ],
         edges: [
-          { source: 'root-1', target: 'node-2', label: 'defines' },
-          { source: 'root-1', target: 'node-3', label: 'requires' },
-          { source: 'node-2', target: 'node-4', label: 'references' },
+          { source: "root-1", target: "node-2", label: "defines" },
+          { source: "root-1", target: "node-3", label: "requires" },
+          { source: "node-2", target: "node-4", label: "references" },
         ],
       };
     }
 
     // Transform AI JSON into React Flow Nodes and Edges
-    const { nodes: rawNodes, edges: rawEdges } = transformAiResponseToReactFlow(aiGraph);
+    const { nodes: rawNodes, edges: rawEdges } =
+      transformAiResponseToReactFlow(aiGraph);
 
     // Compute Auto-Layout Positioning using ELK.js
-    const positionedNodes = await calculateElkLayout(rawNodes, rawEdges, 'RIGHT');
+    const positionedNodes = await calculateElkLayout(
+      rawNodes,
+      rawEdges,
+      "RIGHT",
+    );
 
-    let targetCanvasId = canvasId || `canvas_${Math.random().toString(36).slice(2, 10)}`;
+    let targetCanvasId =
+      canvasId || `canvas_${Math.random().toString(36).slice(2, 10)}`;
 
     // Try DB persistence if available
     try {
@@ -100,7 +137,11 @@ User Input:
 
       if (!dbUser) {
         dbUser = await prisma.user.create({
-          data: { id: userId, email: `${userId}@mindspace.local`, name: 'MindSpace User' },
+          data: {
+            id: userId,
+            email: `${userId}@mindspace.local`,
+            name: "MindSpace User",
+          },
         });
       }
 
@@ -108,7 +149,7 @@ User Input:
         const newCanvas = await prisma.canvas.create({
           data: {
             userId: dbUser.id,
-            title: aiGraph.title || 'Untitled MindSpace Map',
+            title: aiGraph.title || "Untitled MindSpace Map",
           },
         });
         targetCanvasId = newCanvas.id;
@@ -118,7 +159,9 @@ User Input:
         for (const node of positionedNodes) {
           const data = node.data as MindSpaceNodeData;
           const nodeType = (data.type as NodeType) || NodeType.CONCEPT;
-          const reminderDate = data.reminderAt ? new Date(data.reminderAt) : null;
+          const reminderDate = data.reminderAt
+            ? new Date(data.reminderAt)
+            : null;
 
           await tx.node.create({
             data: {
@@ -126,11 +169,11 @@ User Input:
               canvasId: targetCanvasId,
               parentId: data.parentId,
               type: nodeType,
-              label: data.label || 'Node',
-              markdown: data.markdown || '',
+              label: data.label || "Node",
+              markdown: data.markdown || "",
               positionX: node.position.x,
               positionY: node.position.y,
-              color: data.color || '#FF3D00',
+              color: data.color || "#FF3D00",
               reminderAt: reminderDate,
             },
           });
@@ -149,13 +192,16 @@ User Input:
         }
       });
 
-      await dispatchWebhookEvent(dbUser.id, 'canvas.updated', {
+      await dispatchWebhookEvent(dbUser.id, "canvas.updated", {
         canvasId: targetCanvasId,
         nodeCount: positionedNodes.length,
         edgeCount: rawEdges.length,
       });
     } catch (dbErr) {
-      console.warn('[DB Persist Fallback]: Graph generated directly.', (dbErr as Error).message);
+      console.warn(
+        "[DB Persist Fallback]: Graph generated directly.",
+        (dbErr as Error).message,
+      );
     }
 
     return NextResponse.json({
@@ -165,10 +211,13 @@ User Input:
       edges: rawEdges,
     });
   } catch (error) {
-    console.error('[API /generate Error]:', error);
+    console.error("[API /generate Error]:", error);
     return NextResponse.json(
-      { error: 'Failed to generate visual graph', details: (error as Error).message },
-      { status: 500 }
+      {
+        error: "Failed to generate visual graph",
+        details: (error as Error).message,
+      },
+      { status: 500 },
     );
   }
 }

@@ -1,13 +1,12 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { Network, User, Menu, Shield } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
-import { ThemeToggle } from '@/components/ui/ThemeToggle';
-import { AccountDrawer } from '@/components/ui/AccountDrawer';
-import { MobileNavDrawer } from './MobileNavDrawer';
+import React, { useState } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { Network, Menu, Shield, Search } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { AccountDrawer } from "@/components/ui/AccountDrawer";
+import { MobileNavDrawer } from "./MobileNavDrawer";
 
 interface AppHeaderProps {
   title?: string;
@@ -21,14 +20,14 @@ export function AppHeader({ title, actions }: AppHeaderProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const navLinks = [
-    { href: '/', label: 'Hub', exact: true },
-    { href: '/notes', label: 'Notes', exact: false },
-    { href: '/tasks', label: 'Tasks', exact: false },
-    { href: '/calendar', label: 'Calendar', exact: false },
-    { href: '/reminders', label: 'Reminders', exact: false },
-    { href: '/chat', label: 'Chat', exact: false },
-    ...(user?.role === 'ADMIN'
-      ? [{ href: '/admin', label: 'Admin', exact: false, isAdmin: true }]
+    { href: "/", label: "Hub", exact: true },
+    { href: "/notes", label: "Notes", exact: false },
+    { href: "/tasks", label: "Tasks", exact: false },
+    { href: "/calendar", label: "Calendar", exact: false },
+    { href: "/reminders", label: "Reminders", exact: false },
+    { href: "/chat", label: "Chat", exact: false },
+    ...(user?.role === "ADMIN"
+      ? [{ href: "/admin", label: "Admin", exact: false, isAdmin: true }]
       : []),
   ];
 
@@ -71,10 +70,14 @@ export function AppHeader({ title, actions }: AppHeaderProps) {
                 key={link.href}
                 href={link.href}
                 className={`relative flex items-center h-full transition-colors ${
-                  isActive ? 'text-[#FAFAFA] font-bold' : 'text-[#737373] hover:text-[#FAFAFA]'
+                  isActive
+                    ? "text-[#FAFAFA] font-bold"
+                    : "text-[#737373] hover:text-[#FAFAFA]"
                 }`}
               >
-                {link.isAdmin && <Shield className="w-3 h-3 text-[#FF3D00] mr-1" />}
+                {link.isAdmin && (
+                  <Shield className="w-3 h-3 text-[#FF3D00] mr-1" />
+                )}
                 <span>{link.label}</span>
                 {isActive && (
                   <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#FF3D00]" />
@@ -86,6 +89,25 @@ export function AppHeader({ title, actions }: AppHeaderProps) {
 
         {/* Right: Actions, Theme, Account & Mobile Hamburger */}
         <div className="flex items-center gap-2 sm:gap-3">
+          {/* Global Command Palette Trigger */}
+          <button
+            onClick={() =>
+              window.dispatchEvent(
+                new CustomEvent("mindspace:open-command-palette"),
+              )
+            }
+            className="flex items-center gap-2 px-2.5 py-1.5 border border-[#262626] hover:border-[#FF3D00] bg-[#0F0F0F] hover:bg-[#141414] text-[#737373] hover:text-[#FAFAFA] font-mono text-xs transition-colors"
+            title="Open Command Palette (Cmd+K)"
+          >
+            <Search className="w-3.5 h-3.5 text-[#FF3D00]" />
+            <span className="hidden lg:inline text-[11px]">
+              Search & Commands
+            </span>
+            <kbd className="hidden sm:inline-block text-[9px] px-1 bg-[#141414] border border-[#262626] text-[#737373]">
+              ⌘K
+            </kbd>
+          </button>
+
           {/* Custom Page Action Slot */}
           {actions && <div className="flex items-center gap-2">{actions}</div>}
 
@@ -97,10 +119,10 @@ export function AppHeader({ title, actions }: AppHeaderProps) {
                 className="flex items-center gap-2 px-2.5 py-1.5 border border-[#262626] hover:border-[#FF3D00] bg-[#0F0F0F] hover:bg-[#1A1A1A] transition-colors"
               >
                 <div className="w-4 h-4 bg-[#FF3D00] flex items-center justify-center font-mono font-bold text-[9px] text-[#0A0A0A]">
-                  {user.name ? user.name[0].toUpperCase() : 'U'}
+                  {user.name ? user.name[0].toUpperCase() : "U"}
                 </div>
                 <span className="font-mono text-xs text-[#FAFAFA] hidden lg:inline truncate max-w-[100px]">
-                  {user.name || user.email.split('@')[0]}
+                  {user.name || user.email.split("@")[0]}
                 </span>
               </button>
             </div>
@@ -126,7 +148,11 @@ export function AppHeader({ title, actions }: AppHeaderProps) {
 
       {/* Account Drawer */}
       {user && (
-        <AccountDrawer isOpen={isAccountOpen} onClose={() => setIsAccountOpen(false)} user={user} />
+        <AccountDrawer
+          isOpen={isAccountOpen}
+          onClose={() => setIsAccountOpen(false)}
+          user={user}
+        />
       )}
 
       {/* Mobile Navigation Drawer */}

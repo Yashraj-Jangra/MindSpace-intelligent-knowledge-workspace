@@ -1,16 +1,19 @@
-import React from 'react';
-import { redirect } from 'next/navigation';
-import Link from 'next/link';
-import { getSessionFromCookie } from '@/lib/session';
-import { getUserNotes } from '@/lib/notes-storage';
-import { getUserCanvases } from '@/lib/canvas-storage';
-import { getUserTasksDue, getPinnedTasks } from '@/lib/task-storage';
-import { HubHeader } from '@/components/hub/HubHeader';
-import { QuickCaptureInbox } from '@/components/hub/QuickCaptureInbox';
-import { UrgencyTimeline, TimelineItem } from '@/components/hub/UrgencyTimeline';
-import { RecentCanvasesGrid } from '@/components/hub/RecentCanvasesGrid';
-import { PinnedItemsRail, PinnedItem } from '@/components/hub/PinnedItemsRail';
-import { CriticalZoneBanner } from '@/components/hub/CriticalZoneBanner';
+import React from "react";
+import { redirect } from "next/navigation";
+import Link from "next/link";
+import { getSessionFromCookie } from "@/lib/session";
+import { getUserNotes } from "@/lib/notes-storage";
+import { getUserCanvases } from "@/lib/canvas-storage";
+import { getUserTasksDue, getPinnedTasks } from "@/lib/task-storage";
+import { HubHeader } from "@/components/hub/HubHeader";
+import { QuickCaptureInbox } from "@/components/hub/QuickCaptureInbox";
+import {
+  UrgencyTimeline,
+  TimelineItem,
+} from "@/components/hub/UrgencyTimeline";
+import { RecentCanvasesGrid } from "@/components/hub/RecentCanvasesGrid";
+import { PinnedItemsRail, PinnedItem } from "@/components/hub/PinnedItemsRail";
+import { CriticalZoneBanner } from "@/components/hub/CriticalZoneBanner";
 import {
   Network,
   FileText,
@@ -20,9 +23,9 @@ import {
   Zap,
   LayoutDashboard,
   Shield,
-} from 'lucide-react';
+} from "lucide-react";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 function isOverdueOrToday(dueAtStr: string | null) {
   if (!dueAtStr) return false;
@@ -35,7 +38,7 @@ function isOverdueOrToday(dueAtStr: string | null) {
 export default async function HubDashboard() {
   const session = await getSessionFromCookie();
   if (!session) {
-    redirect('/login');
+    redirect("/login");
   }
   const userId = session.id;
 
@@ -46,7 +49,7 @@ export default async function HubDashboard() {
   const pinnedTasks = await getPinnedTasks(userId);
 
   const criticalTasks = dueTasks.filter(
-    (t) => t.priority === 'CRITICAL' && isOverdueOrToday(t.dueAt)
+    (t) => t.priority === "CRITICAL" && isOverdueOrToday(t.dueAt),
   );
 
   const now = new Date();
@@ -59,17 +62,17 @@ export default async function HubDashboard() {
       const isToday = reminderDate.toDateString() === now.toDateString();
       const isOverdue = reminderDate < now && !isToday;
 
-      let urgency: 'OVERDUE' | 'DUE_TODAY' | 'UPCOMING' = 'UPCOMING';
+      let urgency: "OVERDUE" | "DUE_TODAY" | "UPCOMING" = "UPCOMING";
       if (isToday) {
-        urgency = 'DUE_TODAY';
+        urgency = "DUE_TODAY";
       } else if (isOverdue) {
-        urgency = 'OVERDUE';
+        urgency = "OVERDUE";
       }
 
       return {
         id: n.id,
-        type: 'NOTE_REMINDER',
-        title: n.title || 'Untitled Note',
+        type: "NOTE_REMINDER",
+        title: n.title || "Untitled Note",
         urgency,
         deadlineAt: n.reminderAt!,
         sourceId: n.id,
@@ -83,16 +86,16 @@ export default async function HubDashboard() {
     const isToday = due.toDateString() === now.toDateString();
     const isOverdue = due < now && !isToday;
 
-    let urgency: 'OVERDUE' | 'DUE_TODAY' | 'UPCOMING' = 'UPCOMING';
+    let urgency: "OVERDUE" | "DUE_TODAY" | "UPCOMING" = "UPCOMING";
     if (isToday) {
-      urgency = 'DUE_TODAY';
+      urgency = "DUE_TODAY";
     } else if (isOverdue) {
-      urgency = 'OVERDUE';
+      urgency = "OVERDUE";
     }
 
     return {
       id: t.id,
-      type: 'TASK_DEADLINE',
+      type: "TASK_DEADLINE",
       title: t.title,
       urgency,
       deadlineAt: t.dueAt!,
@@ -110,13 +113,15 @@ export default async function HubDashboard() {
     return new Date(a.deadlineAt).getTime() - new Date(b.deadlineAt).getTime();
   });
 
-  const overdueCount = combinedTimeline.filter((i) => i.urgency === 'OVERDUE').length;
+  const overdueCount = combinedTimeline.filter(
+    (i) => i.urgency === "OVERDUE",
+  ).length;
 
   const pinnedNotes = notes.filter((n) => n.isPinned);
   const pinnedItems: PinnedItem[] = [
     ...pinnedNotes.map((n) => ({
       id: n.id,
-      type: 'note' as const,
+      type: "note" as const,
       title: n.title,
       priority: n.priority,
       updatedAt: n.updatedAt,
@@ -125,13 +130,15 @@ export default async function HubDashboard() {
     })),
     ...pinnedTasks.map((t) => ({
       id: t.id,
-      type: 'task' as const,
+      type: "task" as const,
       title: t.title,
       priority: t.priority,
       updatedAt: t.updatedAt,
       url: `/tasks`,
     })),
-  ].sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+  ].sort(
+    (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
+  );
 
   return (
     <div className="min-h-screen w-full bg-[#0A0A0A] text-[#FAFAFA] flex flex-col font-sans selection:bg-[#FF3D00] selection:text-[#0A0A0A]">
@@ -154,15 +161,24 @@ export default async function HubDashboard() {
                 <span>Command Center Cockpit</span>
               </div>
               <h1 className="font-sans font-black text-3xl sm:text-5xl tracking-tighter uppercase text-[#FAFAFA] leading-none">
-                WELCOME, {session.name ? session.name.toUpperCase() : 'CREATOR'}
+                WELCOME, {session.name ? session.name.toUpperCase() : "CREATOR"}
               </h1>
               <p className="font-mono text-xs text-[#737373] mt-2 max-w-xl">
-                Organize thoughts, manage dynamic reminders, and map ideas with vector canvas.
+                Organize thoughts, manage dynamic reminders, and map ideas with
+                vector canvas.
               </p>
             </div>
 
             {/* Quick Action Launcher Row */}
             <div className="flex flex-wrap items-center gap-3">
+              <Link
+                href="/canvas/new"
+                className="flex items-center gap-2 px-4 py-2.5 bg-[#0F0F0F] border border-[#262626] hover:border-[#FF3D00] text-[#FAFAFA] font-mono text-xs font-bold uppercase tracking-wider transition-colors"
+              >
+                <Plus className="w-4 h-4 text-[#FF3D00]" />
+                <span>New Canvas</span>
+              </Link>
+
               <Link
                 href="/notes/new"
                 className="flex items-center gap-2 px-4 py-2.5 bg-[#0F0F0F] border border-[#262626] hover:border-[#FF3D00] text-[#FAFAFA] font-mono text-xs font-bold uppercase tracking-wider transition-colors"
@@ -191,7 +207,9 @@ export default async function HubDashboard() {
                 <span>Canvases</span>
                 <Network className="w-3.5 h-3.5 text-[#FF3D00]" />
               </div>
-              <div className="font-black text-xl text-[#FAFAFA] mt-1">{canvases.length}</div>
+              <div className="font-black text-xl text-[#FAFAFA] mt-1">
+                {canvases.length}
+              </div>
             </Link>
 
             <Link
@@ -202,7 +220,9 @@ export default async function HubDashboard() {
                 <span>Active Notes</span>
                 <FileText className="w-3.5 h-3.5 text-[#FF3D00]" />
               </div>
-              <div className="font-black text-xl text-[#FAFAFA] mt-1">{notes.length}</div>
+              <div className="font-black text-xl text-[#FAFAFA] mt-1">
+                {notes.length}
+              </div>
             </Link>
 
             <Link
@@ -213,7 +233,9 @@ export default async function HubDashboard() {
                 <span>Pending Tasks</span>
                 <CheckSquare className="w-3.5 h-3.5 text-[#10B981]" />
               </div>
-              <div className="font-black text-xl text-[#FAFAFA] mt-1">{dueTasks.length}</div>
+              <div className="font-black text-xl text-[#FAFAFA] mt-1">
+                {dueTasks.length}
+              </div>
             </Link>
 
             <Link
@@ -224,7 +246,9 @@ export default async function HubDashboard() {
                 <span>Overdue Reminders</span>
                 <Bell className="w-3.5 h-3.5 text-[#FF3D00]" />
               </div>
-              <div className="font-black text-xl text-[#FF3D00] mt-1">{overdueCount}</div>
+              <div className="font-black text-xl text-[#FF3D00] mt-1">
+                {overdueCount}
+              </div>
             </Link>
           </div>
         </section>

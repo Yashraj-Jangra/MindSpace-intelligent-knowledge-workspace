@@ -1,69 +1,69 @@
-import { common, createLowlight } from 'lowlight';
+import { common, createLowlight } from "lowlight";
 
-import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useState, useEffect, useCallback, useMemo } from "react";
+import { useRouter } from "next/navigation";
 
-import { useEditor, EditorContent } from '@tiptap/react';
-import StarterKit from '@tiptap/starter-kit';
+import { useEditor, EditorContent } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
 
-import { RichTextProvider } from 'reactjs-tiptap-editor';
-import * as Tooltip from '@radix-ui/react-tooltip';
-import { Bold, RichTextBold } from 'reactjs-tiptap-editor/bold';
-import { Italic, RichTextItalic } from 'reactjs-tiptap-editor/italic';
-import { TextUnderline, RichTextUnderline } from 'reactjs-tiptap-editor/textunderline';
-import { Strike, RichTextStrike } from 'reactjs-tiptap-editor/strike';
-import { Heading, RichTextHeading } from 'reactjs-tiptap-editor/heading';
-import { BulletList, RichTextBulletList } from 'reactjs-tiptap-editor/bulletlist';
-import { OrderedList, RichTextOrderedList } from 'reactjs-tiptap-editor/orderedlist';
-import { TaskList, RichTextTaskList } from 'reactjs-tiptap-editor/tasklist';
-import { CodeBlock, RichTextCodeBlock } from 'reactjs-tiptap-editor/codeblock';
-import { Blockquote, RichTextBlockquote } from 'reactjs-tiptap-editor/blockquote';
-import { Color, RichTextColor } from 'reactjs-tiptap-editor/color';
-import { Highlight, RichTextHighlight } from 'reactjs-tiptap-editor/highlight';
-import { TextAlign, RichTextAlign } from 'reactjs-tiptap-editor/textalign';
-import { Link, RichTextLink } from 'reactjs-tiptap-editor/link';
-import { Image, RichTextImage } from 'reactjs-tiptap-editor/image';
-
-import { Emoji, RichTextEmoji } from 'reactjs-tiptap-editor/emoji';
-import { History, RichTextUndo, RichTextRedo } from 'reactjs-tiptap-editor/history';
-import { Clear, RichTextClear } from 'reactjs-tiptap-editor/clear';
-import { HorizontalRule, RichTextHorizontalRule } from 'reactjs-tiptap-editor/horizontalrule';
-import { SearchAndReplace, RichTextSearchAndReplace } from 'reactjs-tiptap-editor/searchandreplace';
-import { SlashCommand } from 'reactjs-tiptap-editor/slashcommand';
-
+import { RichTextProvider } from "reactjs-tiptap-editor";
+import * as Tooltip from "@radix-ui/react-tooltip";
+import { Bold, RichTextBold } from "reactjs-tiptap-editor/bold";
+import { Italic, RichTextItalic } from "reactjs-tiptap-editor/italic";
 import {
-  RichTextBubbleText,
-  RichTextBubbleImage,
-  RichTextBubbleLink,
-  RichTextBubbleCodeBlock,
-} from 'reactjs-tiptap-editor/bubble';
+  TextUnderline,
+  RichTextUnderline,
+} from "reactjs-tiptap-editor/textunderline";
+import { Strike, RichTextStrike } from "reactjs-tiptap-editor/strike";
+import { Heading, RichTextHeading } from "reactjs-tiptap-editor/heading";
+import {
+  BulletList,
+  RichTextBulletList,
+} from "reactjs-tiptap-editor/bulletlist";
+import {
+  OrderedList,
+  RichTextOrderedList,
+} from "reactjs-tiptap-editor/orderedlist";
+import { TaskList, RichTextTaskList } from "reactjs-tiptap-editor/tasklist";
+import { CodeBlock, RichTextCodeBlock } from "reactjs-tiptap-editor/codeblock";
+import {
+  Blockquote,
+  RichTextBlockquote,
+} from "reactjs-tiptap-editor/blockquote";
+import { Color, RichTextColor } from "reactjs-tiptap-editor/color";
+import { Highlight, RichTextHighlight } from "reactjs-tiptap-editor/highlight";
+import { TextAlign, RichTextAlign } from "reactjs-tiptap-editor/textalign";
+import { Link, RichTextLink } from "reactjs-tiptap-editor/link";
+import { Image, RichTextImage } from "reactjs-tiptap-editor/image";
 
-import { CanvasTableExtension } from './table/CanvasTableExtension';
-import { InsertTableModal } from './table/InsertTableModal';
+import { Emoji, RichTextEmoji } from "reactjs-tiptap-editor/emoji";
+import { RichTextUndo, RichTextRedo } from "reactjs-tiptap-editor/history";
+import { Clear, RichTextClear } from "reactjs-tiptap-editor/clear";
+import {
+  HorizontalRule,
+  RichTextHorizontalRule,
+} from "reactjs-tiptap-editor/horizontalrule";
+import {
+  SearchAndReplace,
+  RichTextSearchAndReplace,
+} from "reactjs-tiptap-editor/searchandreplace";
+import { SlashCommand } from "reactjs-tiptap-editor/slashcommand";
 
-
+import { CanvasTableExtension } from "./table/CanvasTableExtension";
+import { InsertTableModal } from "./table/InsertTableModal";
+import { SlashMenu } from "./SlashMenu";
 
 import {
   ArrowLeft,
   Check,
   Loader2,
-  Bell,
   Timer,
-  Sparkles,
-  Share2,
-  Trash2,
   Tag,
   PenTool,
-  Settings2,
-  Undo2,
-  Redo2,
   ZoomIn,
   ZoomOut,
   Crosshair,
   FileText,
-  MousePointer,
-  Highlighter,
-  Eraser,
   Table,
   Network,
   Pin,
@@ -71,14 +71,12 @@ import {
   Minimize2,
   MoreHorizontal,
   Clock,
-  ShieldCheck,
-  Settings,
-} from 'lucide-react';
+  Sparkles,
+} from "lucide-react";
 
-import { StoredNote } from '@/lib/notes-storage';
-import { ReminderModal } from '../ui/ReminderModal';
-import { EditorSettingsPopover } from './EditorSettingsPopover';
-import { ThemeToggle } from '../ui/ThemeToggle';
+import { StoredNote } from "@/lib/notes-storage";
+import { ReminderModal } from "../ui/ReminderModal";
+import { EditorSettingsPopover } from "./EditorSettingsPopover";
 
 // Stylus & Digital Ink System Imports
 import {
@@ -91,54 +89,53 @@ import {
   StylusButtonAction,
   NotePageData,
   PaperTemplate,
-} from '@/lib/stylus/stylus-types';
-import { NativeStylusCanvas } from './stylus/NativeStylusCanvas';
-import { VerticalStylusSidebar } from './stylus/VerticalStylusSidebar';
-import { PageNavigationBar } from './PageNavigationBar';
-import { PenSettingsPopover, PenPreset } from './stylus/PenSettingsPopover';
-import { ShapeSettingsPopover } from './stylus/ShapeSettingsPopover';
-import { HighlighterSettingsPopover } from './stylus/HighlighterSettingsPopover';
-import { EraserSettingsPopover } from './stylus/EraserSettingsPopover';
-import { LassoSettingsPopover } from './stylus/LassoSettingsPopover';
-import { StylusSettingsModal } from './stylus/StylusSettingsModal';
-import { useStylusHardware } from '@/hooks/useStylusHardware';
-import { recognizeInkToText } from '@/lib/stylus/ink-to-text';
+} from "@/lib/stylus/stylus-types";
+import { NativeStylusCanvas } from "./stylus/NativeStylusCanvas";
+import { VerticalStylusSidebar } from "./stylus/VerticalStylusSidebar";
+import { PageNavigationBar } from "./PageNavigationBar";
+import { PenSettingsPopover } from "./stylus/PenSettingsPopover";
+import { ShapeSettingsPopover } from "./stylus/ShapeSettingsPopover";
+import { HighlighterSettingsPopover } from "./stylus/HighlighterSettingsPopover";
+import { EraserSettingsPopover } from "./stylus/EraserSettingsPopover";
+import { LassoSettingsPopover } from "./stylus/LassoSettingsPopover";
+import { StylusSettingsModal } from "./stylus/StylusSettingsModal";
+import { StylusRulerOverlay } from "./stylus/StylusRulerOverlay";
+import { useStylusHardware } from "@/hooks/useStylusHardware";
+import { recognizeInkToText } from "@/lib/stylus/ink-to-text";
 
 interface AdvancedNoteEditorProps {
   initialNote: StoredNote;
 }
-
-const DEFAULT_PEN_BOX_PRESETS: PenPreset[] = [
-  { id: 'p1', name: 'White Ballpoint', subtype: 'ballpoint', color: '#FAFAFA', width: 3, lineType: 'solid', smoothing: 'mild' },
-  { id: 'p2', name: 'Red Crimson', subtype: 'fountain', color: '#D32F2F', width: 4, lineType: 'solid', smoothing: 'high' },
-  { id: 'p3', name: 'Deep Blue', subtype: 'ballpoint', color: '#1976D2', width: 3, lineType: 'solid', smoothing: 'mild' },
-  { id: 'p4', name: 'Vermillion Accent', subtype: 'fountain', color: '#FF3D00', width: 5, lineType: 'solid', smoothing: 'high' },
-];
 
 export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
   const router = useRouter();
 
   // Note Metadata State
   const [title, setTitle] = useState(initialNote.title);
-  const [content, setContent] = useState(initialNote.content || '');
+  const [content, setContent] = useState(initialNote.content || "");
   const [tags, setTags] = useState<string[]>(initialNote.tags || []);
-  const [tagInput, setTagInput] = useState('');
-  const [priority, setPriority] = useState<'LOW' | 'MEDIUM' | 'HIGH'>(initialNote.priority || 'MEDIUM');
+  const [tagInput, setTagInput] = useState("");
+  const [priority, setPriority] = useState<"LOW" | "MEDIUM" | "HIGH">(
+    initialNote.priority || "MEDIUM",
+  );
   const [isPinned, setIsPinned] = useState(initialNote.isPinned || false);
-  const [reminderAt, setReminderAt] = useState<string | null>(initialNote.reminderAt || null);
+  const [reminderAt, setReminderAt] = useState<string | null>(
+    initialNote.reminderAt || null,
+  );
 
   // Multi-Page Notebook State
-  const initialPages: NotePageData[] = initialNote.pages && initialNote.pages.length > 0
-    ? initialNote.pages
-    : [
-      {
-        id: 'p-1',
-        pageNumber: 1,
-        content: initialNote.content || '<p></p>',
-        strokes: [],
-        paperTemplate: 'blank',
-      },
-    ];
+  const initialPages: NotePageData[] =
+    initialNote.pages && initialNote.pages.length > 0
+      ? initialNote.pages
+      : [
+          {
+            id: "p-1",
+            pageNumber: 1,
+            content: initialNote.content || "<p></p>",
+            strokes: [],
+            paperTemplate: "blank",
+          },
+        ];
 
   const [pages, setPages] = useState<NotePageData[]>(initialPages);
   const [activePageIndex, setActivePageIndex] = useState<number>(0);
@@ -147,17 +144,20 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
   const [isSidebarVisible, setIsSidebarVisible] = useState(true);
 
   // Stylus Vector Stroke & Engine State
-  const [activeTool, setActiveTool] = useState<StylusTool>('pen');
-  const [activePenSubtype, setActivePenSubtype] = useState<PenSubtype>('ballpoint');
-  const [activeColor, setActiveColor] = useState<string>('#FF3D00');
+  const [activeTool, setActiveTool] = useState<StylusTool>("pen");
+  const [activePenSubtype, setActivePenSubtype] =
+    useState<PenSubtype>("ballpoint");
+  const [activeColor, setActiveColor] = useState<string>("#FF3D00");
   const [strokeWidth, setStrokeWidth] = useState<number>(3);
-  const [lineType, setLineType] = useState<LineType>('solid');
+  const [lineType, setLineType] = useState<LineType>("solid");
   const [stylusSettings, setStylusSettings] = useState<StylusSettings>({
     ...DEFAULT_STYLUS_SETTINGS,
     isStylusModeActive: true,
     stylusOnlyMode: false,
   });
-  const [strokes, setStrokes] = useState<VectorStroke[]>(initialPages[0]?.strokes || []);
+  const [strokes, setStrokes] = useState<VectorStroke[]>(
+    initialPages[0]?.strokes || [],
+  );
   const [undoStack, setUndoStack] = useState<VectorStroke[][]>([]);
   const [redoStack, setRedoStack] = useState<VectorStroke[][]>([]);
 
@@ -180,14 +180,17 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
   // Pen Box Presets & Popover State
   const [isPenPopoverOpen, setIsPenPopoverOpen] = useState(false);
   const [isShapePopoverOpen, setIsShapePopoverOpen] = useState(false);
-  const [isHighlighterPopoverOpen, setIsHighlighterPopoverOpen] = useState(false);
+  const [isHighlighterPopoverOpen, setIsHighlighterPopoverOpen] =
+    useState(false);
   const [isEraserPopoverOpen, setIsEraserPopoverOpen] = useState(false);
   const [isLassoPopoverOpen, setIsLassoPopoverOpen] = useState(false);
-  const [penBoxPresets, setPenBoxPresets] = useState<PenPreset[]>(DEFAULT_PEN_BOX_PRESETS);
+  const [isRulerOpen, setIsRulerOpen] = useState(false);
 
   // Editor View Mode & Native Full Screen Status
   const [isZenMode, setIsZenMode] = useState(false);
-  const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'unsaved'>('saved');
+  const [saveStatus, setSaveStatus] = useState<"saved" | "saving" | "unsaved">(
+    "saved",
+  );
 
   // Canvas Zoom & Center Lock
   const [canvasZoom, setCanvasZoom] = useState(1.0);
@@ -195,24 +198,22 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
   const [isConverting, setIsConverting] = useState(false);
   const [isInsertTableOpen, setIsInsertTableOpen] = useState(false);
 
-
-
   // Native HTML5 Fullscreen API Toggle
   const toggleFullScreen = async () => {
     try {
-      if (!document.fullscreenElement) {
-        if (document.documentElement.requestFullscreen) {
-          await document.documentElement.requestFullscreen();
-        }
-        setIsZenMode(true);
-      } else {
+      if (document.fullscreenElement) {
         if (document.exitFullscreen) {
           await document.exitFullscreen();
         }
         setIsZenMode(false);
+      } else {
+        if (document.documentElement.requestFullscreen) {
+          await document.documentElement.requestFullscreen();
+        }
+        setIsZenMode(true);
       }
     } catch (err) {
-      console.error('Fullscreen toggle error:', err);
+      console.error("Fullscreen toggle error:", err);
       setIsZenMode((prev) => !prev);
     }
   };
@@ -221,15 +222,16 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
     const handleFullscreenChange = () => {
       setIsZenMode(!!document.fullscreenElement);
     };
-    document.addEventListener('fullscreenchange', handleFullscreenChange);
-    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    document.addEventListener("webkitfullscreenchange", handleFullscreenChange);
     return () => {
-      document.removeEventListener('fullscreenchange', handleFullscreenChange);
-      document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+      document.removeEventListener(
+        "webkitfullscreenchange",
+        handleFullscreenChange,
+      );
     };
   }, []);
-
-
 
   // Modals & Popovers state
   const [isReminderOpen, setIsReminderOpen] = useState(false);
@@ -242,7 +244,10 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
     try {
       lowlightInstance = createLowlight(common);
     } catch (e) {
-      console.warn('[Tiptap Lowlight Warning]: Using default code block styling.', e);
+      console.warn(
+        "[Tiptap Lowlight Warning]: Using default code block styling.",
+        e,
+      );
     }
 
     return [
@@ -262,7 +267,9 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
       Italic,
       TextUnderline,
       Strike,
-      lowlightInstance ? CodeBlock.configure({ lowlight: lowlightInstance }) : CodeBlock,
+      lowlightInstance
+        ? CodeBlock.configure({ lowlight: lowlightInstance })
+        : CodeBlock,
       Blockquote,
       BulletList,
       OrderedList,
@@ -273,19 +280,29 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
         addOptions() {
           const parentOptions = this.parent?.() || ({} as any);
           return {
-            types: ['heading', 'paragraph'],
-            alignments: ['left', 'center', 'right', 'justify'],
+            types: ["heading", "paragraph"],
+            alignments: ["left", "center", "right", "justify"],
             defaultAlignment: null,
             ...parentOptions,
             button: ({ editor: t, extension: n, t: x }: any) => {
-              const A = n.options?.alignments || ['left', 'center', 'right', 'justify'];
+              const A = n.options?.alignments || [
+                "left",
+                "center",
+                "right",
+                "justify",
+              ];
               const l: any = {
-                left: n.options?.shortcutKeys?.[0] ?? ['mod', 'Shift', 'L'],
-                center: n.options?.shortcutKeys?.[1] ?? ['mod', 'Shift', 'E'],
-                right: n.options?.shortcutKeys?.[2] ?? ['mod', 'Shift', 'R'],
-                justify: n.options?.shortcutKeys?.[3] ?? ['mod', 'Shift', 'J'],
+                left: n.options?.shortcutKeys?.[0] ?? ["mod", "Shift", "L"],
+                center: n.options?.shortcutKeys?.[1] ?? ["mod", "Shift", "E"],
+                right: n.options?.shortcutKeys?.[2] ?? ["mod", "Shift", "R"],
+                justify: n.options?.shortcutKeys?.[3] ?? ["mod", "Shift", "J"],
               };
-              const m: any = { left: 'AlignLeft', center: 'AlignCenter', right: 'AlignRight', justify: 'AlignJustify' };
+              const m: any = {
+                left: "AlignLeft",
+                center: "AlignCenter",
+                right: "AlignRight",
+                justify: "AlignJustify",
+              };
               const c = A.map((o: string) => ({
                 title: x(`editor.textalign.${o}.tooltip`),
                 icon: m[o],
@@ -296,8 +313,8 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
               }));
               return {
                 componentProps: {
-                  icon: 'AlignJustify',
-                  tooltip: x('editor.textalign.tooltip'),
+                  icon: "AlignJustify",
+                  tooltip: x("editor.textalign.tooltip"),
                   items: c,
                   isActive: () => false, // Keep dropdown trigger button inactive
                 },
@@ -310,9 +327,9 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
       Image.configure({
         upload: async (file: File) => {
           const formData = new FormData();
-          formData.append('file', file);
-          const res = await fetch('/api/upload', {
-            method: 'POST',
+          formData.append("file", file);
+          const res = await fetch("/api/upload", {
+            method: "POST",
             body: formData,
           });
           const data = await res.json();
@@ -325,15 +342,15 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
           const parentOptions = this.parent?.() || ({} as any);
           return {
             HTMLAttributes: {},
-            nextNodeType: 'paragraph',
+            nextNodeType: "paragraph",
             ...parentOptions,
             button: ({ editor: n, t: r, extension: s }: any) => ({
               componentProps: {
                 action: () => n.commands.setHorizontalRule(),
                 disabled: !n.can().setHorizontalRule(),
-                icon: 'Minus',
-                shortcutKeys: s?.options?.shortcutKeys ?? ['mod', 'alt', 'S'],
-                tooltip: r('editor.horizontalrule.tooltip'),
+                icon: "Minus",
+                shortcutKeys: s?.options?.shortcutKeys ?? ["mod", "alt", "S"],
+                tooltip: r("editor.horizontalrule.tooltip"),
                 isActive: () => false, // Action button is never active
               },
             }),
@@ -351,10 +368,11 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
             ...parentOptions,
             button: ({ editor: t, t: n }: any) => ({
               componentProps: {
-                action: () => t.chain().focus().clearNodes().unsetAllMarks().run(),
+                action: () =>
+                  t.chain().focus().clearNodes().unsetAllMarks().run(),
                 disabled: false,
-                icon: 'Eraser',
-                tooltip: n('editor.clear.tooltip'),
+                icon: "Eraser",
+                tooltip: n("editor.clear.tooltip"),
                 isActive: () => false, // Action button is never active
               },
             }),
@@ -371,15 +389,15 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
   const editor = useEditor({
     immediatelyRender: false,
     extensions,
-    content: initialNote.content || '<p></p>',
+    content: initialNote.content || "<p></p>",
     onUpdate: ({ editor: currentEditor }) => {
       setContent(currentEditor.getHTML());
-      setSaveStatus('unsaved');
+      setSaveStatus("unsaved");
     },
     editorProps: {
       attributes: {
         class:
-          'prose prose-invert max-w-none focus:outline-none min-h-[650px] text-base leading-relaxed text-[#FAFAFA] font-sans p-8',
+          "prose prose-invert max-w-none focus:outline-none min-h-[650px] text-base leading-relaxed text-[#FAFAFA] font-sans p-8",
       },
     },
   });
@@ -391,12 +409,9 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
     }
   }, [editor, stylusSettings.isStylusModeActive]);
 
-
-
-
-  // Undo / Redo Stacks for Vector Strokes
+  // Undo / Redo Stacks for Vector Strokes (bounded to 30 history states to protect memory & GC)
   const handleStrokesChange = (nextStrokes: VectorStroke[]) => {
-    setUndoStack((prev) => [...prev, strokes]);
+    setUndoStack((prev) => [...prev.slice(-29), strokes]);
     setRedoStack([]);
     setStrokes(nextStrokes);
 
@@ -412,12 +427,17 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
       return updated;
     });
 
-    setSaveStatus('unsaved');
+    setSaveStatus("unsaved");
   };
 
   // Multi-Page Switching & Mutation Handlers
   const handleSelectPage = (newIndex: number) => {
-    if (newIndex < 0 || newIndex >= pages.length || newIndex === activePageIndex) return;
+    if (
+      newIndex < 0 ||
+      newIndex >= pages.length ||
+      newIndex === activePageIndex
+    )
+      return;
 
     const currentHtml = editor ? editor.getHTML() : content;
     const updatedPages = [...pages];
@@ -432,7 +452,7 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
 
     const targetPage = updatedPages[newIndex];
     if (editor && !editor.isDestroyed) {
-      editor.commands.setContent(targetPage.content || '<p></p>');
+      editor.commands.setContent(targetPage.content || "<p></p>");
     }
     setStrokes(targetPage.strokes || []);
     setUndoStack([]);
@@ -443,9 +463,9 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
     const newPage: NotePageData = {
       id: `p-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
       pageNumber: pages.length + 1,
-      content: '<p></p>',
+      content: "<p></p>",
       strokes: [],
-      paperTemplate: pages[activePageIndex]?.paperTemplate || 'blank',
+      paperTemplate: pages[activePageIndex]?.paperTemplate || "blank",
     };
     const nextPages = [...pages, newPage];
     setPages(nextPages);
@@ -459,14 +479,23 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
     const dupPage: NotePageData = {
       id: `p-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
       pageNumber: targetIndex + 2,
-      content: targetIndex === activePageIndex && editor ? editor.getHTML() : pageToDup.content,
-      strokes: targetIndex === activePageIndex ? [...strokes] : [...(pageToDup.strokes || [])],
+      content:
+        targetIndex === activePageIndex && editor
+          ? editor.getHTML()
+          : pageToDup.content,
+      strokes:
+        targetIndex === activePageIndex
+          ? [...strokes]
+          : [...(pageToDup.strokes || [])],
       paperTemplate: pageToDup.paperTemplate,
     };
 
     const nextPages = [...pages];
     nextPages.splice(targetIndex + 1, 0, dupPage);
-    const reindexed = nextPages.map((p, idx) => ({ ...p, pageNumber: idx + 1 }));
+    const reindexed = nextPages.map((p, idx) => ({
+      ...p,
+      pageNumber: idx + 1,
+    }));
     setPages(reindexed);
     handleSelectPage(targetIndex + 1);
   };
@@ -474,13 +503,16 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
   const handleDeletePage = (targetIndex: number) => {
     if (pages.length <= 1) return;
     const nextPages = pages.filter((_, idx) => idx !== targetIndex);
-    const reindexed = nextPages.map((p, idx) => ({ ...p, pageNumber: idx + 1 }));
+    const reindexed = nextPages.map((p, idx) => ({
+      ...p,
+      pageNumber: idx + 1,
+    }));
     setPages(reindexed);
     const newActive = Math.min(activePageIndex, reindexed.length - 1);
     setActivePageIndex(newActive);
     const target = reindexed[newActive];
     if (editor && !editor.isDestroyed) {
-      editor.commands.setContent(target.content || '<p></p>');
+      editor.commands.setContent(target.content || "<p></p>");
     }
     setStrokes(target.strokes || []);
   };
@@ -492,7 +524,7 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
       paperTemplate: tmpl,
     };
     setPages(nextPages);
-    setSaveStatus('unsaved');
+    setSaveStatus("unsaved");
   };
 
   const handleUndo = () => {
@@ -501,7 +533,7 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
     setRedoStack((prev) => [...prev, strokes]);
     setStrokes(previous);
     setUndoStack((prev) => prev.slice(0, prev.length - 1));
-    setSaveStatus('unsaved');
+    setSaveStatus("unsaved");
   };
 
   const handleRedo = () => {
@@ -510,29 +542,13 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
     setUndoStack((prev) => [...prev, strokes]);
     setStrokes(next);
     setRedoStack((prev) => prev.slice(0, prev.length - 1));
-    setSaveStatus('unsaved');
+    setSaveStatus("unsaved");
   };
 
   const handleClearStrokes = () => {
-    if (confirm('Clear all freehand stylus strokes on this note?')) {
+    if (confirm("Clear all freehand stylus strokes on this note?")) {
       handleStrokesChange([]);
     }
-  };
-
-  // Select Preset from Pen Box
-  const handleSelectPreset = (preset: PenPreset) => {
-    setActivePenSubtype(preset.subtype);
-    setActiveColor(preset.color);
-    setStrokeWidth(preset.width);
-    setLineType(preset.lineType);
-    setStylusSettings((prev) => ({ ...prev, smoothingLevel: preset.smoothing }));
-    setActiveTool('pen');
-  };
-
-  // Add Preset to Pen Box
-  const handleAddToPenBox = (preset: PenPreset) => {
-    setPenBoxPresets((prev) => [...prev, preset]);
-    setIsPenPopoverOpen(false);
   };
 
   // Convert Ink to Text OCR Callback
@@ -540,34 +556,49 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
     if (!strokes.length || !editor) return;
     const result = await recognizeInkToText(strokes);
     if (result && result.text) {
-      editor.chain().focus().insertContent(`<p><strong>[Handwritten Ink]:</strong> ${result.text}</p>`).run();
-      setSaveStatus('unsaved');
+      editor
+        .chain()
+        .focus()
+        .insertContent(
+          `<p><strong>[Handwritten Ink]:</strong> ${result.text}</p>`,
+        )
+        .run();
+      setSaveStatus("unsaved");
     }
   };
 
   // Hardware Button Event Handler via Hook
-  const handleHardwareAction = useCallback((action: StylusButtonAction) => {
-    switch (action) {
-      case 'toggle_eraser':
-        setActiveTool((prev) => (prev === 'eraser' ? 'pen' : 'eraser'));
-        break;
-      case 'undo':
-        handleUndo();
-        break;
-      case 'redo':
-        handleRedo();
-        break;
-      case 'cycle_color':
-        setActiveColor((prev) => (prev === '#FF3D00' ? '#FAFAFA' : prev === '#FAFAFA' ? '#4285F4' : '#FF3D00'));
-        break;
-      case 'clear_ink':
-        handleClearStrokes();
-        break;
-      case 'convert_text':
-        handleConvertInkToText();
-        break;
-    }
-  }, [strokes, editor]);
+  const handleHardwareAction = useCallback(
+    (action: StylusButtonAction) => {
+      switch (action) {
+        case "toggle_eraser":
+          setActiveTool((prev) => (prev === "eraser" ? "pen" : "eraser"));
+          break;
+        case "undo":
+          handleUndo();
+          break;
+        case "redo":
+          handleRedo();
+          break;
+        case "cycle_color":
+          setActiveColor((prev) =>
+            prev === "#FF3D00"
+              ? "#FAFAFA"
+              : prev === "#FAFAFA"
+                ? "#4285F4"
+                : "#FF3D00",
+          );
+          break;
+        case "clear_ink":
+          handleClearStrokes();
+          break;
+        case "convert_text":
+          handleConvertInkToText();
+          break;
+      }
+    },
+    [strokes, editor],
+  );
 
   useStylusHardware({
     settings: stylusSettings,
@@ -583,7 +614,7 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
           setStrokes(parsed);
         }
       } catch (err) {
-        console.error('Failed to parse drawing data:', err);
+        console.error("Failed to parse drawing data:", err);
       }
     }
   }, [initialNote.drawingData]);
@@ -592,7 +623,7 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
   const saveNote = useCallback(
     async (updatedFields: Partial<StoredNote>) => {
       if (!editor) return;
-      setSaveStatus('saving');
+      setSaveStatus("saving");
       try {
         const htmlContent = editor.getHTML();
         const currentPages = [...pages];
@@ -605,8 +636,8 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
         }
 
         await fetch(`/api/notes/${initialNote.id}`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             title,
             content: htmlContent,
@@ -619,36 +650,49 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
             ...updatedFields,
           }),
         });
-        setSaveStatus('saved');
+        setSaveStatus("saved");
       } catch (err) {
-        console.error('Auto-save failed:', err);
-        setSaveStatus('unsaved');
+        console.error("Auto-save failed:", err);
+        setSaveStatus("unsaved");
       }
     },
-    [editor, initialNote.id, title, pages, activePageIndex, tags, priority, isPinned, reminderAt, strokes]
+    [
+      editor,
+      initialNote.id,
+      title,
+      pages,
+      activePageIndex,
+      tags,
+      priority,
+      isPinned,
+      reminderAt,
+      strokes,
+    ],
   );
 
   useEffect(() => {
     if (!editor) return;
+    // 2.5s debounce during drawing mode to prevent heavy JSON serialization spikes while handwriting
+    const delay = stylusSettings.isStylusModeActive ? 2500 : 1000;
     const timer = setTimeout(() => {
-      if (saveStatus === 'unsaved') {
+      if (saveStatus === "unsaved") {
         saveNote({});
       }
-    }, 1000);
+    }, delay);
     return () => clearTimeout(timer);
-  }, [editor, saveStatus, saveNote]);
+  }, [editor, saveStatus, saveNote, stylusSettings.isStylusModeActive]);
 
   // Synchronize Text Formatting Toolbar buttons' active states reactively and handle uncontrolled Radix toggles
   useEffect(() => {
     if (!editor || editor.isDestroyed) return;
 
     const updateToolbarActiveStates = () => {
-      const row2 = document.querySelector('.note-editor-toolbar-row2');
+      const row2 = document.querySelector(".note-editor-toolbar-row2");
       if (!row2) return;
 
-      const rawTaskList = editor.isActive('taskList');
-      const rawBulletList = editor.isActive('bulletList');
-      const rawOrderedList = editor.isActive('orderedList');
+      const rawTaskList = editor.isActive("taskList");
+      const rawBulletList = editor.isActive("bulletList");
+      const rawOrderedList = editor.isActive("orderedList");
 
       // Enforce strict single-active priority: ONLY ONE list type can be active at any given moment
       let taskListActive = false;
@@ -667,100 +711,149 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
         taskList: taskListActive,
         bulletList: bulletListActive,
         orderedList: orderedListActive,
-        blockquote: editor.isActive('blockquote'),
-        codeBlock: editor.isActive('codeBlock'),
-        bold: editor.isActive('bold'),
-        italic: editor.isActive('italic'),
-        underline: editor.isActive('underline'),
-        strike: editor.isActive('strike'),
-        highlight: editor.isActive('highlight'),
-        heading: editor.isActive('heading'),
-        link: editor.isActive('link'),
-        table: editor.isActive('canvasTable') || editor.isActive('table'),
+        blockquote: editor.isActive("blockquote"),
+        codeBlock: editor.isActive("codeBlock"),
+        bold: editor.isActive("bold"),
+        italic: editor.isActive("italic"),
+        underline: editor.isActive("underline"),
+        strike: editor.isActive("strike"),
+        highlight: editor.isActive("highlight"),
+        heading: editor.isActive("heading"),
+        link: editor.isActive("link"),
+        table: editor.isActive("canvasTable") || editor.isActive("table"),
       };
 
-      const buttons = row2.querySelectorAll('button');
+      const buttons = row2.querySelectorAll("button");
       buttons.forEach((btn) => {
-        const svg = btn.querySelector('svg');
+        const svg = btn.querySelector("svg");
         const svgHTML = svg ? svg.outerHTML : btn.innerHTML;
-        const ariaLabel = (btn.getAttribute('aria-label') || btn.getAttribute('title') || btn.textContent || '').toLowerCase();
+        const ariaLabel = (
+          btn.getAttribute("aria-label") ||
+          btn.getAttribute("title") ||
+          btn.textContent ||
+          ""
+        ).toLowerCase();
         const btnId = btn.id;
 
         // Rule 1: One-shot actions (Horizontal Rule, Clear Formatting, Undo, Redo, Align) MUST NEVER maintain active state
-        const isActionOnly = 
-          btnId === 'insert-canvas-table-btn' ||
-          svgHTML.includes('lucide-minus') ||
-          svgHTML.includes('lucide-eraser') ||
-          svgHTML.includes('lucide-undo2') ||
-          svgHTML.includes('lucide-redo2') ||
-          svgHTML.includes('lucide-align') ||
-          ariaLabel.includes('align') ||
-          ariaLabel.includes('horizontal') ||
-          ariaLabel.includes('divider') ||
-          ariaLabel.includes('rule') ||
-          ariaLabel.includes('clear') ||
-          ariaLabel.includes('eraser') ||
-          ariaLabel.includes('undo') ||
-          ariaLabel.includes('redo');
+        const isActionOnly =
+          btnId === "insert-canvas-table-btn" ||
+          svgHTML.includes("lucide-minus") ||
+          svgHTML.includes("lucide-eraser") ||
+          svgHTML.includes("lucide-undo2") ||
+          svgHTML.includes("lucide-redo2") ||
+          svgHTML.includes("lucide-align") ||
+          ariaLabel.includes("align") ||
+          ariaLabel.includes("horizontal") ||
+          ariaLabel.includes("divider") ||
+          ariaLabel.includes("rule") ||
+          ariaLabel.includes("clear") ||
+          ariaLabel.includes("eraser") ||
+          ariaLabel.includes("undo") ||
+          ariaLabel.includes("redo");
 
         if (isActionOnly) {
-          if (btn.getAttribute('data-state') !== 'off') {
-            btn.setAttribute('data-state', 'off');
+          if (btn.getAttribute("data-state") !== "off") {
+            btn.setAttribute("data-state", "off");
           }
-          btn.removeAttribute('aria-pressed');
+          btn.removeAttribute("aria-pressed");
           return;
         }
 
         let isActive = false;
         let matched = false;
 
-        if (svgHTML.includes('lucide-list-todo') || ariaLabel.includes('task') || ariaLabel.includes('todo') || ariaLabel.includes('checklist')) {
+        if (
+          svgHTML.includes("lucide-list-todo") ||
+          ariaLabel.includes("task") ||
+          ariaLabel.includes("todo") ||
+          ariaLabel.includes("checklist")
+        ) {
           isActive = activeStates.taskList;
           matched = true;
-        } else if (svgHTML.includes('lucide-list-ordered') || ariaLabel.includes('ordered') || ariaLabel.includes('numbered')) {
+        } else if (
+          svgHTML.includes("lucide-list-ordered") ||
+          ariaLabel.includes("ordered") ||
+          ariaLabel.includes("numbered")
+        ) {
           isActive = activeStates.orderedList;
           matched = true;
-        } else if ((svgHTML.includes('lucide-list') && !svgHTML.includes('lucide-list-todo') && !svgHTML.includes('lucide-list-ordered')) || ariaLabel.includes('bullet')) {
+        } else if (
+          (svgHTML.includes("lucide-list") &&
+            !svgHTML.includes("lucide-list-todo") &&
+            !svgHTML.includes("lucide-list-ordered")) ||
+          ariaLabel.includes("bullet")
+        ) {
           isActive = activeStates.bulletList;
           matched = true;
-        } else if (svgHTML.includes('lucide-quote') || ariaLabel.includes('quote') || ariaLabel.includes('blockquote')) {
+        } else if (
+          svgHTML.includes("lucide-quote") ||
+          ariaLabel.includes("quote") ||
+          ariaLabel.includes("blockquote")
+        ) {
           isActive = activeStates.blockquote;
           matched = true;
-        } else if (svgHTML.includes('lucide-code-xml') || svgHTML.includes('lucide-code') || ariaLabel.includes('code block') || ariaLabel.includes('codeblock')) {
+        } else if (
+          svgHTML.includes("lucide-code-xml") ||
+          svgHTML.includes("lucide-code") ||
+          ariaLabel.includes("code block") ||
+          ariaLabel.includes("codeblock")
+        ) {
           isActive = activeStates.codeBlock;
           matched = true;
-        } else if (svgHTML.includes('lucide-bold') || ariaLabel.includes('bold')) {
+        } else if (
+          svgHTML.includes("lucide-bold") ||
+          ariaLabel.includes("bold")
+        ) {
           isActive = activeStates.bold;
           matched = true;
-        } else if (svgHTML.includes('lucide-italic') || ariaLabel.includes('italic')) {
+        } else if (
+          svgHTML.includes("lucide-italic") ||
+          ariaLabel.includes("italic")
+        ) {
           isActive = activeStates.italic;
           matched = true;
-        } else if (svgHTML.includes('lucide-underline') || ariaLabel.includes('underline')) {
+        } else if (
+          svgHTML.includes("lucide-underline") ||
+          ariaLabel.includes("underline")
+        ) {
           isActive = activeStates.underline;
           matched = true;
-        } else if (svgHTML.includes('lucide-strikethrough') || ariaLabel.includes('strike')) {
+        } else if (
+          svgHTML.includes("lucide-strikethrough") ||
+          ariaLabel.includes("strike")
+        ) {
           isActive = activeStates.strike;
           matched = true;
-        } else if (svgHTML.includes('lucide-highlighter') || ariaLabel.includes('highlight')) {
+        } else if (
+          svgHTML.includes("lucide-highlighter") ||
+          ariaLabel.includes("highlight")
+        ) {
           isActive = activeStates.highlight;
           matched = true;
-        } else if (svgHTML.includes('lucide-heading') || ariaLabel.includes('heading')) {
+        } else if (
+          svgHTML.includes("lucide-heading") ||
+          ariaLabel.includes("heading")
+        ) {
           isActive = activeStates.heading;
           matched = true;
-        } else if (svgHTML.includes('lucide-link') || ariaLabel.includes('link')) {
+        } else if (
+          svgHTML.includes("lucide-link") ||
+          ariaLabel.includes("link")
+        ) {
           isActive = activeStates.link;
           matched = true;
         }
 
         if (matched) {
-          const nextState = isActive ? 'on' : 'off';
-          if (btn.getAttribute('data-state') !== nextState) {
-            btn.setAttribute('data-state', nextState);
+          const nextState = isActive ? "on" : "off";
+          if (btn.getAttribute("data-state") !== nextState) {
+            btn.setAttribute("data-state", nextState);
           }
           if (isActive) {
-            btn.setAttribute('aria-pressed', 'true');
+            btn.setAttribute("aria-pressed", "true");
           } else {
-            btn.removeAttribute('aria-pressed');
+            btn.removeAttribute("aria-pressed");
           }
         }
       });
@@ -768,38 +861,43 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
 
     // Toolbar click listener to reset action-only buttons immediately (overrides Radix toggle internal state)
     const handleToolbarClick = (e: MouseEvent) => {
-      const button = (e.target as HTMLElement).closest('button');
+      const button = (e.target as HTMLElement).closest("button");
       if (!button) return;
 
-      const svg = button.querySelector('svg');
+      const svg = button.querySelector("svg");
       const svgHTML = svg ? svg.outerHTML : button.innerHTML;
-      const ariaLabel = (button.getAttribute('aria-label') || button.getAttribute('title') || button.textContent || '').toLowerCase();
+      const ariaLabel = (
+        button.getAttribute("aria-label") ||
+        button.getAttribute("title") ||
+        button.textContent ||
+        ""
+      ).toLowerCase();
       const btnId = button.id;
 
-      const isActionOnly = 
-        btnId === 'insert-canvas-table-btn' ||
-        svgHTML.includes('lucide-minus') ||
-        svgHTML.includes('lucide-eraser') ||
-        svgHTML.includes('lucide-undo2') ||
-        svgHTML.includes('lucide-redo2') ||
-        svgHTML.includes('lucide-align') ||
-        ariaLabel.includes('align') ||
-        ariaLabel.includes('horizontal') ||
-        ariaLabel.includes('divider') ||
-        ariaLabel.includes('rule') ||
-        ariaLabel.includes('clear') ||
-        ariaLabel.includes('eraser') ||
-        ariaLabel.includes('undo') ||
-        ariaLabel.includes('redo');
+      const isActionOnly =
+        btnId === "insert-canvas-table-btn" ||
+        svgHTML.includes("lucide-minus") ||
+        svgHTML.includes("lucide-eraser") ||
+        svgHTML.includes("lucide-undo2") ||
+        svgHTML.includes("lucide-redo2") ||
+        svgHTML.includes("lucide-align") ||
+        ariaLabel.includes("align") ||
+        ariaLabel.includes("horizontal") ||
+        ariaLabel.includes("divider") ||
+        ariaLabel.includes("rule") ||
+        ariaLabel.includes("clear") ||
+        ariaLabel.includes("eraser") ||
+        ariaLabel.includes("undo") ||
+        ariaLabel.includes("redo");
 
       if (isActionOnly) {
         setTimeout(() => {
-          button.setAttribute('data-state', 'off');
-          button.removeAttribute('aria-pressed');
+          button.setAttribute("data-state", "off");
+          button.removeAttribute("aria-pressed");
         }, 0);
         setTimeout(() => {
-          button.setAttribute('data-state', 'off');
-          button.removeAttribute('aria-pressed');
+          button.setAttribute("data-state", "off");
+          button.removeAttribute("aria-pressed");
         }, 50);
       } else {
         // For other buttons, trigger active state sync after click
@@ -808,33 +906,32 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
       }
     };
 
-    const row2 = document.querySelector('.note-editor-toolbar-row2');
+    const row2 = document.querySelector(".note-editor-toolbar-row2");
     if (row2) {
-      row2.addEventListener('click', handleToolbarClick as any, true);
+      row2.addEventListener("click", handleToolbarClick as any, true);
     }
 
     // Run initial sync
     updateToolbarActiveStates();
 
     // Subscribe to TipTap events for real-time reactive sync
-    editor.on('selectionUpdate', updateToolbarActiveStates);
-    editor.on('transaction', updateToolbarActiveStates);
-    editor.on('update', updateToolbarActiveStates);
-    editor.on('focus', updateToolbarActiveStates);
-    editor.on('blur', updateToolbarActiveStates);
+    editor.on("selectionUpdate", updateToolbarActiveStates);
+    editor.on("transaction", updateToolbarActiveStates);
+    editor.on("update", updateToolbarActiveStates);
+    editor.on("focus", updateToolbarActiveStates);
+    editor.on("blur", updateToolbarActiveStates);
 
     return () => {
       if (row2) {
-        row2.removeEventListener('click', handleToolbarClick as any, true);
+        row2.removeEventListener("click", handleToolbarClick as any, true);
       }
-      editor.off('selectionUpdate', updateToolbarActiveStates);
-      editor.off('transaction', updateToolbarActiveStates);
-      editor.off('update', updateToolbarActiveStates);
-      editor.off('focus', updateToolbarActiveStates);
-      editor.off('blur', updateToolbarActiveStates);
+      editor.off("selectionUpdate", updateToolbarActiveStates);
+      editor.off("transaction", updateToolbarActiveStates);
+      editor.off("update", updateToolbarActiveStates);
+      editor.off("focus", updateToolbarActiveStates);
+      editor.off("blur", updateToolbarActiveStates);
     };
   }, [editor]);
-
 
   // Telemetry Calculations
   const plainText = useMemo(() => {
@@ -848,7 +945,7 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
 
   // Tag Handlers
   const handleAddTag = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && tagInput.trim()) {
+    if (e.key === "Enter" && tagInput.trim()) {
       e.preventDefault();
       const newTag = tagInput.trim().toLowerCase();
       if (!tags.includes(newTag)) {
@@ -856,7 +953,7 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
         setTags(nextTags);
         saveNote({ tags: nextTags });
       }
-      setTagInput('');
+      setTagInput("");
     }
   };
 
@@ -866,16 +963,58 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
     saveNote({ tags: nextTags });
   };
 
+  const [isSuggestingTags, setIsSuggestingTags] = useState(false);
+  const [suggestedTags, setSuggestedTags] = useState<string[]>([]);
+
+  // Suggest Tags Handler
+  const handleSuggestTags = async () => {
+    if (isSuggestingTags) return;
+    setIsSuggestingTags(true);
+    try {
+      const textToAnalyze = editor ? editor.getText() : content;
+      const res = await fetch("/api/ai/suggest-tags", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title,
+          text: textToAnalyze,
+          existingTags: tags,
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.tags && data.tags.length > 0) {
+          setSuggestedTags(data.tags);
+        }
+      }
+    } catch (err) {
+      console.error("Suggest tags error:", err);
+    } finally {
+      setIsSuggestingTags(false);
+    }
+  };
+
+  const handleApplySuggestedTag = (tagToAdd: string) => {
+    if (!tags.includes(tagToAdd)) {
+      const nextTags = [...tags, tagToAdd];
+      setTags(nextTags);
+      saveNote({ tags: nextTags });
+      setSuggestedTags((prev) => prev.filter((t) => t !== tagToAdd));
+    }
+  };
+
   // Convert to Visual Mind Map Canvas
   const handleConvertToCanvas = async () => {
     setIsConverting(true);
     try {
-      const res = await fetch(`/api/notes/${initialNote.id}/convert-canvas`, { method: 'POST' });
+      const res = await fetch(`/api/notes/${initialNote.id}/convert-canvas`, {
+        method: "POST",
+      });
       if (res.ok) {
-        router.push('/');
+        router.push("/");
       }
     } catch (err) {
-      console.error('Failed to convert note to canvas:', err);
+      console.error("Failed to convert note to canvas:", err);
     } finally {
       setIsConverting(false);
     }
@@ -885,27 +1024,30 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
   const handleExportMarkdown = () => {
     if (!editor) return;
     const textContent = editor.getText();
-    const blob = new Blob([`# ${title}\n\n${textContent}`], { type: 'text/markdown' });
+    const blob = new Blob([`# ${title}\n\n${textContent}`], {
+      type: "text/markdown",
+    });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
-    a.download = `${title.toLowerCase().replace(/\s+/g, '-') || 'note'}.md`;
+    a.download = `${title.toLowerCase().replace(/\s+/g, "-") || "note"}.md`;
     a.click();
     URL.revokeObjectURL(url);
   };
 
   // Delete Note
   const handleDeleteNote = async () => {
-    if (confirm('Are you sure you want to delete this note?')) {
-      await fetch(`/api/notes/${initialNote.id}`, { method: 'DELETE' });
-      router.push('/notes');
+    if (confirm("Are you sure you want to delete this note?")) {
+      await fetch(`/api/notes/${initialNote.id}`, { method: "DELETE" });
+      router.push("/notes");
     }
   };
 
   return (
     <div
-      className={`note-editor-root min-h-screen w-full bg-[#0A0A0A] text-[#FAFAFA] flex flex-col font-sans select-text ${isZenMode ? 'fixed inset-0 z-[90] overflow-y-auto bg-[#0A0A0A]' : ''
-        }`}
+      className={`note-editor-root min-h-screen w-full bg-[#0A0A0A] text-[#FAFAFA] flex flex-col font-sans select-text ${
+        isZenMode ? "fixed inset-0 z-[90] overflow-y-auto bg-[#0A0A0A]" : ""
+      }`}
     >
       {/* Vertical Stylus Sidebar Dock */}
       <VerticalStylusSidebar
@@ -953,17 +1095,13 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
           setIsLassoPopoverOpen(false);
         }}
         settings={stylusSettings}
-        onToggleStylusMode={() =>
-          setStylusSettings((prev) => ({
-            ...prev,
-            isStylusModeActive: !prev.isStylusModeActive,
-          }))
-        }
         onActivateStylusMode={handleActivateStylusMode}
         onDeactivateStylusMode={handleDeactivateStylusMode}
         onUndo={handleUndo}
         onRedo={handleRedo}
         isSidebarVisible={isSidebarVisible}
+        isRulerOpen={isRulerOpen}
+        onToggleRuler={() => setIsRulerOpen(!isRulerOpen)}
       />
 
       {/* Pen Popover Settings */}
@@ -980,7 +1118,9 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
           lineType={lineType}
           onChangeLineType={setLineType}
           settings={stylusSettings}
-          onUpdateSettings={(newSettings) => setStylusSettings((prev) => ({ ...prev, ...newSettings }))}
+          onUpdateSettings={(newSettings) =>
+            setStylusSettings((prev) => ({ ...prev, ...newSettings }))
+          }
         />
       )}
 
@@ -992,7 +1132,9 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
           activeColor={activeColor}
           onChangeColor={setActiveColor}
           settings={stylusSettings}
-          onUpdateSettings={(newSettings) => setStylusSettings((prev) => ({ ...prev, ...newSettings }))}
+          onUpdateSettings={(newSettings) =>
+            setStylusSettings((prev) => ({ ...prev, ...newSettings }))
+          }
         />
       )}
 
@@ -1002,7 +1144,9 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
           isOpen={isEraserPopoverOpen}
           onClose={() => setIsEraserPopoverOpen(false)}
           settings={stylusSettings}
-          onUpdateSettings={(newSettings) => setStylusSettings((prev) => ({ ...prev, ...newSettings }))}
+          onUpdateSettings={(newSettings) =>
+            setStylusSettings((prev) => ({ ...prev, ...newSettings }))
+          }
         />
       )}
 
@@ -1012,7 +1156,9 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
           isOpen={isLassoPopoverOpen}
           onClose={() => setIsLassoPopoverOpen(false)}
           settings={stylusSettings}
-          onUpdateSettings={(newSettings) => setStylusSettings((prev) => ({ ...prev, ...newSettings }))}
+          onUpdateSettings={(newSettings) =>
+            setStylusSettings((prev) => ({ ...prev, ...newSettings }))
+          }
         />
       )}
 
@@ -1022,7 +1168,9 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
           isOpen={isShapePopoverOpen}
           onClose={() => setIsShapePopoverOpen(false)}
           settings={stylusSettings}
-          onUpdateSettings={(newSettings) => setStylusSettings((prev) => ({ ...prev, ...newSettings }))}
+          onUpdateSettings={(newSettings) =>
+            setStylusSettings((prev) => ({ ...prev, ...newSettings }))
+          }
         />
       )}
 
@@ -1032,7 +1180,7 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
           {/* Back Button Box — 100% aligned with left sidebar width (w-12 / 48px) */}
           <div className="w-12 h-14 shrink-0 flex items-center justify-center border-r border-[#262626] bg-[#0F0F0F]">
             <button
-              onClick={() => router.push('/notes')}
+              onClick={() => router.push("/notes")}
               className="p-2 text-[#737373] hover:text-[#FAFAFA] hover:bg-[#1E1E1E] transition-colors flex items-center justify-center"
               title="Back to Notes Library"
             >
@@ -1050,7 +1198,7 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
                 value={title}
                 onChange={(e) => {
                   setTitle(e.target.value);
-                  setSaveStatus('unsaved');
+                  setSaveStatus("unsaved");
                 }}
                 placeholder="Untitled Note"
                 className="bg-transparent font-sans font-bold text-sm tracking-tight text-[#FAFAFA] focus:outline-none placeholder:text-[#3a3a3a] min-w-0 flex-1 max-w-[320px] truncate hover:bg-[#1A1A1A]/50 focus:bg-[#1A1A1A]/80 px-2 py-1 transition-colors cursor-text"
@@ -1059,15 +1207,17 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
 
               {/* Auto-save Status Badge */}
               <div className="hidden sm:flex items-center gap-1.5 font-mono text-[10px] shrink-0">
-                {saveStatus === 'saving' ? (
+                {saveStatus === "saving" ? (
                   <span className="flex items-center gap-1 text-[#FF3D00]">
                     <Loader2 className="w-3 h-3 animate-spin" />
                     <span className="hidden md:inline">Saving</span>
                   </span>
-                ) : saveStatus === 'saved' ? (
+                ) : saveStatus === "saved" ? (
                   <span className="flex items-center gap-1 text-[#737373]">
                     <Check className="w-3 h-3 text-[#10b981]" />
-                    <span className="hidden md:inline text-[#737373]">Saved</span>
+                    <span className="hidden md:inline text-[#737373]">
+                      Saved
+                    </span>
                   </span>
                 ) : (
                   <span className="text-[#FF3D00] text-[10px]">Unsaved</span>
@@ -1087,18 +1237,22 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
                     handleDeactivateStylusMode();
                   }
                 }}
-                className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 border text-[10px] sm:text-[11px] font-mono uppercase tracking-widest font-bold transition-all duration-200 ${isSidebarVisible
-                    ? 'border-[#FF3D00] bg-[#FF3D00]/10 text-[#FF3D00]'
-                    : 'border-[#262626] bg-[#0F0F0F] text-[#737373] hover:text-[#FAFAFA] hover:border-[#404040]'
-                  }`}
+                className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 border text-[10px] sm:text-[11px] font-mono uppercase tracking-widest font-bold transition-all duration-200 ${
+                  isSidebarVisible
+                    ? "border-[#FF3D00] bg-[#FF3D00]/10 text-[#FF3D00]"
+                    : "border-[#262626] bg-[#0F0F0F] text-[#737373] hover:text-[#FAFAFA] hover:border-[#404040]"
+                }`}
                 title="Toggle Stylus Sidebar Dock Visibility"
               >
                 <span
-                  className={`w-1.5 h-1.5 rounded-full transition-all ${isSidebarVisible ? 'bg-[#FF3D00]' : 'bg-[#737373]'
-                    }`}
+                  className={`w-1.5 h-1.5 rounded-full transition-all ${
+                    isSidebarVisible ? "bg-[#FF3D00]" : "bg-[#737373]"
+                  }`}
                 />
                 <PenTool className="w-3 h-3" />
-                <span className="hidden sm:inline">{isSidebarVisible ? 'Ink ON' : 'Ink'}</span>
+                <span className="hidden sm:inline">
+                  {isSidebarVisible ? "Ink ON" : "Ink"}
+                </span>
               </button>
             </div>
 
@@ -1126,11 +1280,12 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
                   setIsPinned(nextPinned);
                   saveNote({ isPinned: nextPinned });
                 }}
-                className={`p-2 border transition-all duration-150 ${isPinned
-                    ? 'border-[#FF3D00] bg-[#FF3D00]/10 text-[#FF3D00]'
-                    : 'border-[#262626] text-[#737373] hover:text-[#FAFAFA] hover:border-[#404040]'
-                  }`}
-                title={isPinned ? 'Unpin Note' : 'Pin Note'}
+                className={`p-2 border transition-all duration-150 ${
+                  isPinned
+                    ? "border-[#FF3D00] bg-[#FF3D00]/10 text-[#FF3D00]"
+                    : "border-[#262626] text-[#737373] hover:text-[#FAFAFA] hover:border-[#404040]"
+                }`}
+                title={isPinned ? "Unpin Note" : "Pin Note"}
               >
                 <Pin className="w-3.5 h-3.5 stroke-[1.5]" />
               </button>
@@ -1138,11 +1293,16 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
               {/* Set Reminder */}
               <button
                 onClick={() => setIsReminderOpen(true)}
-                className={`p-2 border transition-all duration-150 ${reminderAt
-                    ? 'border-[#FF3D00] bg-[#FF3D00]/10 text-[#FF3D00]'
-                    : 'border-[#262626] text-[#737373] hover:text-[#FAFAFA] hover:border-[#404040]'
-                  }`}
-                title={reminderAt ? `Reminder: ${new Date(reminderAt).toLocaleDateString()}` : 'Set Note Reminder'}
+                className={`p-2 border transition-all duration-150 ${
+                  reminderAt
+                    ? "border-[#FF3D00] bg-[#FF3D00]/10 text-[#FF3D00]"
+                    : "border-[#262626] text-[#737373] hover:text-[#FAFAFA] hover:border-[#404040]"
+                }`}
+                title={
+                  reminderAt
+                    ? `Reminder: ${new Date(reminderAt).toLocaleDateString()}`
+                    : "Set Note Reminder"
+                }
               >
                 <Timer className="w-3.5 h-3.5 stroke-[1.5]" />
               </button>
@@ -1150,22 +1310,28 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
               {/* Full Screen */}
               <button
                 onClick={toggleFullScreen}
-                className={`p-2 border transition-all duration-150 ${isZenMode
-                    ? 'border-[#FF3D00] bg-[#FF3D00]/10 text-[#FF3D00]'
-                    : 'border-[#262626] text-[#737373] hover:text-[#FAFAFA] hover:border-[#404040]'
-                  }`}
-                title={isZenMode ? 'Exit Full Screen' : 'Full Screen'}
+                className={`p-2 border transition-all duration-150 ${
+                  isZenMode
+                    ? "border-[#FF3D00] bg-[#FF3D00]/10 text-[#FF3D00]"
+                    : "border-[#262626] text-[#737373] hover:text-[#FAFAFA] hover:border-[#404040]"
+                }`}
+                title={isZenMode ? "Exit Full Screen" : "Full Screen"}
               >
-                {isZenMode ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
+                {isZenMode ? (
+                  <Minimize2 className="w-3.5 h-3.5" />
+                ) : (
+                  <Maximize2 className="w-3.5 h-3.5" />
+                )}
               </button>
 
               {/* ⋯ More Overflow Trigger */}
               <button
                 onClick={() => setIsEditorSettingsOpen(!isEditorSettingsOpen)}
-                className={`p-2 border transition-all duration-150 editor-settings-trigger ${isEditorSettingsOpen
-                    ? 'border-[#FF3D00] bg-[#1A1A1A] text-[#FF3D00]'
-                    : 'border-[#262626] text-[#737373] hover:text-[#FAFAFA] hover:border-[#404040]'
-                  }`}
+                className={`p-2 border transition-all duration-150 editor-settings-trigger ${
+                  isEditorSettingsOpen
+                    ? "border-[#FF3D00] bg-[#1A1A1A] text-[#FF3D00]"
+                    : "border-[#262626] text-[#737373] hover:text-[#FAFAFA] hover:border-[#404040]"
+                }`}
                 title="More Options"
               >
                 <MoreHorizontal className="w-3.5 h-3.5 stroke-[1.5]" />
@@ -1202,11 +1368,14 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
 
       {/* Main Workspace */}
       <main
-        className={`note-editor-main flex-1 w-full flex flex-col transition-all duration-200 ${isSidebarVisible ? 'pl-12' : 'pl-0'
-          }`}
+        className={`note-editor-main flex-1 w-full flex flex-col transition-all duration-200 ${
+          isSidebarVisible ? "pl-12" : "pl-0"
+        }`}
       >
         {/* Tag Manager Bar */}
-        <div className={`note-editor-tagbar flex flex-wrap items-center gap-2 px-6 py-2 border-b border-[#1E1E1E] bg-[#0D0D0D] transition-all duration-200`}>
+        <div
+          className={`note-editor-tagbar flex flex-wrap items-center gap-2 px-6 py-2 border-b border-[#1E1E1E] bg-[#0D0D0D] transition-all duration-200`}
+        >
           <Tag className="w-3 h-3 text-[#FF3D00] shrink-0" />
           {tags.map((t) => (
             <span
@@ -1214,7 +1383,10 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
               className="inline-flex items-center gap-1 px-2 py-0.5 bg-[#1A1A1A] border border-[#262626] text-[10px] font-mono text-[#FAFAFA]"
             >
               <span>#{t}</span>
-              <button onClick={() => handleRemoveTag(t)} className="hover:text-[#FF3D00] ml-0.5 leading-none">
+              <button
+                onClick={() => handleRemoveTag(t)}
+                className="hover:text-[#FF3D00] ml-0.5 leading-none"
+              >
                 ×
               </button>
             </span>
@@ -1228,6 +1400,35 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
             className="bg-transparent border-none text-[10px] font-mono text-[#737373] focus:text-[#FAFAFA] focus:outline-none w-24"
           />
 
+          {/* AI Auto-Tag Suggestion Action */}
+          <button
+            type="button"
+            onClick={handleSuggestTags}
+            disabled={isSuggestingTags}
+            className="inline-flex items-center gap-1 px-2 py-0.5 border border-[#FF3D00]/50 hover:border-[#FF3D00] bg-[#141414] text-[9px] font-mono uppercase text-[#FF3D00] hover:text-[#FAFAFA] transition-colors"
+            title="Auto-suggest relevant tags using AI"
+          >
+            {isSuggestingTags ? (
+              <Loader2 className="w-2.5 h-2.5 animate-spin" />
+            ) : (
+              <Sparkles className="w-2.5 h-2.5" />
+            )}
+            <span>AI Tags</span>
+          </button>
+
+          {/* Suggested Tag Pills */}
+          {suggestedTags.map((st) => (
+            <button
+              key={st}
+              type="button"
+              onClick={() => handleApplySuggestedTag(st)}
+              className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-[#FF3D00]/10 border border-[#FF3D00]/40 text-[9px] font-mono text-[#FF3D00] hover:bg-[#FF3D00] hover:text-[#0A0A0A] transition-colors animate-in fade-in"
+              title="Click to add tag"
+            >
+              <span>+{st}</span>
+            </button>
+          ))}
+
           {/* Right side: word/char/time stats */}
           <div className="ml-auto flex items-center gap-4 font-mono text-[10px] text-[#3a3a3a]">
             <span className="flex items-center gap-1">
@@ -1240,7 +1441,7 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
               <span>~{readingTime}m</span>
             </span>
             <span className="hidden lg:inline text-[#262626] uppercase tracking-widest text-[9px]">
-              {stylusSettings.isStylusModeActive ? '● Ink' : '● Text'}
+              {stylusSettings.isStylusModeActive ? "● Ink" : "● Text"}
             </span>
           </div>
         </div>
@@ -1260,7 +1461,10 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
                 onChangePaperTemplate={handleChangePaperTemplate}
                 stylusOnlyMode={stylusSettings.stylusOnlyMode}
                 onToggleStylusOnlyMode={() =>
-                  setStylusSettings((prev) => ({ ...prev, stylusOnlyMode: !prev.stylusOnlyMode }))
+                  setStylusSettings((prev) => ({
+                    ...prev,
+                    stylusOnlyMode: !prev.stylusOnlyMode,
+                  }))
                 }
               />
             </div>
@@ -1271,13 +1475,17 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
               className="note-editor-toolbar-row2 sticky top-[calc(3.5rem+2.25rem)] z-[39] bg-[#0F0F0F] border-b border-[#1E1E1E] px-3 py-1 flex items-center gap-1 overflow-x-auto no-scrollbar select-none"
             >
               {/* HISTORY group */}
-              <span className="text-[8px] font-mono uppercase tracking-widest text-[#3a3a3a] px-1 shrink-0 hidden lg:inline">History</span>
+              <span className="text-[8px] font-mono uppercase tracking-widest text-[#3a3a3a] px-1 shrink-0 hidden lg:inline">
+                History
+              </span>
               <RichTextUndo />
               <RichTextRedo />
 
               {/* FORMAT group */}
               <div className="h-4 w-px bg-[#1E1E1E] mx-1.5 shrink-0" />
-              <span className="text-[8px] font-mono uppercase tracking-widest text-[#3a3a3a] px-1 shrink-0 hidden lg:inline">Format</span>
+              <span className="text-[8px] font-mono uppercase tracking-widest text-[#3a3a3a] px-1 shrink-0 hidden lg:inline">
+                Format
+              </span>
               <RichTextHeading />
               <RichTextBold />
               <RichTextItalic />
@@ -1288,7 +1496,9 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
 
               {/* LAYOUT group */}
               <div className="h-4 w-px bg-[#1E1E1E] mx-1.5 shrink-0" />
-              <span className="text-[8px] font-mono uppercase tracking-widest text-[#3a3a3a] px-1 shrink-0 hidden lg:inline">Layout</span>
+              <span className="text-[8px] font-mono uppercase tracking-widest text-[#3a3a3a] px-1 shrink-0 hidden lg:inline">
+                Layout
+              </span>
               <RichTextAlign />
               <RichTextBulletList />
               <RichTextOrderedList />
@@ -1298,15 +1508,23 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
 
               {/* INSERT group */}
               <div className="h-4 w-px bg-[#1E1E1E] mx-1.5 shrink-0" />
-              <span className="text-[8px] font-mono uppercase tracking-widest text-[#3a3a3a] px-1 shrink-0 hidden lg:inline">Insert</span>
+              <span className="text-[8px] font-mono uppercase tracking-widest text-[#3a3a3a] px-1 shrink-0 hidden lg:inline">
+                Insert
+              </span>
               {/* Insert Table Button — wrapped in Radix Tooltip matching Code Block 1:1 */}
               <Tooltip.Root>
                 <Tooltip.Trigger asChild>
                   <button
                     id="insert-canvas-table-btn"
-                    disabled={!editor?.isEditable || stylusSettings.isStylusModeActive}
+                    disabled={
+                      !editor?.isEditable || stylusSettings.isStylusModeActive
+                    }
                     onClick={() => {
-                      if (!editor?.isEditable || stylusSettings.isStylusModeActive) return;
+                      if (
+                        !editor?.isEditable ||
+                        stylusSettings.isStylusModeActive
+                      )
+                        return;
                       setIsInsertTableOpen(true);
                     }}
                     className="richtext-inline-flex richtext-items-center richtext-justify-center richtext-rounded-md richtext-text-sm richtext-font-medium richtext-ring-offset-background richtext-transition-colors hover:richtext-bg-muted hover:richtext-text-muted-foreground focus-visible:richtext-outline-none disabled:richtext-pointer-events-none disabled:richtext-opacity-50 richtext-h-[32px] richtext-w-[32px] richtext-p-0"
@@ -1334,7 +1552,9 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
 
               {/* TOOLS group */}
               <div className="h-4 w-px bg-[#1E1E1E] mx-1.5 shrink-0" />
-              <span className="text-[8px] font-mono uppercase tracking-widest text-[#3a3a3a] px-1 shrink-0 hidden lg:inline">Tools</span>
+              <span className="text-[8px] font-mono uppercase tracking-widest text-[#3a3a3a] px-1 shrink-0 hidden lg:inline">
+                Tools
+              </span>
               <RichTextClear />
               <RichTextSearchAndReplace />
             </div>
@@ -1348,51 +1568,62 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
               }}
             />
 
+            {/* Inline Slash Command Menu */}
+            <SlashMenu
+              editor={editor}
+              onOpenInsertTable={() => setIsInsertTableOpen(true)}
+              onOpenReminder={() => setIsReminderOpen(true)}
+            />
+
             {/* Notebook Paper Workspace Scroll Area */}
             <div
               className="note-editor-canvas-area relative flex-1 bg-[#050505] overflow-auto"
-              style={{ minHeight: 'calc(100vh - 160px)' }}
+              style={{ minHeight: "calc(100vh - 160px)" }}
               onDoubleClick={(e) => {
                 // Suppress double-click/double-tap browser-level side effects (iOS zoom, etc.)
                 // The canvas itself also handles this, but belt-and-suspenders for the container.
                 const target = e.target as HTMLElement;
-                if (target.tagName === 'CANVAS') {
+                if (target.tagName === "CANVAS") {
                   e.preventDefault();
                 }
               }}
             >
               {/* Zoom Transform Wrapper — centers and scales the A4 paper sheet */}
               <div
-                className={`py-10 flex ${lockCenter ? 'justify-center' : 'justify-start'} px-4 origin-top`}
+                className={`py-10 flex ${lockCenter ? "justify-center" : "justify-start"} px-4 origin-top`}
                 style={{
                   transform: `scale(${canvasZoom})`,
-                  transformOrigin: 'top center',
+                  transformOrigin: "top center",
                   minHeight: `${1100 * canvasZoom + 80}px`,
                 }}
               >
                 {/* Pure Clean Notebook Paper Canvas Sheet (Fixed A4 Boundaries: 850px x 1100px) */}
                 <div
                   className="note-editor-paper border border-[#262626] bg-[#0F0F0F] relative text-[#FAFAFA] overflow-hidden shrink-0"
-                  style={{ width: '850px', height: '1100px' }}
+                  style={{ width: "850px", height: "1100px" }}
                 >
                   {/* Tiptap Core Editor Content (Layered dynamically based on mode & layerOrder) */}
                   <div
-                    className={`p-8 ${!stylusSettings.isStylusModeActive || stylusSettings.layerOrder === 'text_above_ink'
-                        ? 'relative z-30 pointer-events-auto select-text'
-                        : 'relative z-20 pointer-events-none select-none'
-                      }`}
+                    className={`p-8 ${
+                      !stylusSettings.isStylusModeActive ||
+                      stylusSettings.layerOrder === "text_above_ink"
+                        ? "relative z-30 pointer-events-auto select-text"
+                        : "relative z-20 pointer-events-none select-none"
+                    }`}
                   >
                     <EditorContent editor={editor} />
                   </div>
 
                   {/* Native Freehand Stylus Overlay Canvas Container (Ignore pointers when in Text Mode) */}
                   <div
-                    className={`absolute inset-0 ${stylusSettings.isStylusModeActive && stylusSettings.layerOrder === 'ink_above_text'
-                        ? 'z-30 pointer-events-auto'
+                    className={`absolute inset-0 ${
+                      stylusSettings.isStylusModeActive &&
+                      stylusSettings.layerOrder === "ink_above_text"
+                        ? "z-30 pointer-events-auto"
                         : stylusSettings.isStylusModeActive
-                          ? 'z-20 pointer-events-auto'
-                          : 'z-10 pointer-events-none'
-                      }`}
+                          ? "z-20 pointer-events-auto"
+                          : "z-10 pointer-events-none"
+                    }`}
                   >
                     <NativeStylusCanvas
                       isActive={stylusSettings.isStylusModeActive}
@@ -1404,7 +1635,9 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
                       settings={stylusSettings}
                       strokes={strokes}
                       onStrokesChange={handleStrokesChange}
-                      paperTemplate={pages[activePageIndex]?.paperTemplate || 'blank'}
+                      paperTemplate={
+                        pages[activePageIndex]?.paperTemplate || "blank"
+                      }
                     />
                   </div>
                 </div>
@@ -1414,7 +1647,11 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
               <div className="fixed bottom-6 right-6 z-[45] flex items-center gap-0 bg-[#0A0A0A]/95 backdrop-blur-md border border-[#262626]">
                 {/* Zoom Out */}
                 <button
-                  onClick={() => setCanvasZoom((z) => Math.max(0.4, parseFloat((z - 0.1).toFixed(1))))}
+                  onClick={() =>
+                    setCanvasZoom((z) =>
+                      Math.max(0.4, parseFloat((z - 0.1).toFixed(1))),
+                    )
+                  }
                   className="p-2.5 text-[#737373] hover:text-[#FAFAFA] hover:bg-[#1A1A1A] transition-all border-r border-[#262626]"
                   title="Zoom Out"
                   disabled={canvasZoom <= 0.4}
@@ -1433,7 +1670,11 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
 
                 {/* Zoom In */}
                 <button
-                  onClick={() => setCanvasZoom((z) => Math.min(2.0, parseFloat((z + 0.1).toFixed(1))))}
+                  onClick={() =>
+                    setCanvasZoom((z) =>
+                      Math.min(2.0, parseFloat((z + 0.1).toFixed(1))),
+                    )
+                  }
                   className="p-2.5 text-[#737373] hover:text-[#FAFAFA] hover:bg-[#1A1A1A] transition-all border-r border-[#262626]"
                   title="Zoom In"
                   disabled={canvasZoom >= 2.0}
@@ -1444,11 +1685,16 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
                 {/* Lock Center Toggle */}
                 <button
                   onClick={() => setLockCenter((prev) => !prev)}
-                  className={`p-2.5 transition-all ${lockCenter
-                      ? 'text-[#FF3D00] bg-[#FF3D00]/10 hover:bg-[#FF3D00]/20'
-                      : 'text-[#737373] hover:text-[#FAFAFA] hover:bg-[#1A1A1A]'
-                    }`}
-                  title={lockCenter ? 'Center Lock ON — click to disable' : 'Lock canvas to center'}
+                  className={`p-2.5 transition-all ${
+                    lockCenter
+                      ? "text-[#FF3D00] bg-[#FF3D00]/10 hover:bg-[#FF3D00]/20"
+                      : "text-[#737373] hover:text-[#FAFAFA] hover:bg-[#1A1A1A]"
+                  }`}
+                  title={
+                    lockCenter
+                      ? "Center Lock ON — click to disable"
+                      : "Lock canvas to center"
+                  }
                 >
                   <Crosshair className="w-3.5 h-3.5" />
                 </button>
@@ -1457,6 +1703,12 @@ export function AdvancedNoteEditor({ initialNote }: AdvancedNoteEditorProps) {
           </RichTextProvider>
         )}
       </main>
+
+      {/* Digital Straight-Edge Ruler Guide Overlay */}
+      <StylusRulerOverlay
+        isOpen={isRulerOpen}
+        onClose={() => setIsRulerOpen(false)}
+      />
 
       {/* Hardware Button & Gesture Settings Drawer */}
       <StylusSettingsModal

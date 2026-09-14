@@ -3,21 +3,25 @@ import { findUserByEmail, createUser, countUsers } from '@/lib/auth-storage';
 import { createSessionToken, setSessionCookie } from '@/lib/session';
 
 export async function GET(req: Request) {
-  const { searchParams } = new URL(req.url);
-  const code = searchParams.get('code');
-  const error = searchParams.get('error');
-
   const baseUrl = process.env.BETTER_AUTH_URL || 'http://localhost:3000';
 
-  if (error || !code) {
-    console.error('[Google OAuth Callback Error]:', error);
-    return NextResponse.redirect(`${baseUrl}/login?error=Google authentication was cancelled`);
-  }
-
   try {
-    const clientId = process.env.GOOGLE_CLIENT_ID || '178311275102-ph0shfc0dhs7cfnefre0q4bue6h0knvp.apps.googleusercontent.com';
-    const clientSecret = process.env.GOOGLE_CLIENT_SECRET || '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';
+    const { searchParams } = new URL(req.url);
+    const code = searchParams.get('code');
+    const error = searchParams.get('error');
+
+    if (error || !code) {
+      console.error('[Google OAuth Callback Error]:', error);
+      return NextResponse.redirect(`${baseUrl}/login?error=Google authentication was cancelled`);
+    }
+
+    const clientId = process.env.GOOGLE_CLIENT_ID || '';
+    const clientSecret = process.env.GOOGLE_CLIENT_SECRET || '';
     const redirectUri = `${baseUrl}/api/auth/google/callback`;
+
+    if (!clientId || !clientSecret) {
+      throw new Error('Google OAuth client credentials are not configured in environment variables');
+    }
 
     // 1. Exchange authorization code for access token
     const tokenRes = await fetch('https://oauth2.googleapis.com/token', {

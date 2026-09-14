@@ -2,7 +2,7 @@ import jwt from 'jsonwebtoken';
 import { cookies } from 'next/headers';
 import { getUserById } from './auth-storage';
 
-const JWT_SECRET = process.env.BETTER_AUTH_SECRET || 'mindspace_secret_key_2026';
+const JWT_SECRET = process.env.BETTER_AUTH_SECRET || 'mindspace_local_dev_key';
 const COOKIE_NAME = 'mindspace_session';
 
 export interface SessionUser {

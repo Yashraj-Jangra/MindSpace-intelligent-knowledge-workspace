@@ -1,38 +1,62 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { Node as ReactFlowNode, Edge as ReactFlowEdge } from '@xyflow/react';
-import Link from 'next/link';
-import { MindSpaceCanvas } from '@/components/canvas/MindSpaceCanvas';
-import { PromptInput } from '@/components/ui/PromptInput';
-import { ReminderModal } from '@/components/ui/ReminderModal';
-import { NotificationToast, ToastMessage } from '@/components/ui/NotificationToast';
-import { OutlineView } from '@/components/ui/OutlineView';
-import { DocumentUpload } from '@/components/ui/DocumentUpload';
-import { SearchBar } from '@/components/ui/SearchBar';
-import { ExportMenu } from '@/components/ui/ExportMenu';
-import { AppHeader } from '@/components/navigation/AppHeader';
-import { Network, FileText, FileUp, LogIn, UserPlus, LogOut, User, LayoutDashboard, Bell, ArrowLeft, ListTodo } from 'lucide-react';
-import { MindSpaceNodeData } from '@/lib/graph/transformer';
-import { useAuth } from '@/contexts/AuthContext';
-import { useRouter } from 'next/navigation';
+import React, { useState, useEffect, useCallback, useMemo } from "react";
+import { Node as ReactFlowNode, Edge as ReactFlowEdge } from "@xyflow/react";
+import Link from "next/link";
+import { MindSpaceCanvas } from "@/components/canvas/MindSpaceCanvas";
+import { PromptInput } from "@/components/ui/PromptInput";
+import { ReminderModal } from "@/components/ui/ReminderModal";
+import {
+  NotificationToast,
+  ToastMessage,
+} from "@/components/ui/NotificationToast";
+import { OutlineView } from "@/components/ui/OutlineView";
+import { DocumentUpload } from "@/components/ui/DocumentUpload";
+import { SearchBar } from "@/components/ui/SearchBar";
+import { ExportMenu } from "@/components/ui/ExportMenu";
+import { AppHeader } from "@/components/navigation/AppHeader";
+import {
+  Network,
+  FileText,
+  FileUp,
+  LogIn,
+  UserPlus,
+  LogOut,
+  User,
+  LayoutDashboard,
+  Bell,
+  ArrowLeft,
+  ListTodo,
+} from "lucide-react";
+import { MindSpaceNodeData } from "@/lib/graph/transformer";
+import { useAuth } from "@/contexts/AuthContext";
+import { useRouter } from "next/navigation";
 
-export default function CanvasWorkspace({ params }: { params: Promise<{ id: string }> }) {
+export default function CanvasWorkspace({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const { id } = React.use(params);
   const { user, isLoading, logout } = useAuth();
   const router = useRouter();
-  
+
   const [nodes, setNodes] = useState<ReactFlowNode<MindSpaceNodeData>[]>([]);
   const [edges, setEdges] = useState<ReactFlowEdge[]>([]);
-  const [title, setTitle] = useState('Loading canvas...');
+  const [title, setTitle] = useState("Loading canvas...");
   const [isGenerating, setIsGenerating] = useState(false);
   const [isLoadingCanvas, setIsLoadingCanvas] = useState(true);
-  const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'error'>('saved');
-    
+  const [saveStatus, setSaveStatus] = useState<"saved" | "saving" | "error">(
+    "saved",
+  );
+
   // Modals & Panels
   const [isOutlineOpen, setIsOutlineOpen] = useState(false);
   const [isDocUploadOpen, setIsDocUploadOpen] = useState(false);
-  const [reminderTarget, setReminderTarget] = useState<{ id: string; label: string } | null>(null);
+  const [reminderTarget, setReminderTarget] = useState<{
+    id: string;
+    label: string;
+  } | null>(null);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
   // Hook: Load canvas from API on mount
@@ -41,7 +65,7 @@ export default function CanvasWorkspace({ params }: { params: Promise<{ id: stri
       try {
         setIsLoadingCanvas(true);
         const res = await fetch(`/api/canvas/${id}`);
-        if (!res.ok) throw new Error('Failed to load canvas');
+        if (!res.ok) throw new Error("Failed to load canvas");
         const data = await res.json();
         if (data.canvas) {
           setTitle(data.canvas.title);
@@ -49,8 +73,8 @@ export default function CanvasWorkspace({ params }: { params: Promise<{ id: stri
           setEdges(data.canvas.edges || []);
         }
       } catch (err) {
-        console.error('Error loading canvas:', err);
-        setTitle('Error Loading Canvas');
+        console.error("Error loading canvas:", err);
+        setTitle("Error Loading Canvas");
       } finally {
         setIsLoadingCanvas(false);
       }
@@ -61,31 +85,33 @@ export default function CanvasWorkspace({ params }: { params: Promise<{ id: stri
 
   // Hook: Auto-save canvas to API when graph changes
   useEffect(() => {
-    if (isLoadingCanvas || title === 'Loading canvas...') return;
+    if (isLoadingCanvas || title === "Loading canvas...") return;
 
-    setSaveStatus('saving');
+    setSaveStatus("saving");
     const saveTimeout = setTimeout(async () => {
       try {
         const res = await fetch(`/api/canvas/${id}`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             title,
-            nodes: nodes.map(({ id: nid, type, position, width, height, data }) => ({
-              id: nid,
-              type,
-              position,
-              width,
-              height,
-              data: {
-                label: data.label,
-                markdown: data.markdown,
-                type: data.type,
-                color: data.color,
-                reminderAt: data.reminderAt,
-                parentId: data.parentId,
-              },
-            })),
+            nodes: nodes.map(
+              ({ id: nid, type, position, width, height, data }) => ({
+                id: nid,
+                type,
+                position,
+                width,
+                height,
+                data: {
+                  label: data.label,
+                  markdown: data.markdown,
+                  type: data.type,
+                  color: data.color,
+                  reminderAt: data.reminderAt,
+                  parentId: data.parentId,
+                },
+              }),
+            ),
             edges: edges.map((e) => ({
               id: e.id,
               source: e.source,
@@ -98,13 +124,13 @@ export default function CanvasWorkspace({ params }: { params: Promise<{ id: stri
         });
 
         if (res.ok) {
-          setSaveStatus('saved');
+          setSaveStatus("saved");
         } else {
-          setSaveStatus('error');
+          setSaveStatus("error");
         }
       } catch (err) {
-        console.error('Failed to auto-save canvas:', err);
-        setSaveStatus('error');
+        console.error("Failed to auto-save canvas:", err);
+        setSaveStatus("error");
       }
     }, 2000);
 
@@ -115,13 +141,13 @@ export default function CanvasWorkspace({ params }: { params: Promise<{ id: stri
   const handleExpandNode = useCallback(
     async (nodeId: string, label: string, markdown: string) => {
       try {
-        const res = await fetch('/api/nodes/expand', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+        const res = await fetch("/api/nodes/expand", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ canvasId: id, nodeId, label, markdown }),
         });
 
-        if (!res.ok) throw new Error('Expansion failed');
+        if (!res.ok) throw new Error("Expansion failed");
 
         const data = await res.json();
         if (data.nodes && data.nodes.length > 0) {
@@ -129,71 +155,108 @@ export default function CanvasWorkspace({ params }: { params: Promise<{ id: stri
           setEdges((prev) => [...prev, ...data.edges]);
         }
       } catch (err) {
-        console.error('Failed to expand node topic:', err);
+        console.error("Failed to expand node topic:", err);
       }
     },
-    [id]
+    [id],
   );
 
   // Hook: AI Copilot Toolbar Actions (Summarize, Rewrite, Auto-Link)
   const handleCopilotAction = useCallback(
-    async (action: 'summarize' | 'rewrite' | 'auto-link', nodeId: string, label: string, markdown?: string) => {
+    async (
+      action: "summarize" | "rewrite" | "auto-link",
+      nodeId: string,
+      label: string,
+      markdown?: string,
+    ) => {
       try {
-        const res = await fetch('/api/nodes/copilot', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action, nodeId, label, markdown, canvasId: id }),
+        const res = await fetch("/api/nodes/copilot", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action,
+            nodeId,
+            label,
+            markdown,
+            canvasId: id,
+          }),
         });
 
-        if (!res.ok) throw new Error('Copilot action failed');
+        if (!res.ok) throw new Error("Copilot action failed");
 
         const data = await res.json();
 
-        if (action === 'summarize' && data.summary) {
+        if (action === "summarize" && data.summary) {
           setNodes((prev) =>
-            prev.map((n) => (n.id === nodeId ? { ...n, data: { ...n.data, markdown: data.summary } } : n))
+            prev.map((n) =>
+              n.id === nodeId
+                ? { ...n, data: { ...n.data, markdown: data.summary } }
+                : n,
+            ),
           );
-        } else if (action === 'rewrite' && data.rewritten) {
+        } else if (action === "rewrite" && data.rewritten) {
           setNodes((prev) =>
-            prev.map((n) => (n.id === nodeId ? { ...n, data: { ...n.data, markdown: data.rewritten } } : n))
+            prev.map((n) =>
+              n.id === nodeId
+                ? { ...n, data: { ...n.data, markdown: data.rewritten } }
+                : n,
+            ),
           );
-        } else if (action === 'auto-link' && data.newEdges) {
+        } else if (action === "auto-link" && data.newEdges) {
           setEdges((prev) => [...prev, ...data.newEdges]);
-          alert(`Auto-Linked ${data.newEdges.length} new relationship connections!`);
+          alert(
+            `Auto-Linked ${data.newEdges.length} new relationship connections!`,
+          );
         }
       } catch (err) {
-        console.error('Copilot error:', err);
+        console.error("Copilot error:", err);
       }
     },
-    [id]
+    [id],
   );
 
   // Hook: Bi-Directional Outline Live Text Edit
-  const handleUpdateNodeText = useCallback((nodeId: string, label: string, markdown: string) => {
-    setNodes((prev) =>
-      prev.map((n) => (n.id === nodeId ? { ...n, data: { ...n.data, label, markdown } } : n))
-    );
-  }, []);
+  const handleUpdateNodeText = useCallback(
+    (nodeId: string, label: string, markdown: string) => {
+      setNodes((prev) =>
+        prev.map((n) =>
+          n.id === nodeId ? { ...n, data: { ...n.data, label, markdown } } : n,
+        ),
+      );
+    },
+    [],
+  );
 
   // Hook: Node Spotlight from RAG Search
-  const handleSelectSearchNode = useCallback((targetNode: { id: string; label: string; positionX: number; positionY: number }) => {
-    setNodes((prev) =>
-      prev.map((n) => ({
-        ...n,
-        selected: n.id === targetNode.id,
-      }))
-    );
-  }, []);
+  const handleSelectSearchNode = useCallback(
+    (targetNode: {
+      id: string;
+      label: string;
+      positionX: number;
+      positionY: number;
+    }) => {
+      setNodes((prev) =>
+        prev.map((n) => ({
+          ...n,
+          selected: n.id === targetNode.id,
+        })),
+      );
+    },
+    [],
+  );
 
   // Hook: Reminder Modal Trigger
-  const handleOpenReminderModal = useCallback((nodeId: string, label: string) => {
-    setReminderTarget({ id: nodeId, label });
-  }, []);
+  const handleOpenReminderModal = useCallback(
+    (nodeId: string, label: string) => {
+      setReminderTarget({ id: nodeId, label });
+    },
+    [],
+  );
 
   // Hook: Redirect to login if unauthenticated after loading finishes
   useEffect(() => {
     if (!isLoading && !user) {
-      router.push('/login');
+      router.push("/login");
     }
   }, [user, isLoading, router]);
 
@@ -213,9 +276,9 @@ export default function CanvasWorkspace({ params }: { params: Promise<{ id: stri
   const handleGenerateGraph = async (promptText: string) => {
     setIsGenerating(true);
     try {
-      const res = await fetch('/api/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("/api/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           prompt: promptText,
           canvasId: id,
@@ -223,22 +286,27 @@ export default function CanvasWorkspace({ params }: { params: Promise<{ id: stri
         }),
       });
 
-      if (!res.ok) throw new Error('Failed to generate graph');
+      if (!res.ok) throw new Error("Failed to generate graph");
 
       const data = await res.json();
       if (data.nodes) setNodes(data.nodes);
       if (data.edges) setEdges(data.edges);
       if (data.title) setTitle(data.title);
     } catch (err) {
-      console.error('Error generating graph:', err);
-      alert('Failed to generate mind map graph.');
+      console.error("Error generating graph:", err);
+      alert("Failed to generate mind map graph.");
     } finally {
       setIsGenerating(false);
     }
   };
 
   // Handle Document Upload Graph Generation
-  const handleDocumentSuccess = (data: { canvasId: string; title: string; nodes: any[]; edges: any[] }) => {
+  const handleDocumentSuccess = (data: {
+    canvasId: string;
+    title: string;
+    nodes: any[];
+    edges: any[];
+  }) => {
     if (data.nodes) setNodes(data.nodes);
     if (data.edges) setEdges(data.edges);
     if (data.title) setTitle(data.title);
@@ -246,9 +314,9 @@ export default function CanvasWorkspace({ params }: { params: Promise<{ id: stri
 
   const handleConfirmReminder = async (nodeId: string, reminderAt: string) => {
     try {
-      const res = await fetch('/api/reminders', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("/api/reminders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           nodeId,
           reminderAt,
@@ -265,11 +333,11 @@ export default function CanvasWorkspace({ params }: { params: Promise<{ id: stri
                   data: {
                     ...n.data,
                     reminderAt,
-                    type: 'REMINDER_NODE',
+                    type: "REMINDER_NODE",
                   },
                 }
-              : n
-          )
+              : n,
+          ),
         );
 
         setToasts((prev) => [
@@ -283,9 +351,19 @@ export default function CanvasWorkspace({ params }: { params: Promise<{ id: stri
         ]);
       }
     } catch (err) {
-      console.error('Error scheduling reminder:', err);
+      console.error("Error scheduling reminder:", err);
     }
   };
+
+  const initialNodesWithCopilot = useMemo(() => {
+    return nodes.map((n) => ({
+      ...n,
+      data: {
+        ...n.data,
+        onCopilotAction: handleCopilotAction,
+      },
+    }));
+  }, [nodes, handleCopilotAction]);
 
   return (
     <main className="w-screen h-screen relative flex flex-col bg-[#0A0A0A] overflow-hidden">
@@ -309,13 +387,7 @@ export default function CanvasWorkspace({ params }: { params: Promise<{ id: stri
       {/* Main Canvas Area */}
       <div className="flex-1 w-full h-full relative">
         <MindSpaceCanvas
-          initialNodes={nodes.map((n) => ({
-            ...n,
-            data: {
-              ...n.data,
-              onCopilotAction: handleCopilotAction,
-            },
-          }))}
+          initialNodes={initialNodesWithCopilot}
           initialEdges={edges}
           onExpandNode={handleExpandNode}
           onSetReminder={handleOpenReminderModal}
@@ -324,7 +396,10 @@ export default function CanvasWorkspace({ params }: { params: Promise<{ id: stri
 
       {/* Floating Prompt Bar at Bottom */}
       <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 w-full px-4 flex justify-center">
-        <PromptInput onGenerate={handleGenerateGraph} isLoading={isGenerating} />
+        <PromptInput
+          onGenerate={handleGenerateGraph}
+          isLoading={isGenerating}
+        />
       </div>
 
       {/* Document Upload Modal */}
@@ -346,7 +421,7 @@ export default function CanvasWorkspace({ params }: { params: Promise<{ id: stri
       <ReminderModal
         isOpen={Boolean(reminderTarget)}
         nodeId={reminderTarget?.id || null}
-        nodeLabel={reminderTarget?.label || ''}
+        nodeLabel={reminderTarget?.label || ""}
         onClose={() => setReminderTarget(null)}
         onConfirm={handleConfirmReminder}
       />

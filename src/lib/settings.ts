@@ -54,8 +54,10 @@ export async function getSystemSetting(key: string): Promise<string | null> {
   }
 
   const jsonSettings = readJsonSettings();
-  if (jsonSettings[key] !== undefined) return jsonSettings[key];
-  if (process.env[key] !== undefined) return process.env[key] || null;
+  const jsonVal = jsonSettings[key];
+  if (jsonVal && jsonVal.trim() !== '') return jsonVal;
+  const envVal = process.env[key];
+  if (envVal && envVal.trim() !== '') return envVal;
   return null;
 }
 
@@ -79,7 +81,13 @@ export async function getSystemSettings(keys: string[]): Promise<Record<string, 
   const jsonSettings = readJsonSettings();
   const result: Record<string, string> = {};
   for (const k of keys) {
-    if (jsonSettings[k] !== undefined) result[k] = jsonSettings[k];
+    const jsonVal = jsonSettings[k];
+    const envVal = process.env[k];
+    if (jsonVal && jsonVal.trim() !== '') {
+      result[k] = jsonVal;
+    } else if (envVal && envVal.trim() !== '') {
+      result[k] = envVal;
+    }
   }
   return result;
 }

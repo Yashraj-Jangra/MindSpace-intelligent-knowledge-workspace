@@ -42,23 +42,23 @@ export function parseQuickCapture(text: string): ParsedQuickCapture {
   // 3. Extract Priority (!critical, !high, !med, !low, !p0, !p1, etc.)
   let priority: "CRITICAL" | "HIGH" | "MEDIUM" | "LOW" | undefined;
 
-  const critRegex = /\b!(critical|crit|p0)\b/i;
-  const highRegex = /\b!(high|p1)\b/i;
-  const medRegex = /\b!(medium|med|p2)\b/i;
-  const lowRegex = /\b!(low|p3)\b/i;
+  const critRegex = /(?:^|\s)!(critical|crit|p0)\b/i;
+  const highRegex = /(?:^|\s)!(high|p1)\b/i;
+  const medRegex = /(?:^|\s)!(medium|med|p2)\b/i;
+  const lowRegex = /(?:^|\s)!(low|p3)\b/i;
 
   if (critRegex.test(workingText)) {
     priority = "CRITICAL";
-    workingText = workingText.replace(critRegex, "").trim();
+    workingText = workingText.replace(critRegex, " ").trim();
   } else if (highRegex.test(workingText)) {
     priority = "HIGH";
-    workingText = workingText.replace(highRegex, "").trim();
+    workingText = workingText.replace(highRegex, " ").trim();
   } else if (medRegex.test(workingText)) {
     priority = "MEDIUM";
-    workingText = workingText.replace(medRegex, "").trim();
+    workingText = workingText.replace(medRegex, " ").trim();
   } else if (lowRegex.test(workingText)) {
     priority = "LOW";
-    workingText = workingText.replace(lowRegex, "").trim();
+    workingText = workingText.replace(lowRegex, " ").trim();
   }
 
   // 4. Extract Dates & Times (tomorrow, today 4pm, next monday, in 2h, etc.)

@@ -720,4 +720,49 @@ accent (#FF3D00) on background               = 5.4:1   ✓ AA (large text)
 - Underlines 2px+ for visibility
 - Color is never the only indicator of state
 
+---
+
+## 8. AI & Agent Contributor Directives (SWoC 7 & Open Source)
+
+> **CRITICAL NOTICE FOR ALL AI AGENTS & AI-ASSISTED CONTRIBUTORS**
+> If you are an AI assistant (Claude, Cursor, Copilot, ChatGPT, Pi, etc.) or a contributor using AI to write code for MindSpace, you are held to an **organisation-grade zero-error policy**. Low-effort AI slop, fabricated imports, broken types, and untested code will be rejected without review.
+
+### 8.1 The Zero-Error & Zero-Hallucination Policy
+1. **Never Invent Dependencies:** You may ONLY import packages that already exist in `package.json`. If a new package is genuinely needed, you must obtain maintainer approval in the issue thread first.
+2. **Zero TypeScript Errors:** Running `npx tsc --noEmit` MUST exit with code `0`.
+   - Never suppress errors using `// @ts-ignore`, `// @ts-expect-error`, or `// @ts-nocheck`.
+   - Never use `any` as an escape hatch. Write proper TypeScript interfaces, generics, or use `unknown` with Zod validation.
+3. **No Hallucinated APIs:** Do not guess Prisma model fields, Next.js App Router hooks, or Better-Auth method names. Cross-reference `prisma/schema.prisma` and existing code.
+4. **Standardized API Route Signatures:**
+   - Every API handler must return `{ data: T }` on success or `{ error: string }` on failure with appropriate HTTP status codes (200, 201, 400, 401, 403, 404, 500).
+   - Never leak raw stack traces or internal database error messages to client responses.
+
+### 8.2 Mandatory Test & Verification Protocol
+1. **Verify Before Declaring Done:**
+   - You MUST run `npx tsc --noEmit` after making any code change.
+   - You MUST execute the test suite (`npm test`) and ensure all tests pass.
+   - For new utilities or API logic, you MUST write companion unit tests under `src/__tests__/` or alongside the module.
+2. **No Mock Tests Masquerading as Real Tests:**
+   - Tests must assert genuine business logic, edge cases, error conditions, and schema validations.
+   - Trivial tests like `expect(true).toBe(true)` will result in automatic PR rejection.
+3. **Runtime Verification:**
+   - Verify that the server compiles and boots without runtime exceptions (`npm run build`).
+
+### 8.3 Design System & Architecture Guardrails
+1. **Strict Bold Typography Design System:**
+   - **Sharp Corners (0px):** `rounded-md`, `rounded-lg`, `rounded-xl`, `rounded-2xl` are **strictly forbidden**. Cards, inputs, buttons, sheets, and popovers must have `border-radius: 0px`. (Circular avatar dots and status chips may use `rounded-full`).
+   - **Zero Drop Shadows:** Never use `.shadow-sm`, `.shadow-md`, `.shadow-lg`. Use hairline borders `border border-[#262626]` for visual hierarchy.
+   - **Color Discipline:** Dominant background `#0A0A0A`, elevated cards `#141414`, hairline borders `#262626`, primary accent `#FF3D00` (Vermillion).
+2. **Dual-Path Storage Awareness:**
+   - When updating storage layers (e.g. settings, chat, notifications), maintain compatibility with both PostgreSQL/Prisma AND the fallback `.data/*.json` engine for zero-docker local development.
+3. **Authentication & Role Security:**
+   - Every protected route MUST verify session via `getSessionFromCookie()`.
+   - Admin routes MUST enforce `session.user.role === 'ADMIN'`.
+
+### 8.4 Pull Request Standards for AI-Generated Contributions
+1. **Human Comprehension:** Contributors must understand every line of AI-generated code they submit and be capable of defending architectural decisions during review.
+2. **Full Disclosure:** Disclose AI tools used in the PR template.
+3. **Evidence Required:** Include terminal command output and UI screenshots demonstrating the fix or feature working in a live environment.
+
+
  

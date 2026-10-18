@@ -1,10 +1,100 @@
-# MindSpace v2 — Revised Implementation Plan
+# MindSpace Roadmap — Open Source & SWoC Season 7
 
-## Overview
+Welcome to the **MindSpace Open Source Roadmap**. MindSpace is actively participating in **Social Winter of Code Season 7 (SWoC 7)**. This document serves as the master blueprint for features, community milestones, future plans, architectural refinements, and contributor task allocations.
 
-A complete feature expansion across 6 pillars, built in two clear stages:
-- **Stage A (Classic):** All core non-AI features first — Hub, Calendar, Tasks, Reminders, Chat.
-- **Stage B (AI Layer):** AI and RAG features added on top as an **opt-in enhancement**, user-toggled.
+---
+
+## ❄️ Social Winter of Code (SWoC 7) Track Overview
+
+Contributors can choose tasks from 6 strategic tracks categorized by difficulty:
+- **`documentation`** (10 pts): Guides, API specifications, onboarding walkthroughs.
+- **`level1`** (25 pts): UI refinements, typing improvements, styling alignment, good first issues.
+- **`level2`** (45 pts): New interactive widgets, API CRUD routes, unit test suites, canvas controls.
+- **`level3`** (70+ pts): Complex architectural features, real-time sync, AI/RAG pipelines, bot gateways, PWA/offline.
+
+---
+
+## 🗺️ SWoC 7 Feature Backlog & Contribution Opportunities
+
+### Track 1: Canvas Engine & Visual Modeling (`@xyflow/react`, ELK.js)
+
+| Feature | Difficulty | Description | Status |
+|---|:---:|---|:---:|
+| **Minimap & Navigation Hud** | `level1` | Add interactive minimap overlay with viewport indicator, pan-to-click, and quick zoom presets (25%, 50%, 100%, 200%). | Ready |
+| **Canvas Export Engine** | `level2` | Implement export options for mind maps: high-res SVG, PNG, and formatted Markdown outline. | Ready |
+| **Custom Node Shape Library** | `level2` | Add new node types to React Flow: Decision Diamonds, Sticky Notes, Container Groups, and Cloud nodes. | Ready |
+| **Edge Styling & Routing** | `level1` | Provide edge customization palette: Straight, Smoothstep, Orthogonal, Bezier curves, and animated dashed states. | Ready |
+| **Multi-Node Alignment Tools** | `level2` | Toolbar actions to align selected nodes (top, center, bottom, distribute horizontally/vertically). | Ready |
+| **Zen / Distraction-Free Mode** | `level1` | Fullscreen canvas toggle that collapses sidebars, headers, and controls into a minimal floating bar. | Ready |
+| **Stylus Vector Ink Smoothing** | `level3` | Enhance `perfect-freehand` stylus engine with Catmull-Rom spline smoothing and geometric shape auto-detection. | Backlog |
+
+---
+
+### Track 2: Knowledge Graph & Semantic Intelligence (AI & RAG)
+
+| Feature | Difficulty | Description | Status |
+|---|:---:|---|:---:|
+| **Bi-Directional Wiki-Links** | `level2` | Support `[[Note Title]]` syntax in notes and nodes that automatically creates backlink relationships in the database. | Ready |
+| **Global 2D/3D Force Graph** | `level3` | Dedicated `/graph` view visualizing the entire user knowledge graph using `force-graph` or Three.js, with node filtering. | Backlog |
+| **In-Browser Local Embeddings** | `level3` | Add privacy-first, zero-cloud semantic search using `@xenova/transformers` (all-MiniLM-L6-v2) in Web Workers. | Backlog |
+| **Canvas Node Auto-Cluster** | `level2` | Group related canvas nodes by semantic similarity or tags with auto-generated boundary boxes. | Ready |
+| **Backlink Reference Inspector** | `level2` | Collapsible side-drawer in note editor showing all incoming references, unlinked mentions, and graph neighbors. | Ready |
+| **AI Node Copilot Prompt Presets** | `level1` | Expand node copilot with customizable 1-click prompts ("Pros & Cons", "Counterarguments", "Action Steps"). | Ready |
+
+---
+
+### Track 3: Advanced Editor & Multi-Modal Notes (TipTap)
+
+| Feature | Difficulty | Description | Status |
+|---|:---:|---|:---:|
+| **Markdown File Import/Export** | `level1` | 1-click import of `.md` files (with frontmatter metadata) and export of formatted notes. | Ready |
+| **LaTeX / KaTeX Math Extension** | `level2` | TipTap extension rendering inline math `$E=mc^2$` and block formulas `$$\int f(x)dx$$`. | Ready |
+| **Audio Voice Note Recording** | `level3` | In-editor audio recorder via Web Audio API, storing audio in MinIO with visual audio player. | Backlog |
+| **Syntax Highlight Theme Selector**| `level1` | Add dark/light code block syntax themes (One Dark, Dracula, GitHub Dark, Nord) in settings. | Ready |
+| **Split-Pane Note & Canvas View** | `level2` | Side-by-side view allowing users to edit a note on the left while interacting with its mind map on the right. | Ready |
+| **Table of Contents Floating Bar** | `level1` | Auto-generated document outline floating widget that highlights active heading on scroll. | Ready |
+
+---
+
+### Track 4: Productivity, Calendar & Task Engine
+
+| Feature | Difficulty | Description | Status |
+|---|:---:|---|:---:|
+| **Kanban Task View** | `level2` | Drag-and-drop Kanban board view (`/tasks/kanban`) with columns: Backlog, Todo, In Progress, Done. | Ready |
+| **iCal (.ics) Sync & Export** | `level1` | Export MindSpace calendar events as an `.ics` feed compatible with Apple Calendar, Outlook, and Google. | Ready |
+| **Two-Way Google Calendar Sync**| `level3` | OAuth 2.0 integration with Google Calendar API to synchronize scheduled events bidirectionally. | Backlog |
+| **Recurring Task Engine** | `level2` | Support daily, weekly, monthly, and cron recurrence rules with BullMQ automated regeneration. | Ready |
+| **Focus Streak & Pomodoro Stats**| `level1` | Analytics dashboard card showing daily focus minutes, completed pomodoros, and current streak count. | Ready |
+| **Habit Tracker Hub Widget** | `level2` | Daily habit tracker checkbox matrix embedded in the Hub Dashboard with weekly completion heatmaps. | Ready |
+
+---
+
+### Track 5: Bots, Notifications & Real-Time Sync
+
+| Feature | Difficulty | Description | Status |
+|---|:---:|---|:---:|
+| **Browser Web Clipper Extension**| `level2` | Manifest V3 Chrome/Firefox extension to clip highlighted web text and URLs directly to the MindSpace Hub Inbox. | Ready |
+| **Slack Companion Bot** | `level3` | Bolt.js integration for Slack workspaces: `/mindspace capture`, daily digests, and reminder notifications. | Backlog |
+| **Outbound Webhooks Delivery** | `level2` | Webhook dispatch system triggering HTTP POST payloads on event creation (Task Done, Note Created) with retries. | Ready |
+| **Telegram Voice Note Processing**| `level3` | Allow Telegram bot to receive voice notes, convert audio, and store transcriptions directly into Inbox. | Backlog |
+| **Email Digest HTML Templates** | `level1` | Modern, responsive HTML email templates for Morning Daily Digest with vermillion accents. | Ready |
+
+---
+
+### Track 6: Quality, Testing, DevEx & Technical Debt
+
+| Feature | Difficulty | Description | Status |
+|---|:---:|---|:---:|
+| **Unit Test Suite (Vitest)** | `level1` | Establish unit testing harness for date parsers, graph transformers, and auth helpers. | In Progress |
+| **API Route Integration Tests** | `level2` | Integration tests verifying CRUD endpoints, status codes, and Zod input rejection. | Ready |
+| **Interactive API Documentation**| `level2` | OpenAPI / Swagger UI viewer at `/api/docs` documenting all REST endpoints. | Ready |
+| **React Error Boundaries** | `level1` | Wrap canvas, chat panels, and editor with graceful Error Boundaries displaying fallback UIs. | Ready |
+| **Bundle Size Optimization** | `level2` | Dynamic imports (`next/dynamic`) for heavy dependencies (`elkjs`, `reactjs-tiptap-editor`, `lowlight`). | Ready |
+| **Docker Multi-Arch & Hardening**| `level2` | Add multi-arch Dockerfiles (amd64 / arm64) and healthcheck probes for Postgres, Redis, and MinIO. | Ready |
+
+---
+
+## 🏗️ Architectural Foundations (v2 Implementation Reference)
 
 ---
 

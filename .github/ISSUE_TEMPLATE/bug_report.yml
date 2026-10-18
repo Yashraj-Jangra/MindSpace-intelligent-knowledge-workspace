@@ -1,0 +1,63 @@
+---
+name: "🐛 Bug Report"
+description: "Report a bug, crash, UI glitch, or broken flow in MindSpace"
+title: "[BUG]: <concise description>"
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting an issue! Please provide detail.
+        SWoC 7 participants: please review CONTRIBUTING.md.
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: What environment are you running MindSpace on?
+      placeholder: "e.g., Win 11 + WSL2, Node v20, Docker Desktop"
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: A clear and concise description of the bug.
+      placeholder: "At /canvas/xyz, clicking 'Auto-Layout' throws..."
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to Reproduce
+      description: Step-by-step instructions to reproduce the bug.
+      placeholder: |
+        1. Run `npm run dev`
+        2. Navigate to '...'
+        3. Click on '....'
+        4. See error in terminal / browser console
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What did you expect to happen instead?
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Terminal / Console Logs
+      description: Paste relevant logs or browser console errors.
+      render: shell
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Pre-submission Checklist
+      options:
+        - label: Verified on latest `master` branch.
+          required: true
+        - label: Searched issues to confirm not a duplicate.
+          required: true
+        - label: Willing to submit a PR if approved.
+          required: false

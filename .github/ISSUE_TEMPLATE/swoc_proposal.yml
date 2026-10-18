@@ -1,0 +1,66 @@
+---
+name: "❄️ SWoC 7 Task Proposal & Claim"
+# yamllint disable-line rule:line-length
+description: "Submit a task proposal or claim an issue for Social Winter of Code Season 7"
+title: "[SWoC 7]: <task title>"
+labels: ["swoc-7", "proposal"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Welcome to **Social Winter of Code Season 7 (SWoC 7)**!
+        Please read CONTRIBUTING.md and ROADMAP.md before submitting.
+        Maintainers will review and assign this issue.
+  - type: dropdown
+    id: difficulty
+    attributes:
+      label: Target Difficulty Level
+      description: Select difficulty according to SWoC scoring guidelines.
+      options:
+        - "Level 1 (Beginner: docs, styling, minor bugfix, typing)"
+        - "Level 2 (Intermediate: new widget, UI component, API CRUD, tests)"
+        # yamllint disable-line rule:line-length
+        - "Level 3 (Advanced: AI pipeline, canvas engine, bot gateway, perf)"
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Proposed Implementation Plan
+      description: Detail exactly what you plan to build or fix.
+      placeholder: |
+        1. Modules/files to change
+        2. New APIs or schema updates (if any)
+        3. UX/UI interactions
+    validations:
+      required: true
+  - type: textarea
+    id: testing_strategy
+    attributes:
+      label: Verification & Testing Strategy
+      description: How will you verify this work satisfies zero-error policy?
+      placeholder: |
+        - Run `npm test`
+        - Run `npx tsc --noEmit` (0 type errors)
+        - Manual test steps and screenshots
+    validations:
+      required: true
+  - type: input
+    id: timeline
+    attributes:
+      label: Estimated Turnaround Time
+      description: When can you submit the Pull Request?
+      placeholder: "e.g., 2-3 days from assignment"
+    validations:
+      required: true
+  - type: checkboxes
+    id: swoc_pledge
+    attributes:
+      label: Contributor Pledge
+      options:
+        - label: I will not submit low-effort or unverified AI generated code.
+          required: true
+        - label: I will adhere to the project's zero-error and test policy.
+          required: true
+        - label: I have starred and forked the repository.
+          required: false

@@ -1,0 +1,14 @@
+---
+blank_issues_enabled: false
+contact_links:
+  - name: "❄️ Social Winter of Code (SWoC) Season 7"
+    url: "https://www.socialwinterofcode.com/"
+    about: "Official SWoC portal, rules, and guidelines."
+  - name: "💬 MindSpace Discussions"
+    # yamllint disable-line rule:line-length
+    url: "https://github.com/Yashraj-Jangra/MindSpace-intelligent-knowledge-workspace/discussions"
+    about: "Ask questions, discuss architecture, and get help."
+  - name: "📖 Contributing Guide"
+    # yamllint disable-line rule:line-length
+    url: "https://github.com/Yashraj-Jangra/MindSpace-intelligent-knowledge-workspace/blob/master/CONTRIBUTING.md"
+    about: "Read before creating issues or pull requests."

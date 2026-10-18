@@ -1,0 +1,22 @@
+# Cursor AI Directives for MindSpace (SWoC Season 7)
+
+## Core Philosophy
+MindSpace is an open-source, AI-powered visual note-taking and mind-mapping platform. We enforce an organisation-grade zero-error policy.
+
+## Rules for AI & Cursor
+1. **Zero-Error Policy**:
+   - Always run `npx tsc --noEmit` mentally and verify code before output.
+   - Do NOT introduce `any` types. Never use `// @ts-ignore` or `// @ts-expect-error`.
+   - Never import packages not listed in `package.json`.
+   - Zod `.safeParse()` must validate every API request body.
+2. **Design Tokens (Bold Typography)**:
+   - Sharp corners ONLY: `border-radius: 0px` / `rounded-none`.
+   - Strictly forbidden: `rounded-md`, `rounded-lg`, `rounded-xl`, `rounded-2xl`. (Exception: `rounded-full` for small circular status dots).
+   - Drop shadows forbidden: No `shadow-*` utility classes. Use `border border-[#262626]`.
+   - Accent: `#FF3D00` (Vermillion). Base: `#0A0A0A`, elevated cards `#141414`.
+3. **Architecture**:
+   - Auth: Use `getSessionFromCookie()` in `src/lib/session.ts`. Check `session.user.role === 'ADMIN'` for admin routes.
+   - Dual-path storage: Support both PostgreSQL/Prisma and `.data/*.json` fallback where applicable.
+   - AI features: Always opt-in (`user.aiEnabled`).
+4. **Testing**:
+   - Add unit tests for new logic. Verify that all tests pass.

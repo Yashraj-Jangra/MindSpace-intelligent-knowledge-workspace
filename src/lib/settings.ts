@@ -1,9 +1,9 @@
-import fs from 'fs';
-import path from 'path';
-import { prisma, isDbDisabled, disableDbCircuitBreaker } from './db';
+import fs from "fs";
+import path from "path";
+import { prisma, isDbDisabled, disableDbCircuitBreaker } from "./db";
 
-const DATA_DIR = path.join(process.cwd(), '.data');
-const SETTINGS_FILE = path.join(DATA_DIR, 'system-settings.json');
+const DATA_DIR = path.join(process.cwd(), ".data");
+const SETTINGS_FILE = path.join(DATA_DIR, "system-settings.json");
 
 function ensureFileExists() {
   if (!fs.existsSync(DATA_DIR)) {
@@ -11,20 +11,24 @@ function ensureFileExists() {
   }
   if (!fs.existsSync(SETTINGS_FILE)) {
     const defaultSettings: Record<string, string> = {
-      SMTP_HOST: 'smtp.gmail.com',
-      SMTP_PORT: '587',
-      USER_STORAGE_LIMIT_MB: '100',
-      AI_ENABLED: 'true',
-      ALLOW_PUBLIC_REGISTRATION: 'true',
+      SMTP_HOST: "smtp.gmail.com",
+      SMTP_PORT: "587",
+      USER_STORAGE_LIMIT_MB: "100",
+      AI_ENABLED: "true",
+      ALLOW_PUBLIC_REGISTRATION: "true",
     };
-    fs.writeFileSync(SETTINGS_FILE, JSON.stringify(defaultSettings, null, 2), 'utf-8');
+    fs.writeFileSync(
+      SETTINGS_FILE,
+      JSON.stringify(defaultSettings, null, 2),
+      "utf-8",
+    );
   }
 }
 
 function readJsonSettings(): Record<string, string> {
   try {
     ensureFileExists();
-    const raw = fs.readFileSync(SETTINGS_FILE, 'utf-8');
+    const raw = fs.readFileSync(SETTINGS_FILE, "utf-8");
     return JSON.parse(raw);
   } catch {
     return {};
@@ -34,9 +38,9 @@ function readJsonSettings(): Record<string, string> {
 function writeJsonSettings(settings: Record<string, string>) {
   try {
     ensureFileExists();
-    fs.writeFileSync(SETTINGS_FILE, JSON.stringify(settings, null, 2), 'utf-8');
+    fs.writeFileSync(SETTINGS_FILE, JSON.stringify(settings, null, 2), "utf-8");
   } catch (err) {
-    console.error('[writeJsonSettings Error]:', err);
+    console.error("[writeJsonSettings Error]:", err);
   }
 }
 
@@ -48,20 +52,25 @@ export async function getSystemSetting(key: string): Promise<string | null> {
       });
       if (setting) return setting.value;
     } catch (error) {
-      console.warn(`[getSystemSetting Error] Tripping circuit breaker for key ${key}:`, error);
+      console.warn(
+        `[getSystemSetting Error] Tripping circuit breaker for key ${key}:`,
+        error,
+      );
       disableDbCircuitBreaker();
     }
   }
 
   const jsonSettings = readJsonSettings();
   const jsonVal = jsonSettings[key];
-  if (jsonVal && jsonVal.trim() !== '') return jsonVal;
+  if (jsonVal && jsonVal.trim() !== "") return jsonVal;
   const envVal = process.env[key];
-  if (envVal && envVal.trim() !== '') return envVal;
+  if (envVal && envVal.trim() !== "") return envVal;
   return null;
 }
 
-export async function getSystemSettings(keys: string[]): Promise<Record<string, string>> {
+export async function getSystemSettings(
+  keys: string[],
+): Promise<Record<string, string>> {
   if (!isDbDisabled()) {
     try {
       const settings = await prisma.systemSetting.findMany({
@@ -73,7 +82,10 @@ export async function getSystemSettings(keys: string[]): Promise<Record<string, 
       }
       return result;
     } catch (error) {
-      console.warn('[getSystemSettings Error] Falling back to JSON store:', error);
+      console.warn(
+        "[getSystemSettings Error] Falling back to JSON store:",
+        error,
+      );
       disableDbCircuitBreaker();
     }
   }
@@ -83,9 +95,9 @@ export async function getSystemSettings(keys: string[]): Promise<Record<string, 
   for (const k of keys) {
     const jsonVal = jsonSettings[k];
     const envVal = process.env[k];
-    if (jsonVal && jsonVal.trim() !== '') {
+    if (jsonVal && jsonVal.trim() !== "") {
       result[k] = jsonVal;
-    } else if (envVal && envVal.trim() !== '') {
+    } else if (envVal && envVal.trim() !== "") {
       result[k] = envVal;
     }
   }
@@ -105,24 +117,24 @@ export async function getAllSystemSettings(): Promise<Record<string, string>> {
         result[s.key] = s.value;
       }
     } catch (error) {
-      console.warn('[getAllSystemSettings Error]:', error);
+      console.warn("[getAllSystemSettings Error]:", error);
       disableDbCircuitBreaker();
     }
   }
 
   const keysToFallback = [
-    'SMTP_HOST',
-    'SMTP_PORT',
-    'SMTP_USER',
-    'SMTP_PASS',
-    'SMTP_FROM_EMAIL',
-    'DISCORD_BOT_TOKEN',
-    'DISCORD_CLIENT_ID',
-    'TELEGRAM_BOT_TOKEN',
-    'GEMINI_API_KEY',
-    'AI_ENABLED',
-    'MINIO_ENDPOINT',
-    'USER_STORAGE_LIMIT_MB'
+    "SMTP_HOST",
+    "SMTP_PORT",
+    "SMTP_USER",
+    "SMTP_PASS",
+    "SMTP_FROM_EMAIL",
+    "DISCORD_BOT_TOKEN",
+    "DISCORD_CLIENT_ID",
+    "TELEGRAM_BOT_TOKEN",
+    "GEMINI_API_KEY",
+    "AI_ENABLED",
+    "MINIO_ENDPOINT",
+    "USER_STORAGE_LIMIT_MB",
   ];
   for (const k of keysToFallback) {
     if (!result[k] && process.env[k]) {
@@ -133,7 +145,10 @@ export async function getAllSystemSettings(): Promise<Record<string, string>> {
   return result;
 }
 
-export async function setSystemSetting(key: string, value: string): Promise<void> {
+export async function setSystemSetting(
+  key: string,
+  value: string,
+): Promise<void> {
   if (!isDbDisabled()) {
     try {
       await prisma.systemSetting.upsert({
@@ -142,7 +157,10 @@ export async function setSystemSetting(key: string, value: string): Promise<void
         create: { key, value },
       });
     } catch (error) {
-      console.warn(`[setSystemSetting Error] Falling back to JSON for key ${key}:`, error);
+      console.warn(
+        `[setSystemSetting Error] Falling back to JSON for key ${key}:`,
+        error,
+      );
       disableDbCircuitBreaker();
     }
   }

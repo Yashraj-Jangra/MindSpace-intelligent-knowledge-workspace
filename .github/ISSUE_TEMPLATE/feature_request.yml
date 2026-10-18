@@ -1,0 +1,54 @@
+---
+name: "🚀 Feature Request"
+description: "Propose a new feature, canvas capability, or enhancement"
+title: "[FEATURE]: <concise title>"
+labels: ["enhancement", "proposal"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Have an idea to make MindSpace better? Let us know!
+        Please review ROADMAP.md to ensure it is not already planned.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem Statement
+      description: Is your feature request related to a problem?
+      placeholder: "I am always frustrated when trying to..."
+    validations:
+      required: true
+  - type: textarea
+    id: proposed_solution
+    attributes:
+      label: Proposed Solution / Feature
+      description: Describe the solution you would like to see.
+      placeholder: "Add an export option that converts mind maps into..."
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: Any alternative solutions or workarounds considered?
+  - type: dropdown
+    id: target_area
+    attributes:
+      label: Target Area
+      description: Which part of MindSpace does this feature touch?
+      options:
+        - "Canvas & Mind Mapping (@xyflow/react, ELK.js)"
+        - "Rich Text Notes (TipTap)"
+        - "AI Copilot & Vector Search (Gemini / pgvector)"
+        - "Bot Integrations (Discord / Telegram)"
+        - "Hub, Calendar & Tasks"
+        - "Admin Governance & Infrastructure"
+        - "Other"
+    validations:
+      required: true
+  - type: checkboxes
+    id: willingness
+    attributes:
+      label: Contribution
+      options:
+        - label: I am willing to work on this feature and submit a PR.
+          required: false

@@ -1,0 +1,32 @@
+---
+name: "📚 Documentation Improvement"
+description: "Suggest improvements, fixes, or additions to MindSpace docs"
+title: "[DOCS]: <brief description>"
+labels: ["documentation", "good first issue"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Accurate, high-quality documentation is vital for MindSpace.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Current Documentation Issue
+      description: What section or document needs improvement?
+      placeholder: "The setup instructions in README.md don't mention..."
+    validations:
+      required: true
+  - type: textarea
+    id: suggestion
+    attributes:
+      label: Suggested Content / Changes
+      description: What should the documentation say instead?
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Pre-submission Checklist
+      options:
+        - label: I am willing to submit a PR to update this documentation.
+          required: false

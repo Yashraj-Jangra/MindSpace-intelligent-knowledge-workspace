@@ -1,0 +1,113 @@
+---
+# hiero-bot.yml
+# Hiero Maintainer Bot v2 — Repository Configuration
+# Configured for MindSpace & Social Winter of Code Season 7 (SWoC 7)
+
+# yamllint disable-line rule:line-length
+repo: "Yashraj-Jangra/MindSpace-intelligent-knowledge-workspace"
+
+difficulty_labels:
+  beginner: "level1"
+  intermediate: "level2"
+  advanced: "level3"
+
+teams:
+  mentors: "mentors"
+
+workflows:
+  # Onboarding
+  onboarding:
+    enabled: true
+    check_human_contributors: true
+    welcome_first_time_only: true
+    require_signed_cla: false
+    minimum_account_age_days: 0
+    minimum_public_contributions: 0
+    # Strict 1 active assignment per contributor for fair SWoC distribution
+    max_concurrent_assignments: 1
+    auto_assign_mentor: false
+    mentor_assignment_strategy: round-robin
+    welcome_message: |
+      Welcome to **MindSpace** and **Social Winter of Code Season 7**! 🎉
+      Please read **CONTRIBUTING.md** and **AGENTS.md** before starting.
+    onboarding_checklist:
+      - Read CONTRIBUTING.md & Code of Conduct
+      - Review AGENTS.md (Zero-Error & Test Verification Policy)
+      - Wait for maintainer assignment before opening a PR
+      - Ensure all code passes `npm run typecheck` and `npm test`
+
+  # Pull Request Quality Gates
+  pull_request:
+    enabled: true
+    reviewer_recommendation: true
+
+    ai_review:
+      enabled: false
+
+    quality_gates:
+      require_tests: true
+      require_dco: false
+      require_gpg_signature: false
+      require_changelog_entry: false
+      require_linked_issue: true
+      allowed_branch_pattern: "^(feat|fix|chore|docs|style|test|swoc)/"
+
+    auto_label: true
+
+  # Reviewer Assignment
+  reviewer_assignment:
+    enabled: false
+
+  # PR Health Scoring
+  pr_health:
+    enabled: true
+    score_weights:
+      has_tests: 0.30
+      has_linked_issue: 0.20
+      has_description: 0.20
+      dco_signed: 0.00
+      review_count: 0.15
+      small_diff: 0.15
+    comment_threshold: 60
+    label_healthy_above: 75
+
+  # Developer Progression & Recognition
+  progression:
+    enabled: true
+    recommend_issues_after_merge: true
+    recommendation_count: 3
+    celebrate_milestones: true
+
+    requirements_for_junior_committer:
+      min_merged_prs: 3
+      min_reviews_given: 2
+      min_months_active: 1
+
+    requirements_for_committer:
+      min_merged_prs: 15
+      min_reviews_given: 10
+      min_months_active: 6
+
+    requirements_for_maintainer:
+      min_merged_prs: 50
+      min_reviews_given: 30
+      min_months_active: 12
+
+  # Issue Management
+  issue_management:
+    enabled: true
+    stale_issue_days: 30
+    close_stale_after_days: 7
+    stale_label: "stale"
+    exempt_labels:
+      - pinned
+      - security
+      - in-progress
+      - swoc-7
+    # Automatically unassign inactive contributors after 3 days (72 hours)
+    auto_unassign_inactive_days: 3
+    label_escalation_rules:
+      - label: "security"
+        notify_team: "mentors"
+      - label: "needs-maintainer"
+        notify_team: "mentors"
